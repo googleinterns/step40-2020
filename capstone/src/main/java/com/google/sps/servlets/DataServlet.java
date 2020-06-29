@@ -24,6 +24,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import java.io.BufferedReader;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.sps.data.PerspectiveInput;
+
 
 /** Servlet that returns some example content. TODO: modify this file to handle comments data */
 @WebServlet("/data")
@@ -31,9 +36,20 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // Get the input
+    String data = request.getReader().readLine();
+    Gson gson = new Gson();		
+    PerspectiveInput info = gson.fromJson(data, PerspectiveInput.class);  
+    
+    String text = info.getText();
+    String lang = info.getLang();
+		
+    // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
-    String json = makeJson("This is a toxicity test. You are a bad person.");
+    String json = makeJson(text, lang);
     String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc", json, client);
+  
+    // Return Perspective's results
     response.setContentType("application/json;");
     response.getWriter().println(output);
   }
@@ -50,7 +66,7 @@ public class DataServlet extends HttpServlet {
     }
   }
 
-  String makeJson(String text) {
-    return "{'comment': {'text': '" + text + "'}, 'languages': [], 'requestedAttributes': { 'TOXICITY': {} }}";
+  String makeJson(String text, String lang) {
+    return "{'comment': {'text': '" + text + "'}, 'languages': [" + "], 'requestedAttributes': { 'TOXICITY': {} }}";
   }
 }
