@@ -33,7 +33,7 @@ public class DataServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     OkHttpClient client = new OkHttpClient();
     String json = makeJson("This is a toxicity test. You are a bad person.");
-    String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc", json, client);
+    String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY", json, client);
     response.setContentType("application/json;");
     response.getWriter().println(output);
   }
