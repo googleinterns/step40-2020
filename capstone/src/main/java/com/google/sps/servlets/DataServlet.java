@@ -35,10 +35,10 @@ import com.google.sps.data.PerspectiveInput;
 public class DataServlet extends HttpServlet {
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Get the input
     String data = request.getReader().readLine();
-    Gson gson = new Gson();		
+    Gson gson = new Gson();
     PerspectiveInput info = gson.fromJson(data, PerspectiveInput.class);  
     
     String text = info.getText();
@@ -47,7 +47,7 @@ public class DataServlet extends HttpServlet {
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
     String json = makeJson(text, lang);
-    String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY", json, client);
+    String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc", json, client);
   
     // Return Perspective's results
     response.setContentType("application/json;");
@@ -67,6 +67,6 @@ public class DataServlet extends HttpServlet {
   }
 
   String makeJson(String text, String lang) {
-    return "{'comment': {'text': '" + text + "'}, 'languages': [" + "], 'requestedAttributes': { 'TOXICITY': {} }}";
+    return "{'comment': {'text': '" + text + "'}, 'languages': ['" + lang + "'], 'requestedAttributes': { 'TOXICITY': {} }}";
   }
 }

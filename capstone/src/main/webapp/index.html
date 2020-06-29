@@ -2,14 +2,23 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>My Portfolio</title>
+    <title>Perspective Hub</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
   </head>
   <body>
     <div id="content">
+      <textarea id="text-input" name="text-input" rows="4" cols="50"></textarea>
+      <select name="language-input" id="language-input">
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="it">Italian</option>
+        <option value="pt">Portuguese</option>
+      </select>
       <p>Click here to get Perspective output:</p>
-      <button onclick="callPerspective()">Hello</button>
+      <button onclick="submitInput()">Hello</button>
       <div id="perspective-output-container"></div>
     </div>
   </body>
