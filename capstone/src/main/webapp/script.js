@@ -18,9 +18,7 @@
 async function callPerspective(text, lang) {
   const response = await fetch('/call_perspective', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json',},
       body: JSON.stringify({text: text, lang: lang})});
   const toxicityData = await response.json();
   displayPerspectiveOutput(toxicityData);
