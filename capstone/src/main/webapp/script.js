@@ -13,16 +13,44 @@
 // limitations under the License.
 
 /**
- * Adds a random greeting to the page.
+ * Call the perspective API
  */
-function addRandomGreeting() {
-  const greetings =
-      ['Hello world!', '¡Hola Mundo!', '你好，世界！', 'Bonjour le monde!'];
+async function callPerspective(text, lang) {
+  const response = await fetch('/call_perspective', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({text: text, lang: lang})});
+  const toxicityData = await response.json();
+  displayPerspectiveOutput(toxicityData);
+}
 
-  // Pick a random greeting.
-  const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+/**
+ *  Display toxicity output on the webpage
+ */
+function displayPerspectiveOutput(toxicityData) {
+  const outputElement = document.getElementById('perspective-output-container');
+  if (!outputElement) {
+    return;
+  }
+  outputElement.innerHTML = '';
 
-  // Add it to the page.
-  const greetingContainer = document.getElementById('greeting-container');
-  greetingContainer.innerText = greeting;
+  if (toxicityData.attributeScores) {
+    for (let key in toxicityData.attributeScores) {
+      if (toxicityData.attributeScores[key].summaryScore && 
+          toxicityData.attributeScores[key].summaryScore.value) {
+        outputElement.appendChild(createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value));
+      }
+    }
+  }
+}
+
+/**
+ * Create a 'tag' element with 'text' as its inner HTML
+ */
+function createAnyElement(tag, text) {
+  const textElement = document.createElement(tag);
+  textElement.innerHTML = text;
+  return textElement;
 }
