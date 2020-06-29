@@ -19,14 +19,43 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 /** Servlet that returns some example content. TODO: modify this file to handle comments data */
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("text/html;");
-    response.getWriter().println("<h1>Hello world!</h1>");
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    BufferedReader reader = request.getReader();
+    JsonObject input = new Gson().fromJson(reader, JsonObject.class);
+    
+    String text = getAttribute(input, "text");
+		String lan = getAttribute(input, "lan");
+    
+
+    String APIkey = "AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc";
+    String url = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=" + APIkey;
+    JsonObject params = new JsonObject();
+		params.put('comment': {'text': text});
+		
+		JSON.stringify({
+      'comment': {'text': text},
+      'languages': [lan],
+      'requestedAttributes': {'TOXICITY': {}}
+    });
+		URLConnection connection = new URL(url + "?" + params).openConnection();
+    
+		connection.setRequestMethod("POST");
+    connetion.setRequestProperty("comment", "hardcoded_comment");
+
+		InputStream response = connection.getInputStream();
+
+    httpConnection.setDoOutput(true);
+
+    Gson gson = new Gson();
+    response.setContentType("application/json;");
+    response.getWriter().println(gson.toJson(response));
   }
 }
