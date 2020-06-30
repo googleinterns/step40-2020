@@ -78,5 +78,5 @@ public class DataServlet extends HttpServlet {
       + "'IDENTITY_ATTACK': {},"
       + "'SEVERE_TOXICITY': {}"
       + "}}";
-  }
+  } 
 }
