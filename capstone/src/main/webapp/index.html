@@ -13,8 +13,10 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
+    <script src="script.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
-  <body class="text-center">
+  <body class="text-center" onload="loadChartsApi()">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
@@ -35,7 +37,8 @@
         <p class="lead">Perspective Hub Is An All In One Utillity For Testing Perspective API</p>
         <p class="lead">
           <a href="http://perspectiveapi.com/#/home" class="btn btn-lg btn-secondary">Learn more</a>
-        </p>
+        </p> 
+        <div id="chart-container"></div>
       </main>
       <footer class="mastfoot mt-auto">
         <div class="inner">

@@ -12,17 +12,136 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/**
- * Adds a random greeting to the page.
- */
-function addRandomGreeting() {
-  const greetings =
-      ['Hello world!', '¡Hola Mundo!', '你好，世界！', 'Bonjour le monde!'];
+attributeData = {
+  "attributeScores": {
+    "THREAT": {
+      "spanScores": [
+        {
+          "begin": 0,
+          "end": 4,
+          "score": {
+            "value": 0.18365456,
+            "type": "PROBABILITY"
+          }
+        }
+      ],
+      "summaryScore": {
+        "value": 0.18365456,
+        "type": "PROBABILITY"
+      }
+    },
+    "TOXICITY": {
+      "spanScores": [
+        {
+          "begin": 0,
+          "end": 4,
+          "score": {
+            "value": 0.96509165,
+            "type": "PROBABILITY"
+          }
+        }
+      ],
+      "summaryScore": {
+        "value": 0.96509165,
+        "type": "PROBABILITY"
+      }
+    },
+    "INSULT": {
+      "spanScores": [
+        {
+          "begin": 0,
+          "end": 4,
+          "score": {
+            "value": 0.60424614,
+            "type": "PROBABILITY"
+          }
+        }
+      ],
+      "summaryScore": {
+        "value": 0.60424614,
+        "type": "PROBABILITY"
+      }
+    },
+    "SEVERE_TOXICITY": {
+      "spanScores": [
+        {
+          "begin": 0,
+          "end": 4,
+          "score": {
+            "value": 0.7285898,
+            "type": "PROBABILITY"
+          }
+        }
+      ],
+      "summaryScore": {
+        "value": 0.7285898,
+        "type": "PROBABILITY"
+      }
+    },
+    "IDENTITY_ATTACK": {
+      "spanScores": [
+        {
+          "begin": 0,
+          "end": 4,
+          "score": {
+            "value": 0.13047843,
+            "type": "PROBABILITY"
+          }
+        }
+      ],
+      "summaryScore": {
+        "value": 0.13047843,
+        "type": "PROBABILITY"
+      }
+    },
+    "PROFANITY": {
+      "spanScores": [
+        {
+          "begin": 0,
+          "end": 4,
+          "score": {
+            "value": 0.9831821,
+            "type": "PROBABILITY"
+          }
+        }
+      ],
+      "summaryScore": {
+        "value": 0.9831821,
+        "type": "PROBABILITY"
+      }
+    }
+  },
+  "languages": [
+    "en"
+  ],
+  "detectedLanguages": [
+    "en"
+  ]
+};
 
-  // Pick a random greeting.
-  const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+function loadChartsApi() {
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(drawBarChart); 
+}
 
-  // Add it to the page.
-  const greetingContainer = document.getElementById('greeting-container');
-  greetingContainer.innerText = greeting;
+/** Fetches page vote data and uses it to create a chart. */
+function drawBarChart() {
+  const data = new google.visualization.DataTable();
+  data.addColumn('string', 'Attribute');
+  data.addColumn('number', 'Score');
+  Object.keys(attributeData.attributeScores).forEach((attribute) => {
+    data.addRow([attribute, attributeData.attributeScores[attribute].summaryScore.value]);
+  });
+
+  const options = {
+    title: 'Perspective Data',
+    series: {
+      0: { color: '#DC143C' }
+    },
+    width: 800,
+    height: 700,
+  };
+
+  const chart = new google.visualization.ColumnChart(document.getElementById('chart-container'));
+  chart.draw(data, options);
 }
