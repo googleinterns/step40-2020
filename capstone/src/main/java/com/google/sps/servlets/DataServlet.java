@@ -30,7 +30,7 @@ import com.google.gson.JsonObject;
 import com.google.sps.data.PerspectiveInput;
 
 
-/** Servlet that returns some example content. TODO: modify this file to handle comments data */
+/** Servlet that returns Perspective scoring. */
 @WebServlet("/call-perspective")
 public class DataServlet extends HttpServlet {
 
@@ -67,7 +67,7 @@ public class DataServlet extends HttpServlet {
 
   /** Builds the JSON for the body of the call to Perspective API. */
   private String makePerspectiveJson(String text, String lang) {
-    return "{'comment': {'text': '" + text + "'}, 'languages': [" + "], 'requestedAttributes': {"
+    return "{'comment': {'text': '" + text + "'}, 'languages': ['" + lang + "'], 'requestedAttributes': {"
       + "'TOXICITY': {}," 
       + "'PROFANITY': {}," 
       + "'THREAT': {}," 
