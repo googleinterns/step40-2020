@@ -58,10 +58,8 @@ public class DataServlet extends HttpServlet {
   private String post(String url, String json, OkHttpClient client) throws IOException {
     MediaType JSON = MediaType.get("application/json; charset=utf-8");
     RequestBody body = RequestBody.create(json, JSON);
-    Request request = new Request.Builder()
-        .url(url)
-        .post(body)
-        .build();
+    Request request = new Request.Builder().url(url).post(body).build();
+
     try (Response response = client.newCall(request).execute()) {
       return response.body().string();
     }
