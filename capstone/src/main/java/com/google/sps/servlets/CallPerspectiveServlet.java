@@ -28,11 +28,16 @@ import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.sps.data.PerspectiveInput;
-
+import org.json.simple.JSONObject;    
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /** Servlet that returns Perspective scoring. */
 @WebServlet("/call-perspective")
-public class DataServlet extends HttpServlet {
+public class CallPerspectiveServlet extends HttpServlet {
+  static final String url = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
+  static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  static final ArrayList<String> attributes = new ArrayList<String>(Arrays.asList("TOXICITY", "PROFANITY", "THREAT", "INSULT", "IDENTITY_ATTACK", "SEVERE_TOXICITY"));
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -47,16 +52,15 @@ public class DataServlet extends HttpServlet {
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
     String json = makePerspectiveJson(text, lang);
-    String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY", json, client);
+    String output = post(url, json, client);
   
     // Return Perspective's results
-    response.setContentType("application/json;");
+    response.setContentType("application/json");
     response.getWriter().println(output);
   }
 
   /** Makes a POST request. */
   private String post(String url, String json, OkHttpClient client) throws IOException {
-    MediaType JSON = MediaType.get("application/json; charset=utf-8");
     RequestBody body = RequestBody.create(json, JSON);
     Request request = new Request.Builder().url(url).post(body).build();
 
@@ -67,13 +71,18 @@ public class DataServlet extends HttpServlet {
 
   /** Builds the JSON for the body of the call to Perspective API. */
   private String makePerspectiveJson(String text, String lang) {
-    return "{'comment': {'text': '" + text + "'}, 'languages': ['" + lang + "'], 'requestedAttributes': {"
-      + "'TOXICITY': {}," 
-      + "'PROFANITY': {}," 
-      + "'THREAT': {}," 
-      + "'INSULT': {},"
-      + "'IDENTITY_ATTACK': {},"
-      + "'SEVERE_TOXICITY': {}"
-      + "}}";
+    JSONObject json = new JSONObject();  
+    JSONObject commentValue = new JSONObject();
+    JSONObject requestValue = new JSONObject();
+
+    commentValue.put("text", text);
+    for (String attribute : attributes) {
+      requestValue.put(attribute, new JSONObject());
+    }
+
+    json.put("comment", commentValue);
+    json.put("languages", lang);    
+    json.put("requestedAttributes", requestValue);    
+    return json.toString();
   } 
 }
