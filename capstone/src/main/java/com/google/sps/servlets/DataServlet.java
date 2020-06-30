@@ -52,7 +52,7 @@ public class DataServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Get the input
     String data = request.getReader().readLine();
-    Gson gson = new Gson();		
+    Gson gson = new Gson();
     PerspectiveInput info = gson.fromJson(data, PerspectiveInput.class);  
     
     String text = info.getText();
