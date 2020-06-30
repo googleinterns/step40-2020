@@ -31,7 +31,7 @@ import com.google.sps.data.PerspectiveInput;
 
 
 /** Servlet that returns some example content. TODO: modify this file to handle comments data */
-@WebServlet("/data")
+@WebServlet("/call-perspective")
 public class DataServlet extends HttpServlet {
 
   @Override
@@ -46,7 +46,7 @@ public class DataServlet extends HttpServlet {
 		
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
-    String json = makeJson(text, lang);
+    String json = makePerspectiveJson(text, lang);
     String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY", json, client);
   
     // Return Perspective's results
@@ -54,7 +54,8 @@ public class DataServlet extends HttpServlet {
     response.getWriter().println(output);
   }
 
-  String post(String url, String json, OkHttpClient client) throws IOException {
+  /** Makes a POST request. */
+  private String post(String url, String json, OkHttpClient client) throws IOException {
     MediaType JSON = MediaType.get("application/json; charset=utf-8");
     RequestBody body = RequestBody.create(json, JSON);
     Request request = new Request.Builder()
@@ -66,7 +67,18 @@ public class DataServlet extends HttpServlet {
     }
   }
 
-  String makeJson(String text, String lang) {
-    return "{'comment': {'text': '" + text + "'}, 'languages': [" + "], 'requestedAttributes': { 'TOXICITY': {} }}";
+  /** Builds the JSON for the body of the call to Perspective API. */
+  private String makePerspectiveJson(String text, String lang) {
+    return "{'comment': {'text': '" + text + "'}, 'languages': [" + "], 'requestedAttributes': {"
+      + "'TOXICITY': {}," 
+      + "'PROFANITY': {}," 
+      + "'THREAT': {}," 
+      + "'SEXUALLY_EXPLICIT': {},"
+      + "'INSULT': {},"
+      + "'INFLAMMATORY': {},"
+      + "'FLIRTATION': {},"
+      + "'IDENTITY_ATTACK': {},"
+      + "'SEVERE_TOXICITY': {}"
+      + "}}";
   }
 }
