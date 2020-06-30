@@ -38,7 +38,8 @@ function displayPerspectiveOutput(toxicityData) {
     for (let key in toxicityData.attributeScores) {
       if (toxicityData.attributeScores[key].summaryScore && 
           toxicityData.attributeScores[key].summaryScore.value) {
-        outputElement.appendChild(createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value));
+        attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
+        outputElement.appendChild(attributeElement);
       }
     }
   }
