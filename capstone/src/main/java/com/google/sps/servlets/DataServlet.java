@@ -28,11 +28,25 @@ import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.sps.data.PerspectiveInput;
+import com.google.sps.data.PerspectiveCaller;
+import com.google.sps.data.ApiCaller;
 
 
 /** Servlet that returns Perspective scoring. */
 @WebServlet("/call-perspective")
 public class DataServlet extends HttpServlet {
+
+  private ApiCaller apiCaller;
+
+  public DataServlet() {
+    super();
+    this.apiCaller = new PerspectiveCaller();
+  }
+
+  public DataServlet(ApiCaller apiCaller) {
+    super();
+    this.apiCaller = apiCaller;
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -47,23 +61,23 @@ public class DataServlet extends HttpServlet {
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
     String json = makePerspectiveJson(text, lang);
-    String output = post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY", json, client);
+    String output = apiCaller.post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc", json, client);
   
     // Return Perspective's results
     response.setContentType("application/json;");
     response.getWriter().println(output);
   }
 
-  /** Makes a POST request. */
-  private String post(String url, String json, OkHttpClient client) throws IOException {
-    MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    RequestBody body = RequestBody.create(json, JSON);
-    Request request = new Request.Builder().url(url).post(body).build();
+  // /** Makes a POST request. */
+  // private String post(String url, String json, OkHttpClient client) throws IOException {
+  //   MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  //   RequestBody body = RequestBody.create(json, JSON);
+  //   Request request = new Request.Builder().url(url).post(body).build();
 
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
-  }
+  //   try (Response response = client.newCall(request).execute()) {
+  //     return response.body().string();
+  //   }
+  // }
 
   /** Builds the JSON for the body of the call to Perspective API. */
   private String makePerspectiveJson(String text, String lang) {
