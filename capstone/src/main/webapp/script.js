@@ -124,17 +124,17 @@ function loadChartsApi() {
   google.charts.setOnLoadCallback(drawBarChart); 
 }
 
-/** Fetches page vote data and uses it to create a chart. */
+/** Draws a Google BarChart from a Perspective JSON. */
 function drawBarChart() {
   const data = google.visualization.arrayToDataTable([[ {label: 'Attribute'}, {label: 'Score', type: 'number'}, { role: "style" }]]);
 
   Object.keys(attributeData.attributeScores).forEach((attribute) => {
-    var color = 'green';
+    var color = '#6B8E23'; // Green
     const score = attributeData.attributeScores[attribute].summaryScore.value;
-    if (score > 0.8) {
-      color = 'red';
-    } else if (score > 0.2) {
-      color = 'yellow';
+    if (score >= 0.8) {
+      color = '#DC143C'; // Red
+    } else if (score >= 0.2) {
+      color = '#ffd800'; // Yellow
     } 
     data.addRow([attribute, score, color]);
   });
