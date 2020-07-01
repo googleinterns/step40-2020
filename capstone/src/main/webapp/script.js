@@ -70,6 +70,68 @@ function createAnyElement(tag, text) {
   return textElement;
 }
 
+/**
+ * Creates an checkbox element with the given id and label
+ */
+function createAttributeCheckBox(id, label) {
+  // Construct <input>
+  const inputElement = createAnyElement('input', '');
+  inputElement.setAttribute('class', 'form-check-input');
+  inputElement.setAttribute('type', 'checkbox');
+  inputElement.setAttribute('id', id);
+
+  // Construct <label> 
+  const labelElement = createAnyElement('label', label);
+  labelElement.setAttribute('class', 'form-check-label');
+  labelElement.setAttribute('for', id);
+  labelElement.text = label;
+
+  // Construct <div>
+  const divElement = createAnyElement('div', '');
+  divElement.setAttribute('class', 'form-check');
+  divElement.appendChild(inputElement);
+  divElement.appendChild(labelElement);
+
+  return divElement;
+}
+
+/**
+ * Displays possible analysis attributes on the page based on what language is selected
+ */
+function updateAttributes() {
+  const langElement = document.getElementById('languageForAnalysis');
+  if (!langElement) {
+    return;
+  }
+  const lang = langElement.value;
+
+  const attrContainerElement = document.getElementById('attributes-container');
+  if (!attrContainerElement) {
+    return;
+  }
+  attrContainerElement.innerHTML = '';
+
+  attrContainerElement.appendChild(createAttributeCheckBox('toxicity', 'Toxicity'));
+  attrContainerElement.appendChild(createAttributeCheckBox('severe-toxicity', 'Severe Toxicity'));
+  switch(lang) {
+    case 'en':
+      attrContainerElement.appendChild(createAttributeCheckBox('sexually-explicit', 'Sexually Explicit'));
+      attrContainerElement.appendChild(createAttributeCheckBox('flirtation', 'Flirtation'));
+      attrContainerElement.appendChild(createAttributeCheckBox('toxicity-fast', 'Toxicity (Fast)'));
+      // Fall through
+    case 'de':
+    case 'it':
+    case 'pt':
+      attrContainerElement.appendChild(createAttributeCheckBox('identity-attack', 'Identity Attack'));
+      attrContainerElement.appendChild(createAttributeCheckBox('insult', 'Insult'));
+      attrContainerElement.appendChild(createAttributeCheckBox('profanity', 'Profanity'));
+      attrContainerElement.appendChild(createAttributeCheckBox('threat', 'Threat'));
+      break;
+    default:
+      break;
+  }
+}
+
 /** Loads the Google Charts API */
 function loadChartsApi(toxicityData) {
   google.charts.load('current', {'packages':['corechart']});
