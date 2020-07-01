@@ -126,7 +126,7 @@ function loadChartsApi() {
 
 /** Draws a Google BarChart from a Perspective JSON. */
 function drawBarChart() {
-  const data = google.visualization.arrayToDataTable([[ {label: 'Attribute'}, {label: 'Score', type: 'number'}, { role: "style" }]]);
+  const data = google.visualization.arrayToDataTable([[ {label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(attributeData.attributeScores).forEach((attribute) => {
     var color = '#6B8E23'; // Green
@@ -135,19 +135,21 @@ function drawBarChart() {
       color = '#DC143C'; // Red
     } else if (score >= 0.2) {
       color = '#ffd800'; // Yellow
-    } 
+    }
+    console.log(color); 
     data.addRow([attribute, score, color]);
   });
 
   data.sort({column: 1, desc: false});
 
   const options = {
-    title: 'Attribute Feedback',
+    title: 'Perspective Feedback',
     bars: 'horizontal',
     height: 700,
-    legend: { position: "none" }
+    legend: { position: "none" },
+    theme: 'material'
   };
 
   const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
-  chart.draw(data,options);
+  chart.draw(data, options);
 }
