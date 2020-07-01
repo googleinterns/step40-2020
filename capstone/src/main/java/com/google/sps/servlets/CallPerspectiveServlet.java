@@ -35,9 +35,9 @@ import java.util.Arrays;
 /** Servlet that returns Perspective scoring. */
 @WebServlet("/call-perspective")
 public class CallPerspectiveServlet extends HttpServlet {
-  static final String url = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
-  static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  static final ArrayList<String> attributes = new ArrayList<String>(Arrays.asList("TOXICITY", "PROFANITY", "THREAT", "INSULT", "IDENTITY_ATTACK", "SEVERE_TOXICITY"));
+  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
+  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  private static final ArrayList<String> ATTRIBUTES = new ArrayList<String>(Arrays.asList("TOXICITY", "PROFANITY", "THREAT", "INSULT", "IDENTITY_ATTACK", "SEVERE_TOXICITY"));
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -52,7 +52,7 @@ public class CallPerspectiveServlet extends HttpServlet {
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
     String json = makePerspectiveJson(text, lang);
-    String output = post(url, json, client);
+    String output = post(URL, json, client);
   
     // Return Perspective's results
     response.setContentType("application/json");
@@ -76,7 +76,7 @@ public class CallPerspectiveServlet extends HttpServlet {
     JSONObject requestValue = new JSONObject();
 
     commentValue.put("text", text);
-    for (String attribute : attributes) {
+    for (String attribute : ATTRIBUTES) {
       requestValue.put(attribute, new JSONObject());
     }
 
