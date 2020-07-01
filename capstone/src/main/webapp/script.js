@@ -52,9 +52,27 @@ function displayPerspectiveOutput(toxicityData) {
   if (toxicityData.attributeScores) {
     for (let key in toxicityData.attributeScores) {
       if (toxicityData.attributeScores[key].summaryScore && 
-          toxicityData.attributeScores[key].summaryScore.value) {
-        attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
-        outputElement.appendChild(attributeElement);
+        toxicityData.attributeScores[key].summaryScore.value) {
+        if (document.getElementById('toxicity').checked == true && key == "TOXICITY") {
+          attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
+          outputElement.appendChild(attributeElement);
+        }
+        if (document.getElementById('insult').checked == true && key == "INSULT") {
+          attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
+          outputElement.appendChild(attributeElement);
+        }
+        if (document.getElementById('identity-attack').checked == true && key == "IDENTITY_ATTACK") {
+          attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
+          outputElement.appendChild(attributeElement);
+        }
+        if (document.getElementById('profanity').checked == true && key == "PROFANITY") {
+          attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
+          outputElement.appendChild(attributeElement);
+        }
+        if (document.getElementById('threat').checked == true && key == "THREAT") {
+          attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
+          outputElement.appendChild(attributeElement);
+        }
       }
     }
   }
