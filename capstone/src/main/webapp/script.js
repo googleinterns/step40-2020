@@ -120,29 +120,34 @@ attributeData = {
 };
 
 function loadChartsApi() {
-  google.charts.load('current', {'packages':['bar']});
+  google.charts.load('current', {'packages':['corechart']});
   google.charts.setOnLoadCallback(drawBarChart); 
 }
 
 /** Fetches page vote data and uses it to create a chart. */
 function drawBarChart() {
-  const data = new google.visualization.DataTable();
-  data.addColumn('string', '');
-  data.addColumn('number', 'Score');
+  const data = google.visualization.arrayToDataTable([[ {label: 'Attribute'}, {label: 'Score', type: 'number'}, { role: "style" }]]);
+
   Object.keys(attributeData.attributeScores).forEach((attribute) => {
-    data.addRow([attribute, attributeData.attributeScores[attribute].summaryScore.value]);
+    var color = 'green';
+    const score = attributeData.attributeScores[attribute].summaryScore.value;
+    if (score > 0.8) {
+      color = 'red';
+    } else if (score > 0.2) {
+      color = 'yellow';
+    } 
+    data.addRow([attribute, score, color]);
   });
+
+  data.sort({column: 1, desc: false});
 
   const options = {
     title: 'Attribute Feedback',
-    subtitle: 'from Perspective API',
-    series: {
-      0: { color: '#DC143C' }
-    },
     bars: 'horizontal',
     height: 700,
+    legend: { position: "none" }
   };
 
-  const chart = new google.charts.Bar(document.getElementById('chart-container'));
-  chart.draw(data, google.charts.Bar.convertOptions(options));
+  const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
+  chart.draw(data,options);
 }
