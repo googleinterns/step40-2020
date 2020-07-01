@@ -40,7 +40,7 @@ public class CallPerspectiveServlet extends HttpServlet {
   private static final ArrayList<String> ATTRIBUTES = new ArrayList<String>(Arrays.asList("TOXICITY", "PROFANITY", "THREAT", "INSULT", "IDENTITY_ATTACK", "SEVERE_TOXICITY"));
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Get the input
     String data = request.getReader().readLine();
     Gson gson = new Gson();		
