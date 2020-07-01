@@ -37,6 +37,7 @@ async function callPerspective(text, lang) {
       body: JSON.stringify({text: text, lang: lang})});
   const toxicityData = await response.json();
   displayPerspectiveOutput(toxicityData);
+  loadChartsApi(toxicityData);
 }
 
 /**
@@ -85,4 +86,40 @@ function createAnyElement(tag, text) {
   const textElement = document.createElement(tag);
   textElement.innerHTML = text;
   return textElement;
+}
+
+/** Loads the Google Charts API */
+function loadChartsApi(toxicityData) {
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
+}
+
+/** Draws a Google BarChart from a Perspective JSON. */
+function drawBarChart(toxicityData) {
+  const data = google.visualization.arrayToDataTable([[ {label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
+
+  Object.keys(toxicityData.attributeScores).forEach((attribute) => {
+    var color = '#6B8E23'; // Green
+    const score = toxicityData.attributeScores[attribute].summaryScore.value;
+    if (score >= 0.8) {
+      color = '#DC143C'; // Red
+    } else if (score >= 0.2) {
+      color = '#ffd800'; // Yellow
+    }
+    data.addRow([attribute, score, color]);
+  });
+
+  data.sort({column: 1, desc: false});
+
+  const options = {
+    title: 'Perspective Feedback',
+    bars: 'horizontal',
+    height: 700,
+    legend: {position: "none"},
+    theme: 'material', 
+    hAxis: {viewWindow: {min: 0, max: 1}}
+  };
+
+  const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
+  chart.draw(data, options);
 }
