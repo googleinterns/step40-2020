@@ -33,7 +33,15 @@
           </nav>
         </div>
       </header>
-      <h2>Input text and select the Perspective API attribute(s) you would like to be shown</h2>
+      <main role="main">
+        <section class="jumbotron text-center">
+          <div class="container">
+            <h1>Text Analysis</h1>
+            <p class="lead text-muted">Input text and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
+          </div>
+        </section>
+      </main>
       <form>
         <div class="form-group">
           <input type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here">
@@ -66,7 +74,7 @@
         <div class="form-check">
           <input type="checkbox" class="form-check-input" id="flirtation">
           <label class="form-check-label" for="flirtation">Flirtation</label>
-        </div>
+        </div><br>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
       <div id="perspective-response"></div>
