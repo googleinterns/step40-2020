@@ -120,28 +120,29 @@ attributeData = {
 };
 
 function loadChartsApi() {
-  google.charts.load('current', {'packages':['corechart']});
+  google.charts.load('current', {'packages':['bar']});
   google.charts.setOnLoadCallback(drawBarChart); 
 }
 
 /** Fetches page vote data and uses it to create a chart. */
 function drawBarChart() {
   const data = new google.visualization.DataTable();
-  data.addColumn('string', 'Attribute');
+  data.addColumn('string', '');
   data.addColumn('number', 'Score');
   Object.keys(attributeData.attributeScores).forEach((attribute) => {
     data.addRow([attribute, attributeData.attributeScores[attribute].summaryScore.value]);
   });
 
   const options = {
-    title: 'Perspective Data',
+    title: 'Attribute Feedback',
+    subtitle: 'from Perspective API',
     series: {
       0: { color: '#DC143C' }
     },
-    width: 800,
+    bars: 'horizontal',
     height: 700,
   };
 
-  const chart = new google.visualization.ColumnChart(document.getElementById('chart-container'));
-  chart.draw(data, options);
+  const chart = new google.charts.Bar(document.getElementById('chart-container'));
+  chart.draw(data, google.charts.Bar.convertOptions(options));
 }
