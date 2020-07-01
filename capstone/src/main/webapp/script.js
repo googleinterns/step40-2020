@@ -13,6 +13,21 @@
 // limitations under the License.
 
 /**
+ * Collect the user's input and call Perspective on it
+ */
+async function submitInput() {
+  const textElement = document.getElementById('textForAnalysis');
+  if (!textElement) {
+    return;
+  }
+  const langElement = document.getElementById('languageForAnalysis');
+  if (!langElement) {
+    return;
+  }
+  const response = await callPerspective(textElement.value, langElement.value);
+}
+
+/**
  * Call the perspective API
  */
 async function callPerspective(text, lang) {

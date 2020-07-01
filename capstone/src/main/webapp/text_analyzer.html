@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
+    <script src="script.js"></script>
   </head>
   <body class="text-center">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
@@ -31,13 +32,21 @@
         </div>
       </header>
       <h2>Input text and select the Perspective API attribute(s) you would like to be shown</h2>
-      <form>
+      <form onsubmit="submitInput(); return false;">
         <div class="form-group">
           <input type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here">
           <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
         </div>
+        <select id="languageForAnalysis">
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="it">Italian</option>
+          <option value="pt">Portuguese</option>
+        </select>
         <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="toxicity">
+          <input type="checkbox" class="form-check-input" id="toxicity" checked>
           <label class="form-check-label" for="toxicity">Toxicity</label>
         </div>
         <div class="form-check">
@@ -64,9 +73,9 @@
           <input type="checkbox" class="form-check-input" id="flirtation">
           <label class="form-check-label" for="flirtation">Flirtation</label>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button onclick="submitInput()" class="btn btn-primary">Submit</button>
       </form>
-      <div id="perspective-response"></div>
+      <div id="perspective-output-container"></div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
