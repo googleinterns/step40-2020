@@ -78,7 +78,7 @@ function loadChartsApi(toxicityData) {
 
 /** Draws a Google BarChart from a Perspective JSON. */
 function drawBarChart(toxicityData) {
-  const data = google.visualization.arrayToDataTable([[ {label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
+  const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
     var color = '#6B8E23'; // Green
