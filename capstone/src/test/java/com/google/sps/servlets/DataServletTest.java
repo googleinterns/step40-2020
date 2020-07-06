@@ -51,15 +51,4 @@ public final class DataServletTest {
 
     Assert.assertTrue(stringWriter.toString().contains("{\"attributeScores\":{"));
   }
-
-  @Test
-  public void PerspectiveCallWithValidInput() throws IOException{
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    Mockito.when(response.getWriter()).thenReturn(writer);
-
-    dataServlet.doGet(request, response);
-
-    Assert.assertTrue(stringWriter.toString().contains("{\"attributeScores\":{"));
-  }
 }
