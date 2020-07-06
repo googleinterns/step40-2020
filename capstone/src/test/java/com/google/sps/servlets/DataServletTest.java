@@ -32,13 +32,15 @@ import java.io.StringWriter;
 @RunWith(JUnit4.class)
 public final class DataServletTest {
   private DataServlet dataServlet;
+  private HttpServletRequest request;
+  private HttpServletResponse response;
 
   @Before
   public void setUp() {
     MockPerspectiveCaller mock = new MockPerspectiveCaller();
     this.dataServlet = new DataServlet(mock);
-    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    this.request = Mockito.mock(HttpServletRequest.class);
+    this.response = Mockito.mock(HttpServletResponse.class);
   }
 
   @Test
