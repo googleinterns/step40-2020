@@ -61,7 +61,7 @@ public class DataServlet extends HttpServlet {
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
     String json = makePerspectiveJson(text, lang);
-    String output = apiCaller.post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc", json, client);
+    String output = apiCaller.post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY", json, client);
   
     // Return Perspective's results
     response.setContentType("application/json;");
