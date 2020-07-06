@@ -21,9 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/**
- * Collect the user's input and call Perspective on it
- */
+/** Collects the user's input and calls Perspective on it */
 async function submitInput() {
   const textElement = document.getElementById('textForAnalysis');
   if (!textElement) {
@@ -43,47 +41,14 @@ async function submitInput() {
   await callPerspective(textElement.value, langElement.value, requestedAttributes);
 }
 
-/**
- * Call the perspective API
- */
+/** Calls the perspective API */
 async function callPerspective(text, lang, requestedAttributes) {
   const response = await fetch('/call_perspective', {
       method: 'POST',
       headers: {'Content-Type': 'application/json',},
       body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes})});
   const toxicityData = await response.json();
-  displayPerspectiveOutput(toxicityData);
   loadChartsApi(toxicityData);
-}
-
-/**
- *  Display toxicity output on the webpage
- */
-function displayPerspectiveOutput(toxicityData) {
-  const outputElement = document.getElementById('perspective-output-container');
-  if (!outputElement) {
-    return;
-  }
-  outputElement.innerHTML = '';
-
-  if (toxicityData.attributeScores) {
-    for (let key in toxicityData.attributeScores) {
-      if (toxicityData.attributeScores[key].summaryScore && 
-          toxicityData.attributeScores[key].summaryScore.value) {
-        attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
-        outputElement.appendChild(attributeElement);
-      }
-    }
-  }
-}
-
-/**
- * Create a 'tag' element with 'text' as its inner HTML
- */
-function createAnyElement(tag, text) {
-  const textElement = document.createElement(tag);
-  textElement.innerHTML = text;
-  return textElement;
 }
 
 /** Loads the Google Charts API */
