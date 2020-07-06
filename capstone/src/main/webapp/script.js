@@ -111,6 +111,8 @@ function showAvailableAttributes() {
     label.appendChild(document.createTextNode(attribute));
   
     avaiableAttributesElement.appendChild(checkbox);
+    avaiableAttributesElement.appendChild (document.createTextNode (" "));
     avaiableAttributesElement.appendChild(label);
+    avaiableAttributesElement.appendChild (document.createTextNode (" "));
   });
 }
