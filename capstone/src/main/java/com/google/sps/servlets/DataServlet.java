@@ -51,9 +51,13 @@ public class DataServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Get the input
-    String data = request.getReader().readLine();
-    Gson gson = new Gson();
-    PerspectiveInput info = gson.fromJson(data, PerspectiveInput.class);  
+    PerspectiveInput info = new PerspectiveInput("", "");
+
+    if (request.getReader() != null) {
+      String data = request.getReader().readLine();
+      Gson gson = new Gson();
+      info = gson.fromJson(data, PerspectiveInput.class);
+    }
     
     String text = info.getText();
     String lang = info.getLang();
@@ -67,17 +71,6 @@ public class DataServlet extends HttpServlet {
     response.setContentType("application/json;");
     response.getWriter().println(output);
   }
-
-  // /** Makes a POST request. */
-  // private String post(String url, String json, OkHttpClient client) throws IOException {
-  //   MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  //   RequestBody body = RequestBody.create(json, JSON);
-  //   Request request = new Request.Builder().url(url).post(body).build();
-
-  //   try (Response response = client.newCall(request).execute()) {
-  //     return response.body().string();
-  //   }
-  // }
 
   /** Builds the JSON for the body of the call to Perspective API. */
   private String makePerspectiveJson(String text, String lang) {

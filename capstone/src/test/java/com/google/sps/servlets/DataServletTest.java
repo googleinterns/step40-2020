@@ -37,13 +37,23 @@ public final class DataServletTest {
   public void setUp() {
     MockPerspectiveCaller mock = new MockPerspectiveCaller();
     this.dataServlet = new DataServlet(mock);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
   }
 
   @Test
-  public void PerspectiveCallReturnsValue() throws IOException{
-    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+  public void PerspectiveCallWithNullInput() throws IOException{
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    Mockito.when(response.getWriter()).thenReturn(writer);
 
+    dataServlet.doGet(request, response);
+
+    Assert.assertTrue(stringWriter.toString().contains("{\"attributeScores\":{"));
+  }
+
+  @Test
+  public void PerspectiveCallWithValidInput() throws IOException{
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     Mockito.when(response.getWriter()).thenReturn(writer);
