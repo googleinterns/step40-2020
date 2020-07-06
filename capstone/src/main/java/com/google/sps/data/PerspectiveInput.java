@@ -14,15 +14,20 @@
 
 package com.google.sps.data;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /** An object with the information sent by the user when submitting text */
 public final class PerspectiveInput {
 
   private final String text;
   private final String lang;
+  private final ArrayList<String> requestedAttributes;
 
-  public PerspectiveInput(String text, String lang) {
+  public PerspectiveInput(String text, String lang, String[] requestedAttributes) {
     this.text = text;
     this.lang = lang;
+    this.requestedAttributes = new ArrayList<String>(Arrays.asList(requestedAttributes));
   }
 
   public String getText() {
@@ -32,4 +37,8 @@ public final class PerspectiveInput {
   public String getLang() {
     return this.lang;
   }
+
+  public ArrayList<String> getRequestedAttributes() {
+    return this.requestedAttributes;
+	}
 }

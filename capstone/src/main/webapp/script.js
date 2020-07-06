@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+const ATTRIBUTES_BY_LANGUAGE = {
+  'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
+  'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
+  'fr': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
+  'de': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
+  'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
+  'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
+};
+
 /**
  * Collect the user's input and call Perspective on it
  */
@@ -24,17 +33,24 @@ async function submitInput() {
   if (!langElement) {
     return;
   }
-  const response = await callPerspective(textElement.value, langElement.value);
+  const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
+  const requestedAttributes = []
+  for (let attribute of attributes) {
+    if (attribute.checked == true) {
+      requestedAttributes.push(attribute.value);	
+    }	
+  }
+  await callPerspective(textElement.value, langElement.value, requestedAttributes);
 }
 
 /**
  * Call the perspective API
  */
-async function callPerspective(text, lang) {
+async function callPerspective(text, lang, requestedAttributes) {
   const response = await fetch('/call_perspective', {
       method: 'POST',
       headers: {'Content-Type': 'application/json',},
-      body: JSON.stringify({text: text, lang: lang})});
+      body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes})});
   const toxicityData = await response.json();
   displayPerspectiveOutput(toxicityData);
   loadChartsApi(toxicityData);
@@ -78,6 +94,7 @@ function loadChartsApi(toxicityData) {
 
 /** Draws a Google BarChart from a Perspective JSON. */
 function drawBarChart(toxicityData) {
+  document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
@@ -104,4 +121,31 @@ function drawBarChart(toxicityData) {
 
   const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
   chart.draw(data, options);
+}
+
+/** Shows the avaiable attributes given a language selected on text analyzer page */
+function showAvailableAttributes() {
+  const langElement = document.getElementById('languageForAnalysis');
+  if (!langElement) {
+    return;
+  }
+  const lang = langElement.value;
+  const avaiableAttributesElement = document.getElementById('available-attributes');
+  avaiableAttributesElement.innerHTML = '';
+	
+  const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
+  attributes.forEach(function(attribute) {
+    const checkbox = document.createElement('input');
+    checkbox.type = "checkbox";
+    checkbox.value = attribute;
+    checkbox.id = attribute + '-checkbox';
+    checkbox.checked = true;
+  
+    const label = document.createElement('label');
+    label.htmlFor = attribute + '-checkbox';
+    label.appendChild(document.createTextNode(attribute));
+  
+    avaiableAttributesElement.appendChild(checkbox);
+    avaiableAttributesElement.appendChild(label);
+  })
 }
