@@ -24,19 +24,21 @@
           <h3 class="masthead-brand">Perspective Hub</h3>
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
-            <a class="nav-link active" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
+            <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
+            <a class="nav-link active" href="image_analyzer.html">Image Analyzer</a>
             <a class="nav-link" href="https://support.perspectiveapi.com/s/" target="_blank">Support</a>
             <a class="nav-link" href="https://medium.com/the-false-positive" target="_blank">Blog</a>
           </nav>
         </div>
       </header>
-      <h2>Input text and select the Perspective API attribute(s) you would like to be shown</h2>
-      <form>
-        <div class="form-group">
-          <input type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here">
-          <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
+      <h2>Attach an image and select the Perspective API attribute(s) you would like to be shown</h2>
+      <div class="input-group">
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="imageForAnalysis" aria-describedby="inputFileText">
+          <label class="custom-file-label" for="imageForAnalysis">Select Image to be Analyzed</label>
         </div>
+      </div>
+      <form>
         <div class="form-check">
           <input type="checkbox" class="form-check-input" id="toxicity">
           <label class="form-check-label" for="toxicity">Toxicity</label>
