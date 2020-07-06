@@ -44,9 +44,9 @@ async function submitInput() {
 /** Calls the perspective API */
 async function callPerspective(text, lang, requestedAttributes) {
   const response = await fetch('/call_perspective', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes})});
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes})});
   const toxicityData = await response.json();
   loadChartsApi(toxicityData);
 }
