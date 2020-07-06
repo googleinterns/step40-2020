@@ -112,5 +112,5 @@ function showAvailableAttributes() {
   
     avaiableAttributesElement.appendChild(checkbox);
     avaiableAttributesElement.appendChild(label);
-  })
+  });
 }

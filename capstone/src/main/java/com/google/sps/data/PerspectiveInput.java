@@ -40,5 +40,5 @@ public final class PerspectiveInput {
 
   public ArrayList<String> getRequestedAttributes() {
     return this.requestedAttributes;
-	}
+  }
 }
