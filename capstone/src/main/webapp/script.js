@@ -51,7 +51,7 @@ async function handleInput() {
   const radios = document.getElementsByName('analysisRadios');
   var delimiter = null;
   for (i = 0; i < radios.length; i++) {
-    if (radios[i].checked == true) {
+    if (radios[i].checked) {
       delimiter = radios[i].value;
       break;
     }
