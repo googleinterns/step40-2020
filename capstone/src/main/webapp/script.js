@@ -22,7 +22,8 @@ const ATTRIBUTES_BY_LANGUAGE = {
 };
 
 /** Collects the user's input and calls Perspective on it */
-async function submitInput() {
+async function handleInput() {
+  // Get the submitted text and language
   const textElement = document.getElementById('textForAnalysis');
   if (!textElement) {
     return;
@@ -31,6 +32,8 @@ async function submitInput() {
   if (!langElement) {
     return;
   }
+
+  // Get the selected attributes
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
   const requestedAttributes = []
   for (let attribute of attributes) {
@@ -38,7 +41,52 @@ async function submitInput() {
       requestedAttributes.push(attribute.value);	
     }	
   }
-  await callPerspective(textElement.value, langElement.value, requestedAttributes);
+
+  // Make Perspective call for the entire submission and load data
+  const toxicityData = await callPerspective(textElement.value, langElement.value, requestedAttributes);
+  loadChartsApi(toxicityData);
+
+  // Get detailed analysis if requested
+  document.getElementById('analysis-container').innerHTML = '';
+  const radios = document.getElementsByName('analysisRadios');
+  var delimiter = null;
+  for (i = 0; i < radios.length; i++) {
+    if (radios[i].checked == true) {
+      delimiter = radios[i].value;
+      break;
+    }
+  }
+  if (delimiter != "") {
+    getAnalysis(textElement.value, langElement.value, delimiter); 
+  }
+}
+
+/** Prints detailed analysis of text by word or sentence */
+async function getAnalysis(text, lang, delimiter) {
+  const pieces = text.split(delimiter);
+  const result = createAnyElement('p', '');
+  for (i = 0; i < pieces.length; i++) {
+    if (pieces[i] != '') {
+      const response = await callPerspective(pieces[i], lang, ['TOXICITY']);
+      const score = response.attributeScores.TOXICITY.summaryScore.value;
+      const piece = createAnyElement('mark', pieces[i]);
+      piece.className = 'green-background';
+      if (score >= 0.8) {
+        piece.className = 'red-background';
+      } else if (score >= 0.2) {
+        piece.className = 'yellow-background';
+      }
+      result.appendChild(piece);
+    }
+  }
+  document.getElementById('analysis-container').appendChild(result);
+}
+
+/** Create a 'tag' element with 'text' as its inner HTML */
+function createAnyElement(tag, text) {
+  const textElement = document.createElement(tag);
+  textElement.innerHTML = text;
+  return textElement;
 }
 
 /** Calls the perspective API */
@@ -47,8 +95,7 @@ async function callPerspective(text, lang, requestedAttributes) {
     method: 'POST',
     headers: {'Content-Type': 'application/json',},
     body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes})});
-  const toxicityData = await response.json();
-  loadChartsApi(toxicityData);
+  return await response.json();
 }
 
 /** Loads the Google Charts API */
@@ -76,7 +123,7 @@ function drawBarChart(toxicityData) {
   data.sort({column: 1, desc: false});
 
   const options = {
-    title: 'Perspective Feedback',
+    title: 'General Perspective Feedback',
     bars: 'horizontal',
     height: 700,
     legend: {position: "none"},

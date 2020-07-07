@@ -87,3 +87,15 @@ a, a:focus, a:hover {
 .mastfoot {
   color: #451735;
 }
+
+.green-background {
+  background-color: #75ff75
+}
+
+.yellow-background {
+  background-color: #FFFF00
+}
+
+.red-background {
+  background-color: #FF0000
+}

@@ -33,9 +33,9 @@
         </div>
       </header>
       <h2>Input text and select the Perspective API attribute(s) you would like to be shown</h2>
-      <form onsubmit="submitInput(); return false;">
+      <form onsubmit="handleInput(); return false;">
         <div class="form-group">
-          <input type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here">
+          <textarea type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here" rows="3"></textarea>
           <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
         </div>
         <select id="languageForAnalysis" onchange="showAvailableAttributes()">
@@ -47,10 +47,26 @@
           <option value="pt">Portuguese</option>
         </select>
         <div id="available-attributes"></div>
-        <button onclick="submitInput()" class="btn btn-primary">Submit</button>
+        <div id="analysis-type">
+          <b>Select analysis type</b>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value=".">
+            <label class="form-check-label" for="bySentence">By sentence</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value=" ">
+            <label class="form-check-label" for="byWord">By word</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="" checked>
+            <label class="form-check-label" for="noAnalysis">No analysis</label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
       </form>
       <div id="perspective-output-container"></div>
       <div id="chart-container"></div>
+      <div id="analysis-container"></div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
