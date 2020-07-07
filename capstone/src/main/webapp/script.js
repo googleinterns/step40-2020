@@ -24,7 +24,7 @@ async function submitInput() {
   if (!langElement) {
     return;
   }
-  const response = await callPerspective(textElement.value, langElement.value);
+  await callPerspective(textElement.value, langElement.value);
 }
 
 /**
