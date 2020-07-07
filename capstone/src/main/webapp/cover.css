@@ -99,3 +99,7 @@ a, a:focus, a:hover {
 .red-background {
   background-color: #FF0000
 }
+
+.white-background {
+  background-color: white;
+}
