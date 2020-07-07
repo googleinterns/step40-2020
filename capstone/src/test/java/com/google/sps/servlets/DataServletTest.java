@@ -21,7 +21,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 import com.google.sps.servlets.DataServlet;
-import com.google.sps.data.MockPerspectiveCaller;
+import com.google.sps.data.ApiCaller;
+import com.google.sps.data.MockPerspCaller;
+import com.google.sps.data.MockPerspCallerBadKey;
+import com.google.sps.data.MockPerspCallerNullInput;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -31,26 +34,49 @@ import java.io.StringWriter;
 /** Test the DataServlet class*/
 @RunWith(JUnit4.class)
 public final class DataServletTest {
-  private DataServlet dataServlet;
+  private StringWriter stringWriter;
+  private PrintWriter writer;
   private HttpServletRequest request;
   private HttpServletResponse response;
 
   @Before
   public void setUp() {
-    MockPerspectiveCaller mock = new MockPerspectiveCaller();
-    this.dataServlet = new DataServlet(mock);
+    this.stringWriter = new StringWriter();
+    this.writer = new PrintWriter(stringWriter);
     this.request = Mockito.mock(HttpServletRequest.class);
     this.response = Mockito.mock(HttpServletResponse.class);
   }
 
   @Test
-  public void PerspectiveCallWithNullInput() throws IOException{
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    Mockito.when(response.getWriter()).thenReturn(writer);
+  public void PerspectiveCall() throws IOException{
+    ApiCaller mock = new MockPerspCaller();
+    DataServlet dataServlet = new DataServlet(mock);
 
+    Mockito.when(response.getWriter()).thenReturn(writer);
     dataServlet.doGet(request, response);
 
     Assert.assertTrue(stringWriter.toString().contains("{\"attributeScores\":{"));
+  }
+
+  @Test
+  public void PerspectiveCallWithBadKey() throws IOException{
+    ApiCaller mock = new MockPerspCallerBadKey();
+    DataServlet dataServlet = new DataServlet(mock);
+
+    Mockito.when(response.getWriter()).thenReturn(writer);
+    dataServlet.doGet(request, response);
+
+    Assert.assertTrue(stringWriter.toString().contains("API key not valid."));
+  }
+
+  @Test
+  public void PerspectiveCallWithNullInput() throws IOException{
+    ApiCaller mock = new MockPerspCallerNullInput();
+    DataServlet dataServlet = new DataServlet(mock);
+
+    Mockito.when(response.getWriter()).thenReturn(writer);
+    dataServlet.doGet(request, response);
+
+    Assert.assertTrue(stringWriter.toString().contains("Comment must be non-empty."));
   }
 }
