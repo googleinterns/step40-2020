@@ -21,7 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Collects the user's input and calls Perspective on it */
+/** Collects the user's input and produces Perspective analysis */
 async function handleInput() {
   // Get the submitted text and language
   const textElement = document.getElementById('textForAnalysis');
@@ -37,7 +37,7 @@ async function handleInput() {
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
   const requestedAttributes = []
   for (let attribute of attributes) {
-    if (attribute.checked == true) {
+    if (attribute.checked) {
       requestedAttributes.push(attribute.value);	
     }	
   }
@@ -45,6 +45,11 @@ async function handleInput() {
   // Make Perspective call for the entire submission and load data
   const toxicityData = await callPerspective(textElement.value, langElement.value, requestedAttributes);
   loadChartsApi(toxicityData);
+
+  // Draw the separating line for the output
+  const separator = document.getElementById('separator-container');
+  separator.innerHTML = '';
+  separator.appendChild(document.createElement('hr'));
 
   // Get detailed analysis if requested
   document.getElementById('analysis-container').innerHTML = '';
@@ -63,8 +68,11 @@ async function handleInput() {
 
 /** Prints detailed analysis of text by word or sentence */
 async function getAnalysis(text, lang, delimiter) {
+  const analysisContainer = document.getElementById('analysis-container')
+  analysisContainer.appendChild(createAnyElement('b', 'Detailed Anaylsis'));
   const pieces = text.split(delimiter);
   const result = createAnyElement('p', '');
+  result.className = 'detailed-analysis';
   for (i = 0; i < pieces.length; i++) {
     if (pieces[i] != '') {
       const response = await callPerspective(pieces[i], lang, ['TOXICITY']);
@@ -79,7 +87,7 @@ async function getAnalysis(text, lang, delimiter) {
       result.appendChild(piece);
     }
   }
-  document.getElementById('analysis-container').appendChild(result);
+  analysisContainer.appendChild(result);
 }
 
 /** Create a 'tag' element with 'text' as its inner HTML */

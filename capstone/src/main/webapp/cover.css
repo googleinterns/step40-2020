@@ -88,18 +88,30 @@ a, a:focus, a:hover {
   color: #451735;
 }
 
+/* Text analyzer */
 .green-background {
-  background-color: #75ff75
+  background-color: #ddfada;
 }
 
 .yellow-background {
-  background-color: #FFFF00
+  background-color: #ffff80;
 }
 
 .red-background {
-  background-color: #FF0000
+  background-color: #ff8080;
 }
 
-.white-background {
+.text-analysis-module {
   background-color: white;
+  margin-top: 100px;
+  margin-bottom: 100px;
+  padding-bottom: 15px;
+}
+
+.detailed-analysis { 
+  text-align: left;
+}
+
+hr {
+  width: 90%;
 }
