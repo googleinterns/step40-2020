@@ -1,34 +1,3 @@
-async function youtube() {
-  const id = document.getElementById('channelIdForAnalysis').value;
-  if (!id) {
-    return;
-  }
-  const response = await fetch('/youtube_servlet?channelId=' + id,);
-  const status = await response.json();
-  const comments = status;
-  const commentListElement = document.getElementById('comment-list');
-  commentListElement.innerHTML = '';
-  const att = await submitInput()
-  commentListElement.append(att);;
-  //commentListElement.append(att);
-  //for(let attribute in att){
- //for (const attribute of att){
-   for(var i=0;i<att.length;i++){
-     const total =[];
-     //commentListElement.append("'" +  att[i] + "'");
-  for (let item in comments.items) {
-    const score = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, "en", [att[i]]);
-    //commentListElement.appendChild(document.createElement('br'));
-      total.push(score);
-  }
-    totalSum = arrSum(total)
-    totalAvg = totalSum/comments.items.length;
-    commentListElement.append("AVERAGE " + att[i] + " : " + totalAvg);
-    commentListElement.appendChild(document.createElement('br'));
-  }
-  }
-
-
 const ATTRIBUTES_BY_LANGUAGE = {
   'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
   'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
@@ -38,25 +7,43 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Collects the user's input and calls Perspective on it */
-async function submitInput() {
-  /*const textElement = document.getElementById('textForAnalysis');
-  if (!textElement) {
+async function youtube() {
+  const channelId = document.getElementById('channelIdForAnalysis').value;
+  if (!channelId) {
     return;
   }
-  const langElement = document.getElementById('languageForAnalysis');
-  if (!langElement) {
-    return;
-  }*/
+  const response = await fetch('/youtube_servlet?channelId=' + channelId,);
+  const responseJson = await response.json();
+  const comments = responseJson;
+  const commentListElement = document.getElementById('comment-list');
+  commentListElement.innerHTML = '';
+  const requestedAttributes = await getRequestedAttributes();
+  let attributeAverages = new Map();
+  for (let attribute of requestedAttributes) {
+    const attributeScores = [];
+    for (let item in comments.items) {
+      const perspectiveScore = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, "en", [attribute]);
+      attributeScores.push(perspectiveScore);
+    }
+    attributeScoresSum = arrSum(attributeScores);
+    attributeScoresAvg = attributeScoresSum / comments.items.length;
+    attributeAverages.set(attribute, attributeScoresAvg)
+    commentListElement.append("AVERAGE " + attribute + " : " + attributeScoresAvg);
+    commentListElement.appendChild(document.createElement('br'));
+  }
+  loadChartsApi(attributeAverages);
+}
+
+/** Collects the user's input and calls Perspective on it */
+async function getRequestedAttributes() {
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
-  const requestedAttributes = []
+  const requestedAttributes = [];
   for (let attribute of attributes) {
     if (attribute.checked == true) {
       requestedAttributes.push(attribute.value);	
     }	
   }
   return requestedAttributes;
-  //await callPerspective(textElement.value, langElement.value, requestedAttributes);
 }
 
 /** Calls the perspective API */
@@ -67,9 +54,6 @@ async function callPerspective(text, lang, requestedAttribute) {
     body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttribute})});
   const toxicityData = await response.json();
   return toxicityData.attributeScores[requestedAttribute].summaryScore.value;
-  //const commentListElement = document.getElementById('comment-list');
-  //commentListElement.append(text +" "+toxicityData.attributeScores[requestedAttribute].summaryScore.value);
-  //commentListElement.appendChild(document.createElement('br'))
 }
 
 /** Loads the Google Charts API */
@@ -82,17 +66,16 @@ function loadChartsApi(toxicityData) {
 function drawBarChart(toxicityData) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
-
-  Object.keys(toxicityData.attributeScores).forEach((attribute) => {
+  for (let [attribute, attributeScoresAvg] of toxicityData) {
     var color = '#6B8E23'; // Green
-    const score = toxicityData.attributeScores[attribute].summaryScore.value;
+    const score = attributeScoresAvg;
     if (score >= 0.8) {
       color = '#DC143C'; // Red
     } else if (score >= 0.2) {
       color = '#ffd800'; // Yellow
     }
-    data.addRow([attribute, score, color]);
-  });
+    data.addRow([attribute , score, color]);
+  }
 
   data.sort({column: 1, desc: false});
 
@@ -138,8 +121,8 @@ function showAvailableAttributes() {
   });
 }
 
-arrSum = function(arr){
-  return arr.reduce(function(a,b){
+arrSum = function(arr) {
+  return arr.reduce(function(a, b) {
     return a + b
   }, 0);
 }
