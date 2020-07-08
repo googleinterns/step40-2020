@@ -8,11 +8,26 @@ async function youtube() {
   const comments = status;
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
+  const att = await submitInput()
+  commentListElement.append(att);;
+  //commentListElement.append(att);
+  //for(let attribute in att){
+ //for (const attribute of att){
+   for(var i=0;i<att.length;i++){
+     const total =[];
+     //commentListElement.append("'" +  att[i] + "'");
   for (let item in comments.items) {
-    callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, "en", ["TOXICITY"]);
-    commentListElement.appendChild(document.createElement('br'))
+    const score = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, "en", [att[i]]);
+    //commentListElement.appendChild(document.createElement('br'));
+      total.push(score);
   }
-}
+    totalSum = arrSum(total)
+    totalAvg = totalSum/comments.items.length;
+    commentListElement.append("AVERAGE " + att[i] + " : " + totalAvg);
+    commentListElement.appendChild(document.createElement('br'));
+  }
+  }
+
 
 const ATTRIBUTES_BY_LANGUAGE = {
   'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
@@ -25,14 +40,14 @@ const ATTRIBUTES_BY_LANGUAGE = {
 
 /** Collects the user's input and calls Perspective on it */
 async function submitInput() {
-  const textElement = document.getElementById('textForAnalysis');
+  /*const textElement = document.getElementById('textForAnalysis');
   if (!textElement) {
     return;
   }
   const langElement = document.getElementById('languageForAnalysis');
   if (!langElement) {
     return;
-  }
+  }*/
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
   const requestedAttributes = []
   for (let attribute of attributes) {
@@ -40,19 +55,21 @@ async function submitInput() {
       requestedAttributes.push(attribute.value);	
     }	
   }
-  await callPerspective(textElement.value, langElement.value, requestedAttributes);
+  return requestedAttributes;
+  //await callPerspective(textElement.value, langElement.value, requestedAttributes);
 }
 
 /** Calls the perspective API */
-async function callPerspective(text, lang, requestedAttributes) {
+async function callPerspective(text, lang, requestedAttribute) {
   const response = await fetch('/call_perspective', {
     method: 'POST',
     headers: {'Content-Type': 'application/json',},
-    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes})});
+    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttribute})});
   const toxicityData = await response.json();
-  const commentListElement = document.getElementById('comment-list');
-  commentListElement.append(text +" "+toxicityData.attributeScores["TOXICITY"].summaryScore.value);
-  commentListElement.appendChild(document.createElement('br'))
+  return toxicityData.attributeScores[requestedAttribute].summaryScore.value;
+  //const commentListElement = document.getElementById('comment-list');
+  //commentListElement.append(text +" "+toxicityData.attributeScores[requestedAttribute].summaryScore.value);
+  //commentListElement.appendChild(document.createElement('br'))
 }
 
 /** Loads the Google Charts API */
@@ -119,4 +136,10 @@ function showAvailableAttributes() {
     avaiableAttributesElement.appendChild(label);
     avaiableAttributesElement.appendChild (document.createTextNode (" "));
   });
+}
+
+arrSum = function(arr){
+  return arr.reduce(function(a,b){
+    return a + b
+  }, 0);
 }
