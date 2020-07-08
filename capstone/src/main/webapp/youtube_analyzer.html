@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
+    <script src="script.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body class="text-center">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
@@ -25,22 +27,42 @@
           </div>
           <h3 class="masthead-brand">Perspective Hub</h3>
           <nav class="nav nav-masthead justify-content-center">
-            <a class="nav-link active" href="index.html">Home</a>
+            <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
             <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
             <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
-            <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
+            <a class="nav-link active" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
           </nav>
         </div>
       </header>
-      <main role="main" class="inner cover">
-        <h1 class="cover-heading">Welcome to Perspective Hub</h1>
-        <p class="lead">Perspective Hub Is An All In One Utillity For Testing Perspective API</p>
-        <p class="lead">
-          <a href="http://perspectiveapi.com/#/home" class="btn btn-lg btn-secondary">Learn more</a>
-        </p>
+      <main role="main">
+        <section class="jumbotron text-center">
+          <div class="container">
+            <h1>Youtube Analysis</h1>
+            <p class="lead text-muted">Input a Channel ID and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
+          </div>
+        </section>
       </main>
+      <form onsubmit="youtube(); return false;">
+        <div class="form-group">
+          <input type="text" class="form-control" id="channelIdForAnalysis" aria-describedby="inputText" placeholder="Input Channel ID To Be Analyzed Here">
+          <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small>
+        </div>
+        <select id="languageForAnalysis" onchange="showAvailableAttributes()">
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="it">Italian</option>
+          <option value="pt">Portuguese</option>
+        </select>
+        <div id="available-attributes"></div>
+
+        <button onclick="youtube()" class="btn btn-primary">Submit</button>
+      </form>
+      <div id="comment-list"></div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu</p>
