@@ -7,6 +7,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
+/** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
   const channelId = document.getElementById('channelIdForAnalysis').value;
   if (!channelId) {
@@ -33,7 +34,7 @@ async function callYoutube() {
   loadChartsApi(attributeAverages);
 }
 
-/** Collects the user's input and calls Perspective on it */
+/** Returns the user's input */
 async function getRequestedAttributes() {
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
   const requestedAttributes = [];
@@ -61,7 +62,7 @@ function loadChartsApi(toxicityData) {
   google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
 }
 
-/** Draws a Google BarChart from a Perspective JSON. */
+/** Draws a Google BarChart from a map. */
 function drawBarChart(toxicityData) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
@@ -120,6 +121,7 @@ function showAvailableAttributes() {
   });
 }
 
+/** Returns the sum of all elements in an array */
 arrSum = function(arr) {
   return arr.reduce(function(a, b) {
     return a + b
