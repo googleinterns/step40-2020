@@ -34,7 +34,7 @@ async function submitInput() {
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
   const requestedAttributes = []
   for (let attribute of attributes) {
-    if (attribute.checked == true) {
+    if (attribute.checked) {
       requestedAttributes.push(attribute.value);	
     }	
   }
@@ -111,8 +111,8 @@ function showAvailableAttributes() {
     label.appendChild(document.createTextNode(attribute));
   
     avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild (document.createTextNode (" "));
+    avaiableAttributesElement.appendChild(document.createTextNode(" "));
     avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild (document.createTextNode (" "));
+    avaiableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
