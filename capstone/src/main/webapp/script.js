@@ -7,14 +7,13 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-async function youtube() {
+async function callYoutube() {
   const channelId = document.getElementById('channelIdForAnalysis').value;
   if (!channelId) {
     return;
   }
   const response = await fetch('/youtube_servlet?channelId=' + channelId,);
-  const responseJson = await response.json();
-  const comments = responseJson;
+  const comments = await response.json();
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
   const requestedAttributes = await getRequestedAttributes();
