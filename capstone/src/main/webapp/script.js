@@ -78,12 +78,19 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
   const substrings = text.split(delimiter);
   for (i = 0; i < substrings.length; i++) {
     if (substrings[i] != '') {
-      // Get the Perspective scores for the substring
+      // Get the Perspective scores for the substring & sort them descending
       const response = await callPerspective(substrings[i], lang, requestedAttributes);
       const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
-      const substringEl = createAnyElement('span', substrings[i] + delimiter);
+      var attributes = [];
+      Object.keys(response.attributeScores).forEach((attribute) => {
+        attributes.push([attribute, response.attributeScores[attribute].summaryScore.value]);
+      });
+      attributes.sort(function(a, b) {
+        return b[1] - a[1];
+      });
 
-      // Color the substring appropriately			
+      // Color the substring appropriately	
+      const substringEl = createAnyElement('span', substrings[i] + delimiter);
       substringEl.className = 'green-background segment';
       if (toxicityScore >= 0.8) {
         substringEl.className = 'red-background segment';
@@ -91,40 +98,47 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
         substringEl.className = 'yellow-background segment';
       }
      
-      // Create the tooltip (info-box for the substring)
-      const tooltipEL = document.createElement('div');
-      const headerEl = document.createElement('div');
-      const titleInfoEl = document.createElement('div');
-      const imageEl = document.createElement('img');
-      const bodyEl = document.createElement('div');
-      const titleEl = createAnyElement('h3', 'Perspective Feedback');
-      const subtitleEl = createAnyElement('p', 'based on selected attributes');
-
-      tooltipEL.className = 'tooltip';      
-      headerEl.className = 'header';
-      titleInfoEl.className = 'title-info';
-      titleEl.className = 'tooltip-title';
-      subtitleEl.className = 'tooltip-subtitle';
-      bodyEl.className = 'tooltip-body';
-
-      imageEl.setAttribute('src', 'assets/apple-touch-icon.png');
-      imageEl.setAttribute('alt', 'Perspective Logo');
-			
-      Object.keys(response.attributeScores).forEach((attribute) => {
-        bodyEl.appendChild(createAnyElement('p', attribute + ': ' + decimalToPercentage(response.attributeScores[attribute].summaryScore.value)));
-      });
-
-      titleInfoEl.appendChild(titleEl);
-      titleInfoEl.appendChild(subtitleEl);
-      headerEl.appendChild(imageEl);
-      headerEl.appendChild(titleInfoEl);
-      tooltipEL.appendChild(headerEl);
-      tooltipEL.appendChild(bodyEl);
-      substringEl.appendChild(tooltipEL);
+      // Attach a tooltip (info-box for the substring)
+      const tooltipEl = createTooltip(attributes);
+      substringEl.appendChild(tooltipEl)
       result.appendChild(substringEl);
+
     }
   }
   analysisContainer.appendChild(result);
+}
+
+/** Creates a tooltip for a substring in the detailed analysis */
+function createTooltip(attributes) {
+  const tooltipEL = document.createElement('div');
+  const headerEl = document.createElement('div');
+  const titleInfoEl = document.createElement('div');
+  const imageEl = document.createElement('img');
+  const bodyEl = document.createElement('div');
+  const titleEl = createAnyElement('h3', 'Perspective Feedback');
+  const subtitleEl = createAnyElement('p', 'based on selected attributes');
+
+  tooltipEL.className = 'tooltip';      
+  headerEl.className = 'header';
+  titleInfoEl.className = 'title-info';
+  titleEl.className = 'tooltip-title';
+  subtitleEl.className = 'tooltip-subtitle';
+  bodyEl.className = 'tooltip-body';
+
+  imageEl.setAttribute('src', 'assets/apple-touch-icon.png');
+  imageEl.setAttribute('alt', 'Perspective Logo');
+
+  titleInfoEl.appendChild(titleEl);
+  titleInfoEl.appendChild(subtitleEl);
+  headerEl.appendChild(imageEl);
+  headerEl.appendChild(titleInfoEl);
+  tooltipEL.appendChild(headerEl);
+  tooltipEL.appendChild(bodyEl);
+
+  for (const attribute of attributes) {
+    bodyEl.appendChild(createAnyElement('p', attribute[0] + ': ' + decimalToPercentage(attribute[1])));
+  }
+  return tooltipEL;
 }
 
 /** Converts decimals to percentages */
