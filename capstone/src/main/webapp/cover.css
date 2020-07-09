@@ -122,6 +122,8 @@ hr {
 }
 
 .profile:hover {
+  position: relative;
+  z-index: 1;
   box-shadow: 0 0 0 4px #fff, 0 0 0 5px #d10fd8;
 }
 
