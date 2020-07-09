@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
+    <script src="sheetsScript.js"></script>
   </head>
   <body class="text-center">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
@@ -39,7 +40,7 @@
           <label class="custom-file-label" for="documentForAnalysis">Select Document to be Analyzed</label>
         </div>
       </div>
-      <form>
+      <form onsubmit="callSheets(''); return false">
         <div class="form-check">
           <input type="checkbox" class="form-check-input" id="toxicity">
           <label class="form-check-label" for="toxicity">Toxicity</label>
@@ -68,15 +69,23 @@
           <input type="checkbox" class="form-check-input" id="flirtation">
           <label class="form-check-label" for="flirtation">Flirtation</label>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="form-check">
+          <button class="btn btn-primary" id="submit_button" style="display: none;" type="submit">Submit</button>
+          <button class="btn btn-secondary" id="authorize_button" style="display: none;">Authorize</button>
+          <button class="btn btn-secondary" id="signout_button" style="display: none;">Sign Out</button>
+        </div>
       </form>
-      <div id="perspective-response"></div>
+      <div id="perspective-output-container"></div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
         </div>
       </footer>
     </div>
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
     </script>

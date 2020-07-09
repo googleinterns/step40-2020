@@ -33,9 +33,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /** Servlet that returns Perspective scoring. */
-@WebServlet("/call-perspective")
+@WebServlet("/call_perspective")
 public class CallPerspectiveServlet extends HttpServlet {
-  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
+  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   private static final ArrayList<String> ATTRIBUTES = new ArrayList<String>(Arrays.asList("TOXICITY", "PROFANITY", "THREAT", "INSULT", "IDENTITY_ATTACK", "SEVERE_TOXICITY"));
 
