@@ -116,12 +116,12 @@ hr {
   width: 90%;
 }
 
-.profile {
+.segment {
   position: relative;
   transition: 0.2s;
 }
 
-.profile:hover {
+.segment:hover {
   position: relative;
   z-index: 1;
   box-shadow: 0 0 0 4px #fff, 0 0 0 5px #d10fd8;
@@ -146,6 +146,7 @@ hr {
   display: flex;
   align-items: center;
 }
+
 .tooltip .header img {
   grid-column: 1/2;
   width: 80px;
@@ -161,7 +162,6 @@ hr {
   font-size: 1.25em;
   color: #333;
   letter-spacing: 1px;
-  font-size: 600;
 }
 
 .tooltip .header .title-info .tooltip-subtitle {
@@ -179,7 +179,7 @@ hr {
   color: #272727;
 }
 
-.profile:hover .tooltip {
+.segment:hover .tooltip {
   visibility: visible;
   opacity: 1;
   transform: translateX(-15%) translateY(0px);

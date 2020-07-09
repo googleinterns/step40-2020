@@ -84,11 +84,11 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
       const substringEl = createAnyElement('span', substrings[i] + delimiter);
 
       // Color the substring appropriately			
-      substringEl.className = 'green-background profile';
+      substringEl.className = 'green-background segment';
       if (toxicityScore >= 0.8) {
-        substringEl.className = 'red-background profile';
+        substringEl.className = 'red-background segment';
       } else if (toxicityScore >= 0.2) {
-        substringEl.className = 'yellow-background profile';
+        substringEl.className = 'yellow-background segment';
       }
      
       // Create the tooltip (info-box for the substring)
