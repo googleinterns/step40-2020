@@ -97,11 +97,17 @@ public class SheetsQuickstart extends HttpServlet {
     // Set up authorization code flow
     GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(GoogleNetHttpTransport.newTrustedTransport(), JSON_FACTORY, clientSecrets, SCOPES)
         .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+        .setAccessType("offline")
         .build();
 
     // Authorize
     System.out.println("STARTED AUTHORIZATION");
-    return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver.Builder().setPort(8888).build()).authorize("user");
+    return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver.Builder()
+        // .setLandingPages("/redirect", "/redirect")
+        // .setHost("https://8080-19126c95-861c-4643-9875-3ab9483ad844.us-west1.cloudshell.dev")
+        .setCallbackPath("/authenticate?token=")
+        .setPort(8888)
+        .build()).authorize("user");
   }
 
   public static Sheets getSheetsService() throws IOException, GeneralSecurityException {
@@ -126,8 +132,9 @@ public class SheetsQuickstart extends HttpServlet {
     }
 
     // Return Perspective's results
-    response.setContentType("text/html");
-    response.getWriter().println("DONE");
+    // response.setContentType("text/html");
+    // response.getWriter().println("DONE");
+    response.sendRedirect("/index.html");
   }
 }
 
