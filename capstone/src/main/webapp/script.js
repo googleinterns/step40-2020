@@ -13,6 +13,18 @@
 // limitations under the License.
 
 /**
+ * Test the authentication for the Sheets service
+ */
+async function callSheets(sheetID) {
+  const response = await fetch('/call-sheets', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json',},
+      body: JSON.stringify({id: sheetID})});
+  const out = await response.json();
+  console.log(out);
+}
+
+/**
  * Call the perspective API
  */
 async function callPerspective(text, lang) {
