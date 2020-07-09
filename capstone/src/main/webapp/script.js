@@ -62,32 +62,75 @@ async function handleInput() {
     }
   }
   if (delimiter != "") {
-    getAnalysis(textElement.value, langElement.value, delimiter); 
+    getAnalysis(textElement.value, langElement.value, requestedAttributes, delimiter); 
   }
 }
 
 /** Prints detailed analysis of text by word or sentence */
-async function getAnalysis(text, lang, delimiter) {
+async function getAnalysis(text, lang, requestedAttributes, delimiter) {
+  // Set up the detailed analysis section
   const analysisContainer = document.getElementById('analysis-container')
   analysisContainer.appendChild(createAnyElement('b', 'Detailed Anaylsis'));
-  const pieces = text.split(delimiter);
   const result = createAnyElement('p', '');
   result.className = 'detailed-analysis';
-  for (i = 0; i < pieces.length; i++) {
-    if (pieces[i] != '') {
-      const response = await callPerspective(pieces[i], lang, ['TOXICITY']);
-      const score = response.attributeScores.TOXICITY.summaryScore.value;
-      const piece = createAnyElement('mark', pieces[i]);
-      piece.className = 'green-background';
-      if (score >= 0.8) {
-        piece.className = 'red-background';
-      } else if (score >= 0.2) {
-        piece.className = 'yellow-background';
+  
+  // Generate the results for every substring of the input text
+  const substrings = text.split(delimiter);
+  for (i = 0; i < substrings.length; i++) {
+    if (substrings[i] != '') {
+      // Get the Perspective scores for the substring
+      const response = await callPerspective(substrings[i], lang, requestedAttributes);
+      const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
+      const substringEl = createAnyElement('span', substrings[i] + delimiter);
+
+      // Color the substring appropriately			
+      substringEl.className = 'green-background profile';
+      if (toxicityScore >= 0.8) {
+        substringEl.className = 'red-background profile';
+      } else if (toxicityScore >= 0.2) {
+        substringEl.className = 'yellow-background profile';
       }
-      result.appendChild(piece);
+     
+      // Create the tooltip (info-box for the substring)
+      const tooltipEL = document.createElement('div');
+      const headerEl = document.createElement('div');
+      const titleInfoEl = document.createElement('div');
+      const imageEl = document.createElement('img');
+      const bodyEl = document.createElement('div');
+      const titleEl = createAnyElement('h3', 'Perspective Feedback');
+      const subtitleEl = createAnyElement('p', 'based on selected attributes');
+
+      tooltipEL.className = 'tooltip';      
+      headerEl.className = 'header';
+      titleInfoEl.className = 'title-info';
+      titleEl.className = 'tooltip-title';
+      subtitleEl.className = 'tooltip-subtitle';
+      bodyEl.className = 'tooltip-body';
+
+      imageEl.setAttribute('src', 'assets/apple-touch-icon.png');
+      imageEl.setAttribute('alt', 'Perspective Logo');
+			
+      Object.keys(response.attributeScores).forEach((attribute) => {
+        bodyEl.appendChild(createAnyElement('p', attribute + ': ' + decimalToPercentage(response.attributeScores[attribute].summaryScore.value)));
+      });
+
+      titleInfoEl.appendChild(titleEl);
+      titleInfoEl.appendChild(subtitleEl);
+      headerEl.appendChild(imageEl);
+      headerEl.appendChild(titleInfoEl);
+      tooltipEL.appendChild(headerEl);
+      tooltipEL.appendChild(bodyEl);
+      substringEl.appendChild(tooltipEL);
+      result.appendChild(substringEl);
     }
   }
   analysisContainer.appendChild(result);
+}
+
+/** Converts decimals to percentages */
+function decimalToPercentage(decimal) {
+  const decimalAsString = decimal.toString();
+  return decimalAsString.slice(2, 4) + '.' + decimalAsString.slice(4, 6) + '%';
 }
 
 /** Create a 'tag' element with 'text' as its inner HTML */
