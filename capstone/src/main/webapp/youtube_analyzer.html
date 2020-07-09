@@ -50,7 +50,10 @@
           <input type="text" class="form-control" id="channelIdForAnalysis" aria-describedby="inputText" placeholder="Input Channel ID To Be Analyzed Here">
           <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small>
         </div>
-        <select id="languageForAnalysis" onchange="showAvailableAttributes()">
+        <button onclick="submitID(this)" type="button" class="btn btn-secondary btn-sm" value="UC_x5XG1OV2P6uZZ5FSM9Ttw">Google Developers</button>
+        <button onclick="submitID(this)" type="button" class="btn btn-secondary btn-sm" value="UC-lHJZR3Gqxm24_Vd_AJ5Yw">PewDiePie</button>
+        <button onclick="submitID(this)" type="button" class="btn btn-secondary btn-sm" value="UCupvZG-5ko_eiXAupbDfxWw">CNN</button>
+        <br><select id="languageForAnalysis" onchange="showAvailableAttributes()">
           <option value="en">English</option>
           <option value="es">Spanish</option>
           <option value="fr">French</option>

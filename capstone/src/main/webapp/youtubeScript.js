@@ -18,6 +18,9 @@ async function callYoutube() {
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
   const requestedAttributes = await getRequestedAttributes();
+  if (!requestedAttributes) {
+      return;
+  }
   let attributeAverages = new Map();
   for (let attribute of requestedAttributes) {
     const attributeScores = [];
@@ -126,4 +129,9 @@ arrSum = function(arr) {
   return arr.reduce(function(a, b) {
     return a + b
   }, 0);
+}
+
+function submitID(button) {
+  document.getElementById("channelIdForAnalysis").value = button.value;
+  callYoutube();
 }
