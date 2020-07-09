@@ -61,9 +61,10 @@ import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.extensions.appengine.datastore.AppEngineDataStoreFactory;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import java.security.GeneralSecurityException;
 
 /** Servlet that returns Perspective scoring. */
-@WebServlet("/authenticate")
+@WebServlet("/Callback")
 // public class AuthFlowServlet extends HttpServlet {
 //   @Override
 //   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -77,6 +78,7 @@ public class AuthFlowServlet extends AbstractAppEngineAuthorizationCodeServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // do stuff
+    response.getWriter().println("TEST");
   }
 
   @Override
@@ -92,7 +94,7 @@ public class AuthFlowServlet extends AbstractAppEngineAuthorizationCodeServlet {
 
 class Utils {
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-  private static final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+  // private static final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
   private static final AppEngineDataStoreFactory DATA_STORE_FACTORY = new AppEngineDataStoreFactory();
   
   static String getRedirectUri(HttpServletRequest req) {
@@ -102,9 +104,24 @@ class Utils {
   }
 
   static GoogleAuthorizationCodeFlow newFlow() throws IOException {
+    NetHttpTransport HTTP_TRANSPORT = null;
+    try {
+      HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+    } catch (Exception e) {
+      e.printStackTrace();
+      // Print an error message
+      return null;
+    }
+
+    // Load client secrets
+    InputStream in = SheetsQuickstart.class.getResourceAsStream("/credentials.json");
+    // if (in == null) {
+    //   throw new FileNotFoundException("Resource not found: /credentials.json");
+    // }
+    GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
     
     return new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
-        getClientCredential(), // ******************************
+        clientSecrets, // ******************************
         Collections.singleton(SheetsScopes.SPREADSHEETS)).setDataStoreFactory(
         DATA_STORE_FACTORY).setAccessType("offline").build();
   }

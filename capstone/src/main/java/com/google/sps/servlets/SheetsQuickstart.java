@@ -104,8 +104,8 @@ public class SheetsQuickstart extends HttpServlet {
     System.out.println("STARTED AUTHORIZATION");
     return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver.Builder()
         // .setLandingPages("/redirect", "/redirect")
-        // .setHost("https://8080-19126c95-861c-4643-9875-3ab9483ad844.us-west1.cloudshell.dev")
-        .setCallbackPath("/authenticate?token=")
+        // .setHost("https://8080-19126c95-861c-4643-9875-3ab9483ad844.us-west1.cloudshell.dev/authenticate")
+        // .setCallbackPath("https://8080-19126c95-861c-4643-9875-3ab9483ad844.us-west1.cloudshell.dev/authenticate")
         .setPort(8888)
         .build()).authorize("user");
   }
