@@ -21,8 +21,8 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Collects the user's input and produces Perspective analysis */
-async function handleInput() {
+/** Collects the user's input and submits it for analysis */
+async function gatherInput() {
   // Get the submitted text and language
   const textElement = document.getElementById('textForAnalysis');
   if (!textElement) {
@@ -42,16 +42,7 @@ async function handleInput() {
     }	
   }
 
-  // Make Perspective call for the entire submission and load data
-  const toxicityData = await callPerspective(textElement.value, langElement.value, requestedAttributes);
-  loadChartsApi(toxicityData);
-
-  // Draw the separating line for the output
-  const separator = document.getElementById('separator-container');
-  separator.innerHTML = '';
-  separator.appendChild(document.createElement('hr'));
-
-  // Get detailed analysis if requested
+  // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   var delimiter = null;
@@ -61,8 +52,24 @@ async function handleInput() {
       break;
     }
   }
+
+  handleInput(textElement.value, langElement.value, requestedAttributes, delimiter);
+}
+
+/** Submits the input to Perspective and loads the appropriate output */
+async function handleInput(text, lang, requestedAttributes, delimiter) {
+  // Draw the separating line for the output
+  const separator = document.getElementById('separator-container');
+  separator.innerHTML = '';
+  separator.appendChild(document.createElement('hr')); 
+	
+  // Make Perspective call for the entire submission and load graph data
+  const toxicityData = await callPerspective(text, lang, requestedAttributes);
+  loadChartsApi(toxicityData);
+
+  // Get detailed analysis if requested
   if (delimiter != "") {
-    getAnalysis(textElement.value, langElement.value, requestedAttributes, delimiter); 
+    getAnalysis(text, lang, requestedAttributes, delimiter); 
   }
 }
 
@@ -80,6 +87,10 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
     if (substrings[i] != '') {
       // Get the Perspective scores for the substring & sort them descending
       const response = await callPerspective(substrings[i], lang, requestedAttributes);
+      if (typeof(response.error) != 'undefined') {
+        analysisContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get scores'));
+        return;
+      }
       const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
       var attributes = [];
       Object.keys(response.attributeScores).forEach((attribute) => {
@@ -102,7 +113,6 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
       const tooltipEl = createTooltip(attributes);
       substringEl.appendChild(tooltipEl)
       result.appendChild(substringEl);
-
     }
   }
   analysisContainer.appendChild(result);
@@ -110,7 +120,7 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
 
 /** Creates a tooltip for a substring in the detailed analysis */
 function createTooltip(attributes) {
-  const tooltipEL = document.createElement('div');
+  const tooltipEl = document.createElement('div');
   const headerEl = document.createElement('div');
   const titleInfoEl = document.createElement('div');
   const imageEl = document.createElement('img');
@@ -118,7 +128,7 @@ function createTooltip(attributes) {
   const titleEl = createAnyElement('h3', 'Perspective Feedback');
   const subtitleEl = createAnyElement('p', 'based on selected attributes');
 
-  tooltipEL.className = 'tooltip';      
+  tooltipEl.className = 'tooltip';      
   headerEl.className = 'header';
   titleInfoEl.className = 'title-info';
   titleEl.className = 'tooltip-title';
@@ -132,13 +142,13 @@ function createTooltip(attributes) {
   titleInfoEl.appendChild(subtitleEl);
   headerEl.appendChild(imageEl);
   headerEl.appendChild(titleInfoEl);
-  tooltipEL.appendChild(headerEl);
-  tooltipEL.appendChild(bodyEl);
+  tooltipEl.appendChild(headerEl);
+  tooltipEl.appendChild(bodyEl);
 
   for (const attribute of attributes) {
     bodyEl.appendChild(createAnyElement('p', attribute[0] + ': ' + decimalToPercentage(attribute[1])));
   }
-  return tooltipEL;
+  return tooltipEl;
 }
 
 /** Converts decimals to percentages */
