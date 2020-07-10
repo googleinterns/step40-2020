@@ -59,8 +59,8 @@ async function handleSheetsInput() {
 }
 
 // Client ID and API key from the Developer Console
-var CLIENT_ID = '829584540184-uhjij62s65igq2r5n29sevp1ehbu0u93.apps.googleusercontent.com';
-var API_KEY = 'AIzaSyDMRYIXlcVWOVh-TTvrpVl11KTIw14Mg3c';
+var CLIENT_ID = 'CLIENT_ID';
+var API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs used by the quickstart
 var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
