@@ -21,7 +21,9 @@
       <header class="masthead mb-auto">
         <div class="inner">
           <div class="text-center">
-            <img src="assets/perspective_horizontal_color.png" class="rounded">
+            <a href="http://perspectiveapi.com/#/home">
+              <img src="assets/perspective_horizontal_color.png" class="rounded">
+            </a>
           </div>
           <h3 class="masthead-brand">Perspective Hub</h3>
           <nav class="nav nav-masthead justify-content-center">
@@ -34,12 +36,20 @@
           </nav>
         </div>
       </header>
-      <h2>Input text and select the Perspective API attribute(s) you would like to be shown</h2>
+      <main role="main">
+        <section class="jumbotron text-center">
+          <div class="container">
+            <h1>Text Analysis</h1>
+            <p class="lead text-muted">Input text and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
+          </div>
+        </section>
+      </main>
       <!--Returns false so the page does not reload-->
       <form onsubmit="submitInput(); return false;">
         <div class="form-group">
           <input type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here">
-          <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
+          <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small>
         </div>
         <select id="languageForAnalysis" onchange="showAvailableAttributes()">
           <option value="en">English</option>
@@ -56,7 +66,7 @@
       <div id="chart-container"></div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
-          <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
+          <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu</p>
         </div>
       </footer>
     </div>
