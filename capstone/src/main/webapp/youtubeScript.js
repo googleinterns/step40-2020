@@ -48,18 +48,24 @@ async function inputCommentsToPerspective(response) {
   if (!requestedAttributes) {
       return;
   }
-  const attributeAverages = new Map();
-  for (const attribute of requestedAttributes) {
-    const attributeScores = [];
-    for (const item in comments.items) {
-      const perspectiveScore = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, "en", [attribute]);
-      attributeScores.push(perspectiveScore);
+  const attributeScores = [];
+  for (const item in comments.items) {
+    const perspectiveScore = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, "en", requestedAttributes);
+    attributeScores.push(perspectiveScore);
+  }
+  const attributeTotals = new Map();
+  for (var i = 0; i < requestedAttributes.length; i++) {
+    for (var j = 0; j < attributeScores.length; j++) {
+      if (attributeTotals.has(requestedAttributes[i])) {
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+      } else {
+        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+      }
     }
-    attributeScoresSum = arrSum(attributeScores);
-    attributeScoresAvg = attributeScoresSum / comments.items.length;
-    attributeAverages.set(attribute, attributeScoresAvg)
-    commentListElement.append("AVERAGE " + attribute + " : " + attributeScoresAvg);
-    commentListElement.appendChild(document.createElement('br'));
+  }
+  const attributeAverages = new Map();
+  for (const [attribute, attributeScoresTotal] of attributeTotals) {
+    attributeAverages.set(attribute,attributeScoresTotal/requestedAttributes.length);
   }
   loadChartsApi(attributeAverages);
 }
@@ -77,13 +83,13 @@ function getRequestedAttributes() {
 }
 
 /** Calls the perspective API */
-async function callPerspective(text, lang, requestedAttribute) {
+async function callPerspective(text, lang, requestedAttributes) {
   const response = await fetch('/call_perspective', {
     method: 'POST',
     headers: {'Content-Type': 'application/json',},
-    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttribute})});
+    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes})});
   const toxicityData = await response.json();
-  return toxicityData.attributeScores[requestedAttribute].summaryScore.value;
+  return toxicityData;
 }
 
 /** Loads the Google Charts API */
