@@ -12,67 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/**
- * Test the authentication for the Sheets service
- */
-async function callSheets(sheetID) {
-  const text = await getText('194EPwCpNnSLDDRQV19RJWVRa4Er3z3AKunQxZnt2nEI');
-  // const text = await getText(sheetID);
-  const response = await callPerspective(text, 'en');
-}
-
-// /**
-//  * Test the authentication for the Sheets service
-//  */
-// async function callSheets(sheetID) {
-//   const response = await fetch('/call-sheets', {
-//       method: 'POST',
-//       headers: {'Content-Type': 'application/json',},
-//       body: JSON.stringify({id: sheetID})});
-//   const out = await response.json();
-//   console.log(out);
-// }
-
-/**
- * Call the perspective API
- */
-async function callPerspective(text, lang) {
-  const response = await fetch('/call_perspective', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: JSON.stringify({text: text, lang: lang})});
-  const toxicityData = await response.json();
-  displayPerspectiveOutput(toxicityData);
-}
-
-/**
- *  Display toxicity output on the webpage
- */
-function displayPerspectiveOutput(toxicityData) {
-  const outputElement = document.getElementById('perspective-output-container');
-  if (!outputElement) {
+/** Collects the user's input and produces Perspective analysis */
+async function handleSheetsInput() {
+  // Get the submitted text and language
+  const idElement = document.getElementById('sheet-id');
+  if (!idElement) {
     return;
   }
-  outputElement.innerHTML = '';
+  const langElement = document.getElementById('languageForAnalysis');
+  if (!langElement) {
+    return;
+  }
 
-  if (toxicityData.attributeScores) {
-    for (let key in toxicityData.attributeScores) {
-      if (toxicityData.attributeScores[key].summaryScore && 
-          toxicityData.attributeScores[key].summaryScore.value) {
-        attributeElement = createAnyElement('p', key + ": " + toxicityData.attributeScores[key].summaryScore.value);
-        outputElement.appendChild(attributeElement);
-      }
+  // Get the selected attributes
+  const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
+  const requestedAttributes = []
+  for (let attribute of attributes) {
+    if (attribute.checked) {
+      requestedAttributes.push(attribute.value);	
+    }	
+  }
+
+  // Make Perspective call for the entire submission and load data
+  const text = await getTextFromSheet(idElement.value);
+  const toxicityData = await callPerspective(text, langElement.value, requestedAttributes);
+  loadChartsApi(toxicityData);
+
+  // Draw the separating line for the output
+  const separator = document.getElementById('separator-container');
+  separator.innerHTML = '';
+  separator.appendChild(document.createElement('hr'));
+
+  // Get detailed analysis if requested
+  document.getElementById('analysis-container').innerHTML = '';
+  const radios = document.getElementsByName('analysisRadios');
+  var delimiter = null;
+  for (i = 0; i < radios.length; i++) {
+    if (radios[i].checked) {
+      delimiter = radios[i].value;
+      break;
     }
   }
-}
-
-/**
- * Create a 'tag' element with 'text' as its inner HTML
- */
-function createAnyElement(tag, text) {
-  const textElement = document.createElement(tag);
-  textElement.innerHTML = text;
-  return textElement;
+  if (delimiter != "") {
+    getAnalysis(text, langElement.value, requestedAttributes, delimiter); 
+  }
 }
 
 // Client ID and API key from the Developer Console
@@ -152,7 +135,7 @@ function handleSignoutClick(event) {
   gapi.auth2.getAuthInstance().signOut();
 }
 
-async function getText(spreadsheetId) {
+async function getTextFromSheet(spreadsheetId) {
   const response = await gapi.client.sheets.spreadsheets.values.get({
     spreadsheetId: spreadsheetId,
     range: 'Sheet1!A1:YY',
