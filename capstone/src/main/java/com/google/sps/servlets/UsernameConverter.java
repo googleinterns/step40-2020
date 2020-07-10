@@ -35,20 +35,21 @@ import java.util.Arrays;
 @WebServlet("/username_servlet")
 public class UsernameConverter extends HttpServlet {
   private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
-  private static final String Key = "";
+  private static final String KEY = "API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String userName = request.getParameter("channelId");
-    String url = URL + Key + "&forUsername=" + userName + "&part=id";
-    String output = run(url);
+    String url = URL + KEY + "&forUsername=" + userName + "&part=id";
+    String output = get(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
   
-  String run(String url) throws IOException {
+  /** Makes a GET request. */
+  private String get(String url) throws IOException {
     Request request = new Request.Builder()
       .url(url)
       .build();

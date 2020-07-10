@@ -35,21 +35,22 @@ import java.util.Arrays;
 @WebServlet("/youtube_servlet")
 public class YoutubeServlet extends HttpServlet {
   private static final String URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies&allThreadsRelatedToChannelId=";
-  private static final String Key = "";
-  private static final String numResults = "5";
+  private static final String KEY = "API_KEY";
+  private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String ChannelId = request.getParameter("channelId");
-    String url = URL + ChannelId + "&maxResults=" + numResults + "&key=" + Key;
-    String output = run(url);
+    String url = URL + ChannelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
+    String output = get(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
   
-  String run(String url) throws IOException {
+  /** Makes a GET request. */
+  private String get(String url) throws IOException {
     Request request = new Request.Builder()
       .url(url)
       .build();
