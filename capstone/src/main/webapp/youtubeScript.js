@@ -41,6 +41,10 @@ async function callYoutube() {
 
 /** Calls perspective to analyze comments */
 async function inputCommentsToPerspective(response) {
+  const langElement = document.getElementById('languageForAnalysis');
+  if (!langElement) {
+    return;
+  }
   const comments = await response.json();
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
@@ -50,7 +54,7 @@ async function inputCommentsToPerspective(response) {
   }
   const attributeScores = [];
   for (const item in comments.items) {
-    const perspectiveScore = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, "en", requestedAttributes);
+    const perspectiveScore = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
     attributeScores.push(perspectiveScore);
   }
   const attributeTotals = new Map();
