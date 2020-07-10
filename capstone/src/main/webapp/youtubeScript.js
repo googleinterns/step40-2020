@@ -23,7 +23,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
 
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
-  const channelId = document.getElementById('channelIdForAnalysis').value;
+  const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
     return;
   }
