@@ -81,7 +81,7 @@ async function inputCommentsToPerspective(comments) {
   }
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute,attributeScoresTotal / requestedAttributes.length);
+    attributeAverages.set(attribute,attributeScoresTotal / comments.items.length);
   }
   loadChartsApi(attributeAverages);
 }
