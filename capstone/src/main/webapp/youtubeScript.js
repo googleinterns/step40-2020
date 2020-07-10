@@ -13,7 +13,20 @@ async function callYoutube() {
   if (!channelId) {
     return;
   }
-  const response = await fetch('/youtube_servlet?channelId=' + channelId,);
+  var response;
+  if (channelId[0]=="U" && channelId[1]=="C") {
+    response = await fetch('/youtube_servlet?channelId=' + channelId,);
+  } else {
+    const converterResponse = await fetch('/username_servlet?channelId=' + channelId,)
+    const converterResponseJson = await converterResponse.json();
+    const convertedUserName = converterResponseJson.items[0].id;
+    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,);
+  }
+  inputCommentsToPerspective(response);
+}
+
+/** Calls perspective to analyze comments */
+async function inputCommentsToPerspective(response) {
   const comments = await response.json();
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
@@ -129,9 +142,4 @@ arrSum = function(arr) {
   return arr.reduce(function(a, b) {
     return a + b
   }, 0);
-}
-
-function submitID(button) {
-  document.getElementById("channelIdForAnalysis").value = button.value;
-  callYoutube();
 }

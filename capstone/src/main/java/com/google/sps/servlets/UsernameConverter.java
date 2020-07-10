@@ -32,18 +32,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /** Servlet that returns youtube api data. */
-@WebServlet("/youtube_servlet")
-public class YoutubeServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies&allThreadsRelatedToChannelId=";
+@WebServlet("/username_servlet")
+public class UsernameConverter extends HttpServlet {
+  private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String Key = "";
-  private static final String numResults = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String ChannelId = request.getParameter("channelId");
-    String url = URL + ChannelId + "&maxResults=" + numResults + "&key=" + Key;
+    String userName = request.getParameter("channelId");
+    String url = URL + Key + "&forUsername=" + userName + "&part=id";
     String output = run(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
