@@ -28,24 +28,36 @@ async function callYoutube() {
     return;
   }
   var response;
-  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24) {
+  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId,);
+    response = await response.json();
+    if (response.hasOwnProperty('error')) {
+      alert("Invalid Channel ID");
+      inputCommentsToPerspective([]);
+      return;
+    }
   } else {
     const converterResponse = await fetch('/username_servlet?channelId=' + channelId,)
     const converterResponseJson = await converterResponse.json();
+    if (converterResponseJson.pageInfo.totalResults == 0) {
+      alert("Username Not found, Please Input Channel ID");
+      inputCommentsToPerspective([]);
+      return;
+    }
     const convertedUserName = converterResponseJson.items[0].id;
     response = await fetch('/youtube_servlet?channelId=' + convertedUserName,);
+    response = await response.json();
   }
   inputCommentsToPerspective(response);
 }
 
 /** Calls perspective to analyze comments */
-async function inputCommentsToPerspective(response) {
+async function inputCommentsToPerspective(comments) {
   const langElement = document.getElementById('languageForAnalysis');
   if (!langElement) {
     return;
   }
-  const comments = await response.json();
+  //const comments = await response.json();
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
   const requestedAttributes = getRequestedAttributes();
@@ -154,9 +166,11 @@ function showAvailableAttributes() {
   });
 }
 
-/** Returns the sum of all elements in an array */
-arrSum = function(arr) {
-  return arr.reduce(function(a, b) {
-    return a + b
-  }, 0);
+/** Checks if a character is a letter */
+function isLetter(character) {
+  if ((character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122)) {
+    return true;
+  } else {
+    return false;
+  }
 }
