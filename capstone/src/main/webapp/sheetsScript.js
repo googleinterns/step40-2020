@@ -21,6 +21,18 @@ async function callSheets(sheetID) {
   const response = await callPerspective(text, 'en');
 }
 
+// /**
+//  * Test the authentication for the Sheets service
+//  */
+// async function callSheets(sheetID) {
+//   const response = await fetch('/call-sheets', {
+//       method: 'POST',
+//       headers: {'Content-Type': 'application/json',},
+//       body: JSON.stringify({id: sheetID})});
+//   const out = await response.json();
+//   console.log(out);
+// }
+
 /**
  * Call the perspective API
  */

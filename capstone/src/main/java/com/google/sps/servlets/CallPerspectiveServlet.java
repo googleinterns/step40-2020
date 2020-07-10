@@ -37,7 +37,6 @@ import java.util.Arrays;
 public class CallPerspectiveServlet extends HttpServlet {
   private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7-AKc";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  private static final ArrayList<String> ATTRIBUTES = new ArrayList<String>(Arrays.asList("TOXICITY", "PROFANITY", "THREAT", "INSULT", "IDENTITY_ATTACK", "SEVERE_TOXICITY"));
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -48,10 +47,11 @@ public class CallPerspectiveServlet extends HttpServlet {
     
     String text = info.getText();
     String lang = info.getLang();
+    ArrayList<String> requestedAttributes = info.getRequestedAttributes();
 		
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
-    String json = makePerspectiveJson(text, lang);
+    String json = makePerspectiveJson(text, lang, requestedAttributes);
     String output = post(URL, json, client);
   
     // Return Perspective's results
@@ -70,13 +70,13 @@ public class CallPerspectiveServlet extends HttpServlet {
   }
 
   /** Builds the JSON for the body of the call to Perspective API. */
-  private String makePerspectiveJson(String text, String lang) {
+  private String makePerspectiveJson(String text, String lang, ArrayList<String> requestedAttributes) {
     JSONObject json = new JSONObject();  
     JSONObject commentValue = new JSONObject();
     JSONObject requestValue = new JSONObject();
 
     commentValue.put("text", text);
-    for (String attribute : ATTRIBUTES) {
+    for (String attribute : requestedAttributes) {
       requestValue.put(attribute, new JSONObject());
     }
 
@@ -84,5 +84,5 @@ public class CallPerspectiveServlet extends HttpServlet {
     json.put("languages", lang);    
     json.put("requestedAttributes", requestValue);    
     return json.toString();
-  } 
+  }
 }

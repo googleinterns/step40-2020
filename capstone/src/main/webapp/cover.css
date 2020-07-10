@@ -87,3 +87,100 @@ a, a:focus, a:hover {
 .mastfoot {
   color: #451735;
 }
+
+/* Text analyzer */
+.green-background {
+  background-color: #ddfada;
+}
+
+.yellow-background {
+  background-color: #ffff80;
+}
+
+.red-background {
+  background-color: #ff8080;
+}
+
+.text-analysis-module {
+  background-color: white;
+  margin-top: 100px;
+  margin-bottom: 100px;
+  padding-bottom: 15px;
+}
+
+.detailed-analysis { 
+  text-align: left;
+}
+
+hr {
+  width: 90%;
+}
+
+.segment {
+  position: relative;
+  transition: 0.2s;
+}
+
+.segment:hover {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 5px #d10fd8;
+}
+
+.tooltip {
+  position: absolute;
+  left: calc(50% - 70px);
+  bottom: 75px;
+  padding: 20px;
+  min-width: 400px;
+  background-color: #f9f9f9;
+  border: 1px solid #d10fd8;
+  border-radius: 10px;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: 0.5s;
+}
+
+.tooltip .header {
+  display: flex;
+  align-items: center;
+}
+
+.tooltip .header img {
+  grid-column: 1/2;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tooltip .header .title-info {
+  margin-left: 1em;
+}
+.tooltip .header .title-info .tooltip-title {
+  font-size: 1.25em;
+  color: #333;
+  letter-spacing: 1px;
+}
+
+.tooltip .header .title-info .tooltip-subtitle {
+  font-size: 0.9em;
+  color: #969696;
+  font-weight: 500;
+}
+
+.tooltip .tooltip-body {
+  padding: 1em;
+}
+
+.tooltip .tooltip-body p {
+  font-size: 0.95em;
+  color: #272727;
+}
+
+.segment:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-15%) translateY(0px);
+}
