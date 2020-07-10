@@ -28,8 +28,9 @@ async function callYoutube() {
     return;
   }
   var response;
+  /** Checks if input follows channel ID format if not attempts to convert it to channel ID*/
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId,);
+    response = await fetch('/youtube_servlet?channelId=' + channelId,)
     response = await response.json();
     if (response.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
@@ -45,7 +46,7 @@ async function callYoutube() {
       return;
     }
     const convertedUserName = converterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,);
+    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
     response = await response.json();
   }
   inputCommentsToPerspective(response);
