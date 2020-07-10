@@ -35,7 +35,7 @@ async function gatherInput() {
 
   // Get the selected attributes
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
-  const requestedAttributes = []
+  const requestedAttributes = [];
   for (let attribute of attributes) {
     if (attribute.checked) {
       requestedAttributes.push(attribute.value);	
@@ -76,7 +76,7 @@ async function handleInput(text, lang, requestedAttributes, delimiter) {
 /** Prints detailed analysis of text by word or sentence */
 async function getAnalysis(text, lang, requestedAttributes, delimiter) {
   // Set up the detailed analysis section
-  const analysisContainer = document.getElementById('analysis-container')
+  const analysisContainer = document.getElementById('analysis-container');
   analysisContainer.appendChild(createAnyElement('b', 'Detailed Anaylsis'));
   const result = createAnyElement('p', '');
   result.className = 'detailed-analysis';
@@ -111,7 +111,7 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
      
       // Attach a tooltip (info-box for the substring)
       const tooltipEl = createTooltip(attributes);
-      substringEl.appendChild(tooltipEl)
+      substringEl.appendChild(tooltipEl);
       result.appendChild(substringEl);
     }
   }
