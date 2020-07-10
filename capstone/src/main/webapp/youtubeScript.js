@@ -28,7 +28,7 @@ async function callYoutube() {
     return;
   }
   var response;
-  if (channelId[0]=="U" && channelId[1]=="C") {
+  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24) {
     response = await fetch('/youtube_servlet?channelId=' + channelId,);
   } else {
     const converterResponse = await fetch('/username_servlet?channelId=' + channelId,)
@@ -69,7 +69,7 @@ async function inputCommentsToPerspective(response) {
   }
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute,attributeScoresTotal/requestedAttributes.length);
+    attributeAverages.set(attribute,attributeScoresTotal / requestedAttributes.length);
   }
   loadChartsApi(attributeAverages);
 }
