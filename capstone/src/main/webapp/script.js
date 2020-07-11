@@ -21,8 +21,6 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-ENGLISH_HONORIFICS = ['Mr.', 'Mrs.', 'Ms.', 'Dr.'];
-
 /** Collects the user's input and submits it for analysis */
 async function gatherInput() {
   // Get the submitted text and language
@@ -84,7 +82,7 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
   result.className = 'detailed-analysis';
   
   // Generate the results for every substring of the input text
-	substrings = getSubstrings(text, delimiter);
+	const substrings = getSubstrings(text, delimiter);
   for (i = 0; i < substrings.length; i++) {
     if (substrings[i] != '') {
       // Get the Perspective scores for the substring & sort them descending
@@ -127,15 +125,6 @@ function getSubstrings(text, delimiter) {
     substrings = text.match(/\S+\s*/g);  // Regular expression for getting words
   } else {
     substrings = text.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);  // Regular expression for getting sentences
-    // Account for honorifics like "Mr."
-    for (i = 0; i < substrings.length; i++){
-      for (j = 0; j < ENGLISH_HONORIFICS.length; j++) {
-       if (substrings[i].includes(ENGLISH_HONORIFICS[j])) {
-          substrings[i] += substrings[i+1];
-          substrings.splice(i+1, 1);
-        }
-      }
-    }
   }
   return substrings;
 }
