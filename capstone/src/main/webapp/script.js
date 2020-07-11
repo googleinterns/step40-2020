@@ -36,7 +36,7 @@ async function gatherInput() {
   // Get the selected attributes
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
   const requestedAttributes = [];
-  for (let attribute of attributes) {
+  for (const attribute of attributes) {
     if (attribute.checked) {
       requestedAttributes.push(attribute.value);	
     }	
