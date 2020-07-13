@@ -13,15 +13,16 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
+    <script src="script.js"></script>
+    <script src="docsScript.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
-  <body class="text-center">
+  <body class="text-center" onload="showAvailableAttributes()">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
           <div class="text-center">
-            <a href="http://perspectiveapi.com/#/home">
-              <img src="assets/perspective_horizontal_color.png" class="rounded">
-            </a>
+            <img src="assets/perspective_horizontal_color.png" class="rounded">
           </div>
           <h3 class="masthead-brand">Perspective Hub</h3>
           <nav class="nav nav-masthead justify-content-center">
@@ -30,64 +31,60 @@
             <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
             <a class="nav-link active" href="document_analyzer.html">Document Analyzer</a>
             <a class="nav-link" href="https://support.perspectiveapi.com/s/" target="_blank">Support</a>
-            <a class="nav-link" href="about.html">About</a>
+            <a class="nav-link" href="https://medium.com/the-false-positive" target="_blank">Blog</a>
           </nav>
         </div>
       </header>
-      <main role="main">
-        <section class="jumbotron text-center">
-          <div class="container">
-            <h1>Doument Analysis</h1>
-            <p class="lead text-muted">Upload a document and select the Perspective API attribute(s) you would like to be shown</p>
-            <small id="disclaimer" class="form-text text-muted">Supported Formats: .CSV, .XLSX</small>
+      <h2>Attach a document and select the Perspective API attribute(s) you would like to be shown</h2>
+      <div class="text-analysis-module">
+        <form onsubmit="gatherDocsInput(); return false;">
+          <div class="form-group">
+            <textarea type="text" class="form-control" id="doc-id" aria-describedby="inputText" placeholder="Input ID of Google Doc To Be Analyzed Here" rows="3"></textarea>
+            <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
           </div>
-        </section>
-      </main>
-      <div class="input-group">
-        <div class="custom-file">
-          <input type="file" class="custom-file-input" id="documentForAnalysis" aria-describedby="inputFileText">
-          <label class="custom-file-label" for="documentForAnalysis">Select Document to be Analyzed</label>
-        </div>
+          <select id="languageForAnalysis" class="form-control" onchange="showAvailableAttributes()">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
+          </select>
+          <div id="available-attributes"></div>
+          <div id="analysis-type">
+            <b>Select analysis type</b>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="." checked>
+              <label class="form-check-label" for="bySentence">By sentence</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value=" ">
+              <label class="form-check-label" for="byWord">By word</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="">
+              <label class="form-check-label" for="noAnalysis">No analysis</label>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="submit_button" style="display: none;" type="submit">Submit</button>
+          <button class="btn btn-secondary" id="authorize_button" style="display: none;">Authorize</button>
+          <button class="btn btn-secondary" id="signout_button" style="display: none;">Sign Out</button>
+        </form>
+        <div id="separator-container"></div>
+        <div id="chart-container"></div>
+        <div id="analysis-container"></div>
       </div>
-      <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small><br>
-      <form>
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="toxicity">
-          <label class="form-check-label" for="toxicity">Toxicity</label>
-        </div>
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="identity-attack">
-          <label class="form-check-label" for="identity-attack">Identity Attack</label>
-        </div>
-        <div class="form-check">
-           <input type="checkbox" class="form-check-input" id="insult">
-          <label class="form-check-label" for="insult">Insult</label>
-        </div>
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="profanity">
-          <label class="form-check-label" for="profanity">Profanity</label>
-        </div>
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="threat">
-          <label class="form-check-label" for="threat">Threat</label>
-        </div>
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="sexually-explicit">
-          <label class="form-check-label" for="sexually-explicit">Sexually Explicit</label>
-        </div>
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="flirtation">
-          <label class="form-check-label" for="flirtation">Flirtation</label>
-        </div><br>
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </form>
-      <div id="perspective-response"></div>
+
       <footer class="mastfoot mt-auto">
         <div class="inner">
-          <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu</p>
+          <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
         </div>
       </footer>
     </div>
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
     </script>
