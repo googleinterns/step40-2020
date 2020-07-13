@@ -14,7 +14,7 @@
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
     <script src="script.js"></script>
-    <script src="docsScript.js"></script>
+    <script src="gSuiteScript.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body class="text-center" onload="showAvailableAttributes()">
@@ -37,11 +37,15 @@
       </header>
       <h2>Attach a document and select the Perspective API attribute(s) you would like to be shown</h2>
       <div class="text-analysis-module">
-        <form onsubmit="gatherDocsInput(); return false;">
+        <form onsubmit="gatherGSuiteInput(); return false;">
           <div class="form-group">
-            <textarea type="text" class="form-control" id="doc-id" aria-describedby="inputText" placeholder="Input ID of Google Doc To Be Analyzed Here" rows="3"></textarea>
+            <textarea type="text" class="form-control" id="google-id" aria-describedby="inputText" placeholder="Input ID of Google Doc To Be Analyzed Here" rows="3"></textarea>
             <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
           </div>
+          <select id="medium-of-input" class="form-control" onchange="handleClientLoad()">
+            <option value="docs">Docs</option>
+            <option value="sheets">Sheets</option>
+          </select>
           <select id="languageForAnalysis" class="form-control" onchange="showAvailableAttributes()">
             <option value="en">English</option>
             <option value="es">Spanish</option>
@@ -74,7 +78,6 @@
         <div id="chart-container"></div>
         <div id="analysis-container"></div>
       </div>
-
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
