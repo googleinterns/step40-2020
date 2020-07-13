@@ -78,9 +78,9 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
   // Set up the detailed analysis section
   const analysisContainer = document.getElementById('analysis-container');
   analysisContainer.appendChild(createAnyElement('b', 'Detailed Anaylsis'));
-	const loadingEl = document.createElement('p');
-	loadingEl.className = 'spinner-border';
-	analysisContainer.appendChild(loadingEl);
+  const loadingEl = document.createElement('p');
+  loadingEl.className = 'spinner-border';
+  analysisContainer.appendChild(loadingEl);
   const result = document.createElement('p');
   result.className = 'detailed-analysis';
   
@@ -91,7 +91,7 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
       // Get the Perspective scores for the substring & sort them descending
       const response = await callPerspective(substrings[i], lang, requestedAttributes);
       if (typeof(response.error) != 'undefined') {
-				analysisContainer.removeChild(loadingEl);
+        analysisContainer.removeChild(loadingEl);
         analysisContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get scores for detailed analysis'));
         return;
       }
@@ -129,7 +129,7 @@ function getSubstrings(text, delimiter) {
     return text.match(/\S+\s*/g);  // Regular expression for getting words
   } else {
     return text.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);  // Regular expression for getting sentences
-	}
+  }
 }
 
 /** Creates a tooltip for a substring in the detailed analysis */
