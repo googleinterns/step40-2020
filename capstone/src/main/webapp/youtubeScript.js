@@ -28,7 +28,7 @@ async function callYoutube() {
     return;
   }
   var response;
-  /** Checks if input follows channel ID format if not attempts to convert it to channel ID*/
+  /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId,)
     response = await response.json();
@@ -38,14 +38,14 @@ async function callYoutube() {
       return;
     }
   } else {
-    const converterResponse = await fetch('/username_servlet?channelId=' + channelId,)
-    const converterResponseJson = await converterResponse.json();
-    if (converterResponseJson.pageInfo.totalResults == 0) {
+    const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
+    const usernameConverterResponseJson = await usernameConverterResponse.json();
+    if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
-    const convertedUserName = converterResponseJson.items[0].id;
+    const convertedUserName = usernameConverterResponseJson.items[0].id;
     response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
     response = await response.json();
   }
@@ -58,7 +58,6 @@ async function inputCommentsToPerspective(comments) {
   if (!langElement) {
     return;
   }
-  //const comments = await response.json();
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
   const requestedAttributes = getRequestedAttributes();

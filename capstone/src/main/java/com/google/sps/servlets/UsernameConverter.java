@@ -31,7 +31,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/** Servlet that returns youtube api data. */
+/** Servlet that converts a youtube username to a channelID. */
 @WebServlet("/username_servlet")
 public class UsernameConverter extends HttpServlet {
   private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
