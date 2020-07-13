@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/** Collects the user's input and produces Perspective analysis */
-async function handleSheetsInput() {
+/** Collects the user's input and submits it for analysis */
+async function gatherSheetsInput() {
   // Get the submitted text and language
   const idElement = document.getElementById('sheet-id');
   if (!idElement) {
@@ -26,51 +26,42 @@ async function handleSheetsInput() {
 
   // Get the selected attributes
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
-  const requestedAttributes = []
-  for (let attribute of attributes) {
+  const requestedAttributes = [];
+  for (const attribute of attributes) {
     if (attribute.checked) {
       requestedAttributes.push(attribute.value);	
     }	
   }
 
-  // Make Perspective call for the entire submission and load data
-  const text = await getTextFromSheet(idElement.value);
-  const toxicityData = await callPerspective(text, langElement.value, requestedAttributes);
-  loadChartsApi(toxicityData);
-
-  // Draw the separating line for the output
-  const separator = document.getElementById('separator-container');
-  separator.innerHTML = '';
-  separator.appendChild(document.createElement('hr'));
-
-  // Get detailed analysis if requested
+  // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  var delimiter = null;
+  let delimiter = "";
   for (i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
       delimiter = radios[i].value;
       break;
     }
   }
-  if (delimiter != "") {
-    getAnalysis(text, langElement.value, requestedAttributes, delimiter); 
-  }
+
+  const text = await getTextFromSheet(idElement.value);
+  handleInput(text, langElement.value, requestedAttributes, delimiter);
 }
 
 // Client ID and API key from the Developer Console
-var CLIENT_ID = 'CLIENT_ID';
-var API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
+const CLIENT_ID = 'SLIENT_ID';
+const API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs used by the quickstart
-var DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
 
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
-var SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
-var authorizeButton = document.getElementById('authorize_button');
-var signoutButton = document.getElementById('signout_button');
+let authorizeButton = document.getElementById('authorize_button');
+let signoutButton = document.getElementById('signout_button');
+let submitButton = document.getElementById('submit_button');
 
 /**
   *  On load, called to load the auth2 library and API client library.
@@ -142,9 +133,9 @@ async function getTextFromSheet(spreadsheetId) {
   });
   const range = await response.result;
   if (range.values.length > 0) {
-    var text = '';
+    let text = '';
     for (i = 0; i < range.values.length; i++) {
-      var row = range.values[i];
+      let row = range.values[i];
       for (j = 0; j < row.length; j++) {
         text = text + row[j] + '\n';
       }

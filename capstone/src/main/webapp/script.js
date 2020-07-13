@@ -21,8 +21,8 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Collects the user's input and produces Perspective analysis */
-async function handleInput() {
+/** Collects the user's input and submits it for analysis */
+async function gatherInput() {
   // Get the submitted text and language
   const textElement = document.getElementById('textForAnalysis');
   if (!textElement) {
@@ -35,34 +35,41 @@ async function handleInput() {
 
   // Get the selected attributes
   const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
-  const requestedAttributes = []
-  for (let attribute of attributes) {
+  const requestedAttributes = [];
+  for (const attribute of attributes) {
     if (attribute.checked) {
       requestedAttributes.push(attribute.value);	
     }	
   }
 
-  // Make Perspective call for the entire submission and load data
-  const toxicityData = await callPerspective(textElement.value, langElement.value, requestedAttributes);
-  loadChartsApi(toxicityData);
-
-  // Draw the separating line for the output
-  const separator = document.getElementById('separator-container');
-  separator.innerHTML = '';
-  separator.appendChild(document.createElement('hr'));
-
-  // Get detailed analysis if requested
+  // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  var delimiter = null;
+  var delimiter = "";
   for (i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
       delimiter = radios[i].value;
       break;
     }
   }
+
+  handleInput(textElement.value, langElement.value, requestedAttributes, delimiter);
+}
+
+/** Submits the input to Perspective and loads the appropriate output */
+async function handleInput(text, lang, requestedAttributes, delimiter) {
+  // Draw the separating line for the output
+  const separator = document.getElementById('separator-container');
+  separator.innerHTML = '';
+  separator.appendChild(document.createElement('hr')); 
+	
+  // Make Perspective call for the entire submission and load graph data
+  const toxicityData = await callPerspective(text, lang, requestedAttributes);
+  loadChartsApi(toxicityData);
+
+  // Get detailed analysis if requested
   if (delimiter != "") {
-    getAnalysis(textElement.value, langElement.value, requestedAttributes, delimiter); 
+    getAnalysis(text, lang, requestedAttributes, delimiter); 
   }
 }
 

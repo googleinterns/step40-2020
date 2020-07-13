@@ -37,7 +37,7 @@
       </header>
       <h2>Attach a document and select the Perspective API attribute(s) you would like to be shown</h2>
       <div class="text-analysis-module">
-        <form onsubmit="handleSheetsInput(); return false;">
+        <form onsubmit="gatherSheetsInput(); return false;">
           <div class="form-group">
             <textarea type="text" class="form-control" id="sheet-id" aria-describedby="inputText" placeholder="Input ID of Google Sheet To Be Analyzed Here" rows="3"></textarea>
             <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
@@ -66,7 +66,6 @@
               <label class="form-check-label" for="noAnalysis">No analysis</label>
             </div>
           </div>
-          <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
           <button class="btn btn-primary" id="submit_button" style="display: none;" type="submit">Submit</button>
           <button class="btn btn-secondary" id="authorize_button" style="display: none;">Authorize</button>
           <button class="btn btn-secondary" id="signout_button" style="display: none;">Sign Out</button>
