@@ -30,14 +30,3 @@ public class MockPerspCaller implements ApiCaller {
       "\"languages\":[\"en\"],\"detectedLanguages\":[\"en\"]}";
   }
 }
-
-/**
-{"attributeScores":{
-      "INSULT":{"spanScores":[{"begin":0,"end":21,"score":{"value":0.7024426,"type":"PROBABILITY"}}],"summaryScore":{"value":0.7024426,"type":"PROBABILITY"}},
-      "THREAT":{"spanScores":[{"begin":0,"end":21,"score":{"value":0.11023958,"type":"PROBABILITY"}}],"summaryScore":{"value":0.11023958,"type":"PROBABILITY"}},
-      "PROFANITY":{"spanScores":[{"begin":0,"end":21,"score":{"value":0.25487214,"type":"PROBABILITY"}}],"summaryScore":{"value":0.25487214,"type":"PROBABILITY"}},
-      "TOXICITY":{"spanScores":[{"begin":0,"end":21,"score":{"value":0.6079781,"type":"PROBABILITY"}}],"summaryScore":{"value":0.6079781,"type":"PROBABILITY"}},
-      "IDENTITY_ATTACK":{"spanScores":[{"begin":0,"end":21,"score":{"value":0.10474427,"type":"PROBABILITY"}}],"summaryScore":{"value":0.10474427,"type":"PROBABILITY"}},
-      "SEVERE_TOXICITY":{"spanScores":[{"begin":0,"end":21,"score":{"value":0.16598417,"type":"PROBABILITY"}}],"summaryScore":{"value":0.16598417,"type":"PROBABILITY"}}},
-      "languages":["en"],"detectedLanguages":["en"]};
-*/

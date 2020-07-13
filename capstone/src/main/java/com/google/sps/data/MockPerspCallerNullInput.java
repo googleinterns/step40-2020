@@ -17,7 +17,7 @@ package com.google.sps.data;
 import java.io.IOException;
 import okhttp3.OkHttpClient;
 
-/** Mock Perspective caller that returns dummy output */
+/** Mock Perspective caller that returns an empty comment error */
 public class MockPerspCallerNullInput implements ApiCaller {
   public String post(String url, String json, OkHttpClient client) throws IOException {
     return "{ \"error\": { \"code\": 400," +
@@ -26,10 +26,3 @@ public class MockPerspCallerNullInput implements ApiCaller {
       "\"details\": [ { \"@type\": \"type.googleapis.com/google.commentanalyzer.v1alpha1.Error\", \"errorType\": \"COMMENT_EMPTY\" }]}}";
   }
 }
-
-/**
-{ "error": { "code": 400,
-            "message": "Comment must be non-empty.",
-            "status": "INVALID_ARGUMENT",
-            "details": [ { "@type": "type.googleapis.com/google.commentanalyzer.v1alpha1.Error", "errorType": "COMMENT_EMPTY" }]}}
-*/

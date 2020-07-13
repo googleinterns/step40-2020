@@ -17,7 +17,7 @@ package com.google.sps.data;
 import java.io.IOException;
 import okhttp3.OkHttpClient;
 
-/** Mock Perspective caller that returns dummy output */
+/** Mock Perspective caller that returns an invalid key error */
 public class MockPerspCallerBadKey implements ApiCaller {
   public String post(String url, String json, OkHttpClient client) throws IOException {
     return "{ \"error\": { \"code\": 400," +
@@ -26,10 +26,3 @@ public class MockPerspCallerBadKey implements ApiCaller {
       "\"details\": [ { \"@type\": \"type.googleapis.com/google.rpc.Help\", \"links\": [ { \"description\": \"Google developers console\", \"url\": \"https://console.developers.google.com\" }]}]}}";
   }
 }
-
-/** 
-{ "error": { "code": 400, 
-            "message": "API key not valid. Please pass a valid API key.",
-            "status": "INVALID_ARGUMENT",
-            "details": [ { "@type": "type.googleapis.com/google.rpc.Help", "links": [ { "description": "Google developers console", "url": "https://console.developers.google.com" }]}]}}
-*/
