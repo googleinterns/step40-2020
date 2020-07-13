@@ -1,5 +1,3 @@
-// Copyright 2019 Google LLC
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -31,25 +29,19 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/** Servlet that returns youtube api data. */
-@WebServlet("/youtube_servlet")
-public class YoutubeServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
+/** Servlet that fetches trending results of a certain category. */
+@WebServlet("/test_servlet")
+public class trending extends HttpServlet {
+  private static final String URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "5";
+  private static final String NUM_RESULTS = "2";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String ChannelId = request.getParameter("channelId");
-    String videoID = request.getParameter("videoID");
-    String url;
-    if (ChannelId!=null) {
-      url = URL + "&allThreadsRelatedToChannelId=" + ChannelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
-    } else {
-      url = URL + "&videoId=" + videoID + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
-    }
+    String videoCategoryId = request.getParameter("videoCategoryId");
+    String url = URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
     String output = get(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
