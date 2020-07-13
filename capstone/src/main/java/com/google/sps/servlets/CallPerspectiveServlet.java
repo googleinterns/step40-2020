@@ -27,31 +27,37 @@ import okhttp3.Response;
 import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.sps.data.PerspectiveInput;
-import com.google.sps.data.PerspectiveCaller;
 import com.google.sps.data.ApiCaller;
-
+import com.google.sps.data.PerspectiveCaller;
+import com.google.sps.data.PerspectiveInput;
+import org.json.simple.JSONObject;    
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /** Servlet that returns Perspective scoring. */
-@WebServlet("/call-perspective")
-public class DataServlet extends HttpServlet {
+@WebServlet("/call_perspective")
+public class CallPerspectiveServlet extends HttpServlet {
+
+  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
+  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
   private ApiCaller apiCaller;
 
-  public DataServlet() {
+  public CallPerspectiveServlet() {
     super();
     this.apiCaller = new PerspectiveCaller();
   }
 
-  public DataServlet(ApiCaller apiCaller) {
+  public CallPerspectiveServlet(ApiCaller apiCaller) {
     super();
     this.apiCaller = apiCaller;
   }
 
+
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Get the input
-    PerspectiveInput info = new PerspectiveInput("", "");
+    PerspectiveInput info = new PerspectiveInput("", "", new String[0]);
 
     if (request.getReader() != null) {
       String data = request.getReader().readLine();
@@ -62,29 +68,35 @@ public class DataServlet extends HttpServlet {
     if (info == null) {
       return;
     }
-
+    
     String text = info.getText();
     String lang = info.getLang();
+    ArrayList<String> requestedAttributes = info.getRequestedAttributes();
 		
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
-    String json = makePerspectiveJson("", "");
-    String output = apiCaller.post("https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY", json, client);
+    String json = makePerspectiveJson(text, lang, requestedAttributes);
+    String output = apiCaller.post(URL, json, client);
   
     // Return Perspective's results
-    response.setContentType("application/json;");
+    response.setContentType("application/json");
     response.getWriter().println(output);
   }
 
   /** Builds the JSON for the body of the call to Perspective API. */
-  private String makePerspectiveJson(String text, String lang) {
-    return "{'comment': {'text': '" + text + "'}, 'languages': ['" + lang + "'], 'requestedAttributes': {"
-      + "'TOXICITY': {}," 
-      + "'PROFANITY': {}," 
-      + "'THREAT': {}," 
-      + "'INSULT': {},"
-      + "'IDENTITY_ATTACK': {},"
-      + "'SEVERE_TOXICITY': {}"
-      + "}}";
-  } 
+  private String makePerspectiveJson(String text, String lang, ArrayList<String> requestedAttributes) {
+    JSONObject json = new JSONObject();  
+    JSONObject commentValue = new JSONObject();
+    JSONObject requestValue = new JSONObject();
+
+    commentValue.put("text", text);
+    for (String attribute : requestedAttributes) {
+      requestValue.put(attribute, new JSONObject());
+    }
+
+    json.put("comment", commentValue);
+    json.put("languages", lang);    
+    json.put("requestedAttributes", requestValue);    
+    return json.toString();
+  }
 }
