@@ -45,7 +45,7 @@ async function gatherInput() {
   // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  var delimiter = null;
+  var delimiter = "";
   for (i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
       delimiter = radios[i].value;
@@ -78,17 +78,21 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
   // Set up the detailed analysis section
   const analysisContainer = document.getElementById('analysis-container');
   analysisContainer.appendChild(createAnyElement('b', 'Detailed Anaylsis'));
-  const result = createAnyElement('p', '');
+	const loadingEl = document.createElement('p');
+	loadingEl.className = 'spinner-border';
+	analysisContainer.appendChild(loadingEl);
+  const result = document.createElement('p');
   result.className = 'detailed-analysis';
   
   // Generate the results for every substring of the input text
-	const substrings = getSubstrings(text, delimiter);
+  const substrings = getSubstrings(text, delimiter);
   for (i = 0; i < substrings.length; i++) {
     if (substrings[i] != '') {
       // Get the Perspective scores for the substring & sort them descending
       const response = await callPerspective(substrings[i], lang, requestedAttributes);
       if (typeof(response.error) != 'undefined') {
-        analysisContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get scores'));
+				analysisContainer.removeChild(loadingEl);
+        analysisContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get scores for detailed analysis'));
         return;
       }
       const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
@@ -115,18 +119,17 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
       result.appendChild(substringEl);
     }
   }
+  analysisContainer.removeChild(loadingEl);
   analysisContainer.appendChild(result);
 }
 
 /** Breaks up a string into its words or sentences and puts the substrings in an array */
 function getSubstrings(text, delimiter) {
-  var substrings = null;
   if (delimiter === ' ') {
-    substrings = text.match(/\S+\s*/g);  // Regular expression for getting words
+    return text.match(/\S+\s*/g);  // Regular expression for getting words
   } else {
-    substrings = text.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);  // Regular expression for getting sentences
-  }
-  return substrings;
+    return text.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);  // Regular expression for getting sentences
+	}
 }
 
 /** Creates a tooltip for a substring in the detailed analysis */
@@ -192,7 +195,15 @@ function loadChartsApi(toxicityData) {
 
 /** Draws a Google BarChart from a Perspective JSON. */
 function drawBarChart(toxicityData) {
-  document.getElementById('chart-container').innerHTML = '';
+  const chartContainer = document.getElementById('chart-container');
+  chartContainer.innerHTML = '';
+  if (typeof(toxicityData.error) != 'undefined') {
+    chartContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get general scores for the bar chart'));
+    return;
+  }
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'spinner-border';
+  chartContainer.appendChild(loadingEl);
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
@@ -217,7 +228,8 @@ function drawBarChart(toxicityData) {
     hAxis: {viewWindow: {min: 0, max: 1}}
   };
 
-  const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
+  const chart = new google.visualization.BarChart(chartContainer);
+  chartContainer.removeChild(loadingEl);
   chart.draw(data, options);
 }
 
@@ -244,8 +256,8 @@ function showAvailableAttributes() {
     label.appendChild(document.createTextNode(attribute));
   
     avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild (document.createTextNode (" "));
+    avaiableAttributesElement.appendChild(document.createTextNode(" "));
     avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild (document.createTextNode (" "));
+    avaiableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
