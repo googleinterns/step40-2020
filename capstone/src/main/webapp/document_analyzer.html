@@ -35,11 +35,20 @@
           </nav>
         </div>
       </header>
-      <h2>Attach a document and select the Perspective API attribute(s) you would like to be shown</h2>
+      <main role="main">
+        <section class="jumbotron text-center">
+          <div class="container">
+            <h1>Document Analysis</h1>
+            <p class="lead text-muted">Paste the URL or ID of a Google Document or Google Sheet and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Format 1: https://docs.google.com/document/d/1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24/edit?pli=1</small>
+            <small id="disclaimer" class="form-text text-muted">Format 2: 1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24</small>
+          </div>
+        </section>
+      </main>
       <div class="text-analysis-module">
         <form onsubmit="gatherGSuiteInput(); return false;">
           <div class="form-group">
-            <textarea type="text" class="form-control" id="google-id" aria-describedby="inputText" placeholder="Input ID of Google Doc To Be Analyzed Here" rows="3"></textarea>
+            <textarea type="text" class="form-control" id="google-id" aria-describedby="inputText" placeholder="Input Resource To Be Analyzed Here" rows="3"></textarea>
             <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
           </div>
           <select id="medium-of-input" class="form-control" onchange="handleClientLoad()">

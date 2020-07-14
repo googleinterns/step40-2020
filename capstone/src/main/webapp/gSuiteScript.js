@@ -14,11 +14,17 @@
 
 /** Collects the user's input and submits it for analysis */
 async function gatherGSuiteInput() {
-  // Get the submitted text and language
+  // Get the submitted id and language
   const idElement = document.getElementById('google-id');
   if (!idElement) {
     return;
   }
+  let id = idElement.value;
+  const search = idElement.value.match(/\/d\/([\w-]+)/);
+  if (search != null) {
+    id = search[1]; // Shorten full URL to just the ID
+  }
+
   const langElement = document.getElementById('languageForAnalysis');
   if (!langElement) {
     return;
@@ -46,9 +52,9 @@ async function gatherGSuiteInput() {
 
   let text = '';
   if (document.getElementById('medium-of-input').value === 'docs') {
-    text = await getTextFromDoc(idElement.value);
+    text = await getTextFromDoc(id);
   } else if (document.getElementById('medium-of-input').value === 'sheets') {
-    text = await getTextFromSheet(idElement.value);
+    text = await getTextFromSheet(id);
   }
 
   handleInput(text, langElement.value, requestedAttributes, delimiter);
