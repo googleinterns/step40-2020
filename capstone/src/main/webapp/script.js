@@ -45,19 +45,19 @@ async function gatherInput() {
   // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  var delimiter = "";
+  var tokenizer = "";
   for (i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
-      delimiter = radios[i].value;
+      tokenizer = radios[i].value;
       break;
     }
   }
 
-  handleInput(textElement.value, langElement.value, requestedAttributes, delimiter);
+  handleInput(textElement.value, langElement.value, requestedAttributes, tokenizer);
 }
 
 /** Submits the input to Perspective and loads the appropriate output */
-async function handleInput(text, lang, requestedAttributes, delimiter) {
+async function handleInput(text, lang, requestedAttributes, tokenizer) {
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
   separator.innerHTML = '';
@@ -68,13 +68,13 @@ async function handleInput(text, lang, requestedAttributes, delimiter) {
   loadChartsApi(toxicityData);
 
   // Get detailed analysis if requested
-  if (delimiter != "") {
-    getAnalysis(text, lang, requestedAttributes, delimiter); 
+  if (tokenizer != "") {
+    getAnalysis(text, lang, requestedAttributes, tokenizer); 
   }
 }
 
 /** Prints detailed analysis of text by word or sentence */
-async function getAnalysis(text, lang, requestedAttributes, delimiter) {
+async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Set up the detailed analysis section
   const analysisContainer = document.getElementById('analysis-container');
   analysisContainer.appendChild(createAnyElement('b', 'Detailed Anaylsis'));
@@ -85,7 +85,7 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
   result.className = 'detailed-analysis';
   
   // Generate the results for every substring of the input text
-  const substrings = getSubstrings(text, delimiter);
+  const substrings = getSubstrings(text, tokenizer);
   for (i = 0; i < substrings.length; i++) {
     if (substrings[i] != '') {
       // Get the Perspective scores for the substring & sort them descending
@@ -96,22 +96,11 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
         return;
       }
       const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
-      var attributes = [];
-      Object.keys(response.attributeScores).forEach((attribute) => {
-        attributes.push([attribute, response.attributeScores[attribute].summaryScore.value]);
-      });
-      attributes.sort(function(a, b) {
-        return b[1] - a[1];
-      });
+      const attributes = sortAttributes(response);
 
       // Color the substring appropriately	
       const substringEl = createAnyElement('span', substrings[i]);
-      substringEl.className = 'green-background segment';
-      if (toxicityScore >= 0.8) {
-        substringEl.className = 'red-background segment';
-      } else if (toxicityScore >= 0.2) {
-        substringEl.className = 'yellow-background segment';
-      }
+			colorSubstring(substringEl, toxicityScore);
      
       // Attach a tooltip (info-box for the substring)
       const tooltipEl = createTooltip(attributes);
@@ -123,12 +112,34 @@ async function getAnalysis(text, lang, requestedAttributes, delimiter) {
   analysisContainer.appendChild(result);
 }
 
+/** Sorts a Perspective API response's attribute values in descending order */
+function sortAttributes(response) { 
+  var attributes = [];
+  Object.keys(response.attributeScores).forEach((attribute) => {
+    attributes.push([attribute, response.attributeScores[attribute].summaryScore.value]);
+  });
+  attributes.sort(function(a, b) {
+    return b[1] - a[1];
+  });
+  return attributes;
+}
+
 /** Breaks up a string into its words or sentences and puts the substrings in an array */
-function getSubstrings(text, delimiter) {
-  if (delimiter === ' ') {
+function getSubstrings(text, tokenizer) {
+  if (tokenizer === ' ') {
     return text.match(/\S+\s*/g);  // Regular expression for getting words
   } else {
     return text.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);  // Regular expression for getting sentences
+  }
+}
+
+/** Colors a substring in the detailed analysis appropriately */
+function colorSubstring(substringEl, toxicityScore) { 
+  substringEl.className = 'green-background segment';
+  if (toxicityScore >= 0.8) {
+    substringEl.className = 'red-background segment';
+  } else if (toxicityScore >= 0.2) {
+    substringEl.className = 'yellow-background segment';
   }
 }
 
@@ -167,8 +178,7 @@ function createTooltip(attributes) {
 
 /** Converts decimals to percentages */
 function decimalToPercentage(decimal) {
-  const decimalAsString = decimal.toString();
-  return decimalAsString.slice(2, 4) + '.' + decimalAsString.slice(4, 6) + '%';
+  return (decimal * 100).toFixed(2) + '%';
 }
 
 /** Create a 'tag' element with 'text' as its inner HTML */
