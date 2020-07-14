@@ -36,7 +36,7 @@ const YOUTUBE_CATEGORIES = {
 
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
-      document.getElementById('search-type').innerHTML = ""
+  document.getElementById('search-type').innerHTML = ""
   const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
     return;
@@ -200,7 +200,7 @@ function isLetter(character) {
 }
 
 async function getTrending(categoryId) {
-  trendingResponse = await fetch('/test_servlet?videoCategoryId=' + categoryId,)
+  trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
   trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
@@ -232,7 +232,7 @@ function disableTextInput(button) {
 
 /** Creates radio buttons to allow teh user to select between various categories*/
 function showCategories() {
-  /** Creates button to allow for manual input*/
+  /** Creates button to enable manual input*/
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
