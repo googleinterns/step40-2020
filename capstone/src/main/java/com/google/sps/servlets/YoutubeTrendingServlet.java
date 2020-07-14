@@ -31,7 +31,7 @@ import java.util.Arrays;
 
 /** Servlet that fetches trending results of a certain category. */
 @WebServlet("/trending_servlet")
-public class trending extends HttpServlet {
+public class YoutubeTrendingServlet extends HttpServlet {
   private static final String URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "2";
