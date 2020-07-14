@@ -29,7 +29,6 @@ const YOUTUBE_CATEGORIES = {
   'Gaming': 20,
   'How-to&Style' : 26,
   'Music': 10,
-  'Non-profits&Activism': 29,
   'Pets&Animals': 15,
   'Science&Technology': 28,
   'Sports' : 17,
@@ -37,12 +36,14 @@ const YOUTUBE_CATEGORIES = {
 
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
+      document.getElementById('search-type').innerHTML = ""
   const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
     return;
   }
   /** Checks if input is a category, if so directs input to be handled by get trending*/
   if (YOUTUBE_CATEGORIES[channelId] != undefined) {
+    document.getElementById('search-type').innerHTML ="Category Search";
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
@@ -56,6 +57,7 @@ async function callYoutube() {
       inputCommentsToPerspective([]);
       return;
     }
+    document.getElementById('search-type').innerHTML ="Channel ID Search";
   } else {
     const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
     const usernameConverterResponseJson = await usernameConverterResponse.json();
@@ -64,6 +66,7 @@ async function callYoutube() {
       inputCommentsToPerspective([]);
       return;
     }
+    document.getElementById('search-type').innerHTML ="Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
     response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
     response = await response.json();
@@ -243,7 +246,7 @@ function showCategories() {
   radiobox.onclick = function() {
     disableTextInput(this);   
   }
-  const container = document.getElementById('container');
+  const container = document.getElementById('category-container');
   container.appendChild(radiobox);
   container.appendChild(label);
   container.appendChild(document.createTextNode (" "));
@@ -261,7 +264,7 @@ function showCategories() {
     radiobox.onclick = function() {
       enableTextInput(this);   
     }
-    const container = document.getElementById('container');
+    const container = document.getElementById('category-container');
     container.appendChild(radiobox);
     container.appendChild(label);
     container.appendChild(document.createTextNode (" "));
