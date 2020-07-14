@@ -100,7 +100,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
 
       // Color the substring appropriately	
       const substringEl = createAnyElement('span', substrings[i]);
-			colorSubstring(substringEl, toxicityScore);
+      colorSubstring(substringEl, toxicityScore);
      
       // Attach a tooltip (info-box for the substring)
       const tooltipEl = createTooltip(attributes);
@@ -114,7 +114,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
 
 /** Sorts a Perspective API response's attribute values in descending order */
 function sortAttributes(response) { 
-  var attributes = [];
+  const attributes = [];
   Object.keys(response.attributeScores).forEach((attribute) => {
     attributes.push([attribute, response.attributeScores[attribute].summaryScore.value]);
   });
