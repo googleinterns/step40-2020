@@ -247,6 +247,7 @@ function showCategories() {
   container.appendChild(radiobox);
   container.appendChild(label);
   container.appendChild(document.createTextNode (" "));
+  container.appendChild(document.createElement("br"));
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
