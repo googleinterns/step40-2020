@@ -108,6 +108,7 @@ async function inputCommentsToPerspective(commentsList) {
     attributeAverages.set(attribute,attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
   }
   loadChartsApi(attributeAverages);
+  perspectiveToxicityScale(attributeAverages);
 }
 
 /** Returns the user's input */
@@ -269,4 +270,33 @@ function showCategories() {
     container.appendChild(label);
     container.appendChild(document.createTextNode (" "));
   }
+}
+
+/** Converts perspective results to knoop scale than to mohs*/
+function perspectiveToxicityScale(attributeAverages) {
+  const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
+  var totalToxicityScore = 0;
+  for (const [attribute, attributeAverage] of attributeAverages) {
+    totalToxicityScore += attributeAverage;
+  }
+  const inputLength = attributeAverages.size;
+  const averageToxicityScore = totalToxicityScore / inputLength;
+  const knoopScore = averageToxicityScore * 7000;
+  var knoopLow;
+  var knoopHigh;
+  var mohs;
+  for (var i = 0; i < knoopScale.length; i++) {
+    if (knoopScore < knoopScale[i]) {
+      knoopLow = knoopScale[i-1];
+      knoopHigh = knoopScale[i];
+      mohsScore = i;  
+      break;
+    }
+  }
+  const knoopRange = knoopHigh - knoopLow;
+  const amountMoreThanKnoop = knoopScore - knoopLow;
+  const mohsDecimal = amountMoreThanKnoop / knoopRange;
+  const perspectiveToxicityScore = (mohsScore+mohsDecimal).toFixed(1);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
