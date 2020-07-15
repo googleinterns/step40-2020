@@ -66,6 +66,11 @@ async function handleInput(text, lang, requestedAttributes, delimiter) {
   // Make Perspective call for the entire submission and load graph data
   const toxicityData = await callPerspective(text, lang, requestedAttributes);
   loadChartsApi(toxicityData);
+  
+  const userDecisionElement = document.getElementById('sheets-output-yes-no');
+  if (userDecisionElement != null) {
+    createSheet(toxicityData);
+  }
 
   // Get detailed analysis if requested
   if (delimiter != "") {

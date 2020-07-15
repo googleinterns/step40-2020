@@ -13,9 +13,9 @@
 // limitations under the License.
 
 // Client ID and API key from the Developer Console
-const CLIENT_ID = '829584540184-uhjij62s65igq2r5n29sevp1ehbu0u93.apps.googleusercontent.com';
-const DOCS_API_KEY = 'AIzaSyD2womLpvJAC11BQJiLRMCBbP4pwy4bJu8'; // TODO: Create Java servlet to return key
-const SHEETS_API_KEY = 'AIzaSyDMRYIXlcVWOVh-TTvrpVl11KTIw14Mg3c'; // TODO: Create Java servlet to return key
+const CLIENT_ID = 'CLIENT_ID';
+const DOCS_API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
+const SHEETS_API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs
 const DOCS_DISCOVERY_DOCS = ["https://docs.googleapis.com/$discovery/rest?version=v1"];
@@ -231,7 +231,22 @@ function readParagraphElement(paragraphElement) {
   return run.content;
 }
 
-async function createSheet(title, data) {
+
+/**
+ * Create a Google Sheet with toxicityData
+ */
+async function createSheet(toxicityData) {
+  const userDecisionElement = document.getElementById('sheets-output-yes-no');
+  if (userDecisionElement == null || userDecisionElement.value === 'no') {
+    return;
+  }
+
+  let title = 'Perspective Output';
+  const titleElement = document.getElementById('sheets-title');
+  if (titleElement != null) {
+    title = titleElement.value;
+  }
+
   const oldChoice = currentChoice;
   currentChoice = 'sheets';
   handleClientLoad();
@@ -241,20 +256,24 @@ async function createSheet(title, data) {
     }
   });
   const id = await response.result.spreadsheetId;
-  appendDataToSheet(id, data);
+  await appendDataToSheet(id, toxicityData);
   currentChoice = oldChoice;
   handleClientLoad();
 }
 
-async function appendDataToSheet(spreadsheetId, data) {
-  const body = {
-    values: data
-  };
-  const response = await gapi.client.sheets.spreadsheets.values.append({
+/**
+ * Append toxicityData to the Sheet with id spreadsheetId
+ */
+async function appendDataToSheet(spreadsheetId, toxicityData) {
+  const body = { values: [] };
+  for (const attribute of Object.entries(toxicityData.attributeScores)) {
+    body.values.push([attribute[0], attribute[1].summaryScore.value]);
+  }
+
+  await gapi.client.sheets.spreadsheets.values.append({
     spreadsheetId: spreadsheetId,
     range: 'Sheet1!A1:YY',
     valueInputOption: 'USER_ENTERED',
     resource: body
   });
-  const result = await response.result;
 }
