@@ -272,7 +272,7 @@ function showCategories() {
   }
 }
 
-/** Converts perspective results to knoop scale than to mohs*/
+/** Converts perspective results to knoop scale then to mohs*/
 function perspectiveToxicityScale(attributeAverages) {
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
   var totalToxicityScore = 0;
@@ -296,7 +296,7 @@ function perspectiveToxicityScale(attributeAverages) {
   const knoopRange = knoopHigh - knoopLow;
   const amountMoreThanKnoop = knoopScore - knoopLow;
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
-  const perspectiveToxicityScore = (mohsScore+mohsDecimal).toFixed(1);
+  const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
   document.getElementById('search-type').appendChild(document.createElement("br"));  
   document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
