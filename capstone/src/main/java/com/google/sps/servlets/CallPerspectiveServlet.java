@@ -66,6 +66,7 @@ public class CallPerspectiveServlet extends HttpServlet {
     }
 
     if (info == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
     
