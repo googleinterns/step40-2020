@@ -43,21 +43,21 @@ async function callYoutube() {
   }
   /** Checks if input is a category, if so directs input to be handled by get trending*/
   if (YOUTUBE_CATEGORIES[channelId] != undefined) {
-    document.getElementById('search-type').innerHTML ="Category Search";
+    document.getElementById('search-type').innerHTML = "Category Search";
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   var response;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId,)
-    response = await response.json();
+    const response = await fetch('/youtube_servlet?channelId=' + channelId,)
+    const responseJson = await response.json();
     if (response.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
-    document.getElementById('search-type').innerHTML ="Channel ID Search";
+    document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
     const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
     const usernameConverterResponseJson = await usernameConverterResponse.json();
@@ -66,12 +66,12 @@ async function callYoutube() {
       inputCommentsToPerspective([]);
       return;
     }
-    document.getElementById('search-type').innerHTML ="Username Search";
+    document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
-    response = await response.json();
+    const response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
+    const responseJson = await response.json();
   }
-  inputCommentsToPerspective([response]);
+  inputCommentsToPerspective([responseJson]);
 }
 
 /** Calls perspective to analyze an array of comment JSON's */
@@ -200,8 +200,8 @@ function isLetter(character) {
 }
 
 async function getTrending(categoryId) {
-  trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
-  trendingResponseJson = await trendingResponse.json();
+  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
+  const trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
     const videoId = trendingResponseJson.items[item].id;
@@ -209,8 +209,8 @@ async function getTrending(categoryId) {
   }
   const commentsList = []
   for (const id in trendingVideoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoID=' + trendingVideoIds[id],)
-    videoCommentListJson = await videoCommentList.json();
+    const videoCommentList = await fetch('/youtube_servlet?videoID=' + trendingVideoIds[id],)
+    const videoCommentListJson = await videoCommentList.json();
     commentsList.push(videoCommentListJson);
   }
   inputCommentsToPerspective(commentsList);
@@ -269,4 +269,24 @@ function showCategories() {
     container.appendChild(label);
     container.appendChild(document.createTextNode (" "));
   }
+}
+
+async function getKeywordSearchResults() {
+  const searchTerm = document.getElementById('channelIdForAnalysis').value;
+  const response = await fetch('/searchh_servlet?searchTerm=' + searchTerm,)
+  const responseJson = await response.json();
+  var videoIds = [];
+  for (const item in responseJson.items) {
+    if(responseJson.items[item].id.videoId != undefined){
+      videoIds.push(responseJson.items[item].id.videoId);
+    }
+  }   
+  const commentsList = [];
+  for (const id in videoIds) {
+    videoCommentList = await fetch('/youtube_servlet?videoID=' + videoIds[id],)
+    videoCommentListJson = await videoCommentList.json();
+    commentsList.push(videoCommentListJson);
+  }
+  inputCommentsToPerspective(commentsList);
+  document.getElementById('search-type').innerHTML = "Keyword Search";
 }

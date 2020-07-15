@@ -31,19 +31,20 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/** Servlet that fetches trending results of a certain category. */
-@WebServlet("/trending_servlet")
-public class YoutubeTrendingServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
+/** Servlet that returns youtube api data. */
+@WebServlet("/searchh_servlet")
+public class search extends HttpServlet {
+  private static final String URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "2";
+  private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
-
+//https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=surfing&key=AIzaSyCNknbH7wekG_bz1RcP1muXy9plNQhZaAY
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String videoCategoryId = request.getParameter("videoCategoryId");
-    String url = URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
+    String searchTerm = request.getParameter("searchTerm");
+    String url = URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
+   // System.out.println(url);
     String output = get(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
