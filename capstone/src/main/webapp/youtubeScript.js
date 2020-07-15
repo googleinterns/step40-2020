@@ -287,7 +287,11 @@ function perspectiveToxicityScale(attributeAverages) {
   var mohs;
   for (var i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
-      knoopLow = knoopScale[i-1];
+      if(knoopScore < 1) {
+        knoopLow = 0;
+      } else {
+        knoopLow = knoopScale[i-1];
+      }
       knoopHigh = knoopScale[i];
       mohsScore = i;  
       break;
