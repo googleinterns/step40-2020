@@ -36,28 +36,28 @@ const YOUTUBE_CATEGORIES = {
 
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
-  document.getElementById('search-type').innerHTML = ""
+  document.getElementById('search-type').innerHTML = "";
   const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
     return;
   }
   /** Checks if input is a category, if so directs input to be handled by get trending*/
   if (YOUTUBE_CATEGORIES[channelId] != undefined) {
-    document.getElementById('search-type').innerHTML ="Category Search";
+    document.getElementById('search-type').innerHTML = "Category Search";
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   var response;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId,)
-    response = await response.json();
-    if (response.hasOwnProperty('error')) {
+    const response = await fetch('/youtube_servlet?channelId=' + channelId,)
+    const responseJson = await response.json();
+    if (responseJson.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
-    document.getElementById('search-type').innerHTML ="Channel ID Search";
+    document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
     const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
     const usernameConverterResponseJson = await usernameConverterResponse.json();
@@ -66,12 +66,12 @@ async function callYoutube() {
       inputCommentsToPerspective([]);
       return;
     }
-    document.getElementById('search-type').innerHTML ="Username Search";
+    document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
     response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
-    response = await response.json();
+    responseJson = await response.json();
   }
-  inputCommentsToPerspective([response]);
+  inputCommentsToPerspective([responseJson]);
 }
 
 /** Calls perspective to analyze an array of comment JSON's */
@@ -200,8 +200,8 @@ function isLetter(character) {
 }
 
 async function getTrending(categoryId) {
-  trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
-  trendingResponseJson = await trendingResponse.json();
+  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
+  const trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
     const videoId = trendingResponseJson.items[item].id;
@@ -209,8 +209,8 @@ async function getTrending(categoryId) {
   }
   const commentsList = []
   for (const id in trendingVideoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoID=' + trendingVideoIds[id],)
-    videoCommentListJson = await videoCommentList.json();
+    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id],)
+    const videoCommentListJson = await videoCommentList.json();
     commentsList.push(videoCommentListJson);
   }
   inputCommentsToPerspective(commentsList);

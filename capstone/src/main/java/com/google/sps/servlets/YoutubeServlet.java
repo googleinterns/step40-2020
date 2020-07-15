@@ -43,12 +43,12 @@ public class YoutubeServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String ChannelId = request.getParameter("channelId");
-    String videoID = request.getParameter("videoID");
+    String videoId = request.getParameter("videoId");
     String url;
     if (ChannelId!=null) {
       url = URL + "&allThreadsRelatedToChannelId=" + ChannelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
     } else {
-      url = URL + "&videoId=" + videoID + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
+      url = URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
     }
     String output = get(url);
     response.setContentType("application/json");
