@@ -58,6 +58,10 @@ async function gatherInput() {
 
 /** Submits the input to Perspective and loads the appropriate output */
 async function handleInput(text, lang, requestedAttributes, tokenizer) {
+  // Remove any previous output
+	document.getElementById('suggestions-input-container').innerHTML = '';
+	document.getElementById('perspective-datamuse-analysis').innerHTML = '';
+
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
   separator.innerHTML = '';
@@ -98,8 +102,10 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
       const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
       const attributes = sortAttributes(response);
 
-      // Color the substring appropriately	
-      const substringEl = createAnyElement('span', substrings[i]);
+      // Set up and color the substring appropriately	
+      const substring = substrings[i];
+      const substringEl = createAnyElement('span', substring);
+      substringEl.onclick = function() { setUpSuggestions(substring, lang); };
       colorSubstring(substringEl, toxicityScore);
      
       // Attach a tooltip (info-box for the substring)
@@ -110,6 +116,69 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   }
   analysisContainer.removeChild(loadingEl);
   analysisContainer.appendChild(result);
+}
+
+/** Sets up the suggestions module */
+function setUpSuggestions(text, lang) { 
+  // Set up the header containing the selected segment
+  const suggestionsContainer = document.getElementById('suggestions-input-container');
+  suggestionsContainer.innerHTML = '';
+  suggestionsContainer.appendChild(createAnyElement('p', text));
+
+  // Set up the input box for the substring the user wants suggestions for
+  const inputBox = document.createElement('input');
+  inputBox.className = 'form-control';
+  inputBox.setAttribute('id', 'input-box')
+  inputBox.setAttribute('placeholder', 'Input substring of this segment you woud like suggestions for');
+  suggestionsContainer.appendChild(inputBox);
+
+  // Set up the submit button
+  const submitButton = document.createElement('button');
+  submitButton.innerHTML = 'Submit';
+  submitButton.className = 'btn btn-primary';
+  submitButton.onclick = function() { getSuggestions(text, lang); };
+  suggestionsContainer.appendChild(submitButton);
+}
+
+/** Gets the suggestions & their score changes for a subtring based on the Datamuse API */
+async function getSuggestions(text, lang) {
+  // Handle the input from the input box
+  const inputBox = document.getElementById('input-box');
+  if (!inputBox) {
+    return;
+  }
+  const substringForSuggestions = inputBox.value;
+  if (text.indexOf(substringForSuggestions) == -1) {
+  	alert("Substring must be in the selected segment");
+  	return;
+  } else if (substringForSuggestions == '') {
+    alert('Input cannot be empty');
+    return;
+  }
+  inputBox.innerHTML = '';
+  
+  const resultsContainer = document.getElementById('perspective-datamuse-analysis');
+  resultsContainer.innerHTML = '';
+  const perspectiveCallForOriginal = await callPerspective(text, lang, ['TOXICITY']);
+  const toxicityScoreOriginal = perspectiveCallForOriginal.attributeScores.TOXICITY.summaryScore.value;
+  const suggestions = await callDatamuse(substringForSuggestions);
+
+  // Print the suggestions and their differences in toxicity scores
+  for (i = 0; i < suggestions.length; i++) {
+    const suggestion = suggestions[i].word;
+    const newSentence = text.replace(substringForSuggestions, suggestion);
+    const perspectiveScoresForSuggestion = await callPerspective(newSentence, lang, ['TOXICITY']);
+    const toxicityScoreSuggestion = perspectiveScoresForSuggestion.attributeScores.TOXICITY.summaryScore.value;
+    const differenceInScores = toxicityScoreSuggestion - toxicityScoreOriginal;
+    resultsContainer.appendChild(createAnyElement('p', newSentence + ' -> Change in TOXICITY score: ' +  decimalToPercentage(differenceInScores)));
+  }
+}
+
+/** Gets word replacement suggestion from Datamuse API */
+async function callDatamuse(text) {
+  words = text.replace(' ', '+');
+  let response = await fetch('https://api.datamuse.com/words?ml=' + words + '&max=5');
+  return await response.json();
 }
 
 /** Sorts a Perspective API response's attribute values in descending order */
