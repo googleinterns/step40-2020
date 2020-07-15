@@ -68,8 +68,8 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
-    responseJson = await response.json();
+    const response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
+    const responseJson = await response.json();
   }
   inputCommentsToPerspective([responseJson]);
 }
