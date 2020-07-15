@@ -38,7 +38,7 @@ async function callYoutube() {
       return;
     }
   } else {
-    const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
+    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId,)
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
@@ -69,6 +69,13 @@ async function inputCommentsToPerspective(comments) {
     const perspectiveScore = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
     attributeScores.push(perspectiveScore);
   }
+  const attributeAverages = getAttributeAverages(attributeScores, comments.items.length);
+  loadChartsApi(attributeAverages);
+}
+
+/** Returns a map containing atrributes and their averages from an array of JSON's and the amount of comments */
+function getAttributeAverages(attributeScores, amountOfComments) {
+  const requestedAttributes = getRequestedAttributes();
   const attributeTotals = new Map();
   for (var i = 0; i < requestedAttributes.length; i++) {
     for (var j = 0; j < attributeScores.length; j++) {
@@ -81,9 +88,9 @@ async function inputCommentsToPerspective(comments) {
   }
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute,attributeScoresTotal / comments.items.length);
+    attributeAverages.set(attribute, attributeScoresTotal / amountOfComments);
   }
-  loadChartsApi(attributeAverages);
+  return attributeAverages;
 }
 
 /** Returns the user's input */
