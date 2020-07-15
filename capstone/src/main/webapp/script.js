@@ -59,8 +59,8 @@ async function gatherInput() {
 /** Submits the input to Perspective and loads the appropriate output */
 async function handleInput(text, lang, requestedAttributes, tokenizer) {
   // Remove any previous output
-	document.getElementById('suggestions-input-container').innerHTML = '';
-	document.getElementById('perspective-datamuse-analysis').innerHTML = '';
+  document.getElementById('suggestions-input-container').innerHTML = '';
+  document.getElementById('perspective-datamuse-analysis').innerHTML = '';
 
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
