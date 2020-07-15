@@ -13,9 +13,9 @@
 // limitations under the License.
 
 // Client ID and API key from the Developer Console
-const CLIENT_ID = 'CLIENT_ID';
-const DOCS_API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
-const SHEETS_API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
+const CLIENT_ID = '829584540184-uhjij62s65igq2r5n29sevp1ehbu0u93.apps.googleusercontent.com';
+const DOCS_API_KEY = 'AIzaSyD2womLpvJAC11BQJiLRMCBbP4pwy4bJu8'; // TODO: Create Java servlet to return key
+const SHEETS_API_KEY = 'AIzaSyDMRYIXlcVWOVh-TTvrpVl11KTIw14Mg3c'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs
 const DOCS_DISCOVERY_DOCS = ["https://docs.googleapis.com/$discovery/rest?version=v1"];
@@ -132,10 +132,10 @@ async function gatherGSuiteInput() {
   // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  let delimiter = "";
+  let tokenizer;
   for (i = 0; i < radios.length; i++) {
-    if (radios[i].checked) {
-      delimiter = radios[i].value;
+    if (radios[i].checked && radios[i].value != 'NONE') {
+      tokenizer = TokenizerEnum[radios[i].value];
       break;
     }
   }
@@ -147,7 +147,7 @@ async function gatherGSuiteInput() {
     text = await getTextFromSheet(id);
   }
 
-  handleInput(text, langElement.value, requestedAttributes, delimiter);
+  handleInput(text, langElement.value, requestedAttributes, tokenizer);
 }
 
 /**

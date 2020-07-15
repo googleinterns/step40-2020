@@ -35,7 +35,7 @@ import java.util.Arrays;
 @WebServlet("/username_servlet")
 public class UsernameConverter extends HttpServlet {
   private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
-  private static final String KEY = "API_KEY";
+  private static final String KEY = "AIzaSyDsXdOLB3UgR4QYiVcQC36gZV6Rw1PdeJc";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
