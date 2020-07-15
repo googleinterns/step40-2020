@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * The current possible tokenizers and their regular expressions to break up the text input. 
+ * @enum {regexp}
+ */
+const TokenizerEnum = {
+  WORD: /\S+\s*/g, 
+  SENTENCE: /([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g,
+};
+
 const ATTRIBUTES_BY_LANGUAGE = {
   'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
   'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
@@ -38,17 +47,17 @@ async function gatherInput() {
   const requestedAttributes = [];
   for (const attribute of attributes) {
     if (attribute.checked) {
-      requestedAttributes.push(attribute.value);	
+      requestedAttributes.push(attribute.value);
     }	
   }
 
   // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  var tokenizer = "";
+  let tokenizer;
   for (i = 0; i < radios.length; i++) {
-    if (radios[i].checked) {
-      tokenizer = radios[i].value;
+    if (radios[i].checked && radios[i].value != 'NONE') {
+      tokenizer = TokenizerEnum[radios[i].value];
       break;
     }
   }
@@ -68,7 +77,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   loadChartsApi(toxicityData);
 
   // Get detailed analysis if requested
-  if (tokenizer != "") {
+  if (tokenizer != 'undefined') {
     getAnalysis(text, lang, requestedAttributes, tokenizer); 
   }
 }
@@ -86,30 +95,39 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   
   // Generate the results for every substring of the input text
   const substrings = getSubstrings(text, tokenizer);
+  const promises = [];
   for (i = 0; i < substrings.length; i++) {
-    if (substrings[i] != '') {
-      // Get the Perspective scores for the substring & sort them descending
-      const response = await callPerspective(substrings[i], lang, requestedAttributes);
-      if (typeof(response.error) != 'undefined') {
-        analysisContainer.removeChild(loadingEl);
-        analysisContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get scores for detailed analysis'));
-        return;
-      }
-      const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
-      const attributes = sortAttributes(response);
-
-      // Color the substring appropriately	
-      const substringEl = createAnyElement('span', substrings[i]);
-      colorSubstring(substringEl, toxicityScore);
-     
-      // Attach a tooltip (info-box for the substring)
-      const tooltipEl = createTooltip(attributes);
-      substringEl.appendChild(tooltipEl);
-      result.appendChild(substringEl);
-    }
+    promises.push(callPerspective(substrings[i], lang, requestedAttributes));
   }
+  await Promise.all(promises).then(resolvedResponses => {
+    for (i = 0; i < substrings.length; i++) {
+      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i])
+    }
+  });
+
   analysisContainer.removeChild(loadingEl);
   analysisContainer.appendChild(result);
+}
+
+/** Updates the HTML elements for a substring that will be added to the detailed analysis output */
+function addSubstring(substring, analysisContainer, result, loadingEl, response) {
+  // Check for errors and sort the attributes
+  if (typeof(response.error) != 'undefined') {
+    analysisContainer.removeChild(loadingEl);
+    analysisContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get scores for detailed analysis'));
+    return;
+  }
+  const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
+  const attributes = sortAttributes(response);
+
+  // Color the substring appropriately	
+  const substringEl = createAnyElement('span', substring);
+  colorSubstring(substringEl, toxicityScore);
+     
+  // Attach a tooltip (info-box for the substring)
+  const tooltipEl = createTooltip(attributes);
+  substringEl.appendChild(tooltipEl);
+  result.appendChild(substringEl);
 }
 
 /** Sorts a Perspective API response's attribute values in descending order */
@@ -126,11 +144,7 @@ function sortAttributes(response) {
 
 /** Breaks up a string into its words or sentences and puts the substrings in an array */
 function getSubstrings(text, tokenizer) {
-  if (tokenizer === ' ') {
-    return text.match(/\S+\s*/g);  // Regular expression for getting words
-  } else {
-    return text.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);  // Regular expression for getting sentences
-  }
+  return text.match(tokenizer);
 }
 
 /** Colors a substring in the detailed analysis appropriately */
