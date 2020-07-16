@@ -86,26 +86,34 @@ async function inputCommentsToPerspective(commentsList) {
   if (!requestedAttributes) {
       return;
   }
-  const attributeTotals = new Map();
+  const attributeScoresPromises = [];
   for (const comments in commentsList) {
-    const attributeScores = [];
     for (const item in commentsList[comments].items) {
       const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
-      attributeScores.push(perspectiveScore);
-    }    
-    for (var i = 0; i < requestedAttributes.length; i++) {
-      for (var j = 0; j < attributeScores.length; j++) {
-        if (attributeTotals.has(requestedAttributes[i])) {
-          attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-        } else {
-          attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-        }
+      attributeScoresPromises.push(perspectiveScore);
+    }
+  }
+  await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
+    const attributeTotals = getAttributeTotals(resolvedAttributeScores);
+    const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
+    loadChartsApi(attributeAverages);
+    perspectiveToxicityScale(attributeAverages);
+  });
+}
+
+function getAttributeTotals(attributeScores) {
+  const requestedAttributes = getRequestedAttributes();
+  const attributeTotals = new Map();    
+  for (var i = 0; i < requestedAttributes.length; i++) {
+    for (var j = 0; j < attributeScores.length; j++) {
+      if (attributeTotals.has(requestedAttributes[i])) {
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+      } else {
+        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       }
     }
   }
-  const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
-  loadChartsApi(attributeAverages);
-  perspectiveToxicityScale(attributeAverages);
+  return attributeTotals;
 }
 
 function getAttributeAverages(attributeTotals, commentsList) {
