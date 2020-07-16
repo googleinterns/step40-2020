@@ -68,7 +68,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML ="Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
+    response = await fetch('/youtube_servlet?channelId=' + convertedUserName)
     response = await response.json();
   }
   inputCommentsToPerspective([response]);
@@ -92,7 +92,7 @@ async function inputCommentsToPerspective(commentsList) {
     for (const item in commentsList[comments].items) {
       const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
       attributeScores.push(perspectiveScore);
-    }
+    }    
     for (var i = 0; i < requestedAttributes.length; i++) {
       for (var j = 0; j < attributeScores.length; j++) {
         if (attributeTotals.has(requestedAttributes[i])) {
@@ -103,12 +103,17 @@ async function inputCommentsToPerspective(commentsList) {
       }
     }
   }
-  const attributeAverages = new Map();
-  for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute,attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
-  }
+  const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
   loadChartsApi(attributeAverages);
   perspectiveToxicityScale(attributeAverages);
+}
+
+function getAttributeAverages(attributeTotals, commentsList) {
+  const attributeAverages = new Map();
+  for (const [attribute, attributeScoresTotal] of attributeTotals) {
+    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+  }
+  return attributeAverages;
 }
 
 /** Returns the user's input */

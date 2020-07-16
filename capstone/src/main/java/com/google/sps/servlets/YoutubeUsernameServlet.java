@@ -30,10 +30,14 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.io.UnsupportedEncodingException; 
+import java.net.MalformedURLException; 
+import java.net.URL; 
+import java.net.URLEncoder; 
 
 /** Servlet that converts a youtube username to a channelID. */
-@WebServlet("/username_servlet")
-public class UsernameConverter extends HttpServlet {
+@WebServlet("youtube_username_servlet")
+public class YoutubeUsernameServlet extends HttpServlet {
   private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -42,7 +46,8 @@ public class UsernameConverter extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String userName = request.getParameter("channelId");
-    String url = URL + KEY + "&forUsername=" + userName + "&part=id";
+    String ecodedUserName = URLEncoder.encode(userName, "UTF-8");
+    String url = URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
     String output = get(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
