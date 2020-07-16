@@ -12,13 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// API key from the Developer Console
+const API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
+
+// Array of API discovery doc URLs for APIs used by the quickstart
+const DISCOVERY_DOCS = ["https://docs.googleapis.com/$discovery/rest?version=v1"];
+
+// Authorization scopes required by the API; multiple scopes can be
+// included, separated by spaces.
+const SCOPES = "https://www.googleapis.com/auth/documents.readonly";
+
 /** Collects the user's input and submits it for analysis */
 async function gatherDocsInput() {
-  // Get the submitted text and language
+  // Get the submitted id and language
   const idElement = document.getElementById('doc-id');
   if (!idElement) {
     return;
   }
+  let id = idElement.value;
+  const search = idElement.value.match(/\/d\/([\w-]+)/);
+  if (search != null) {
+    id = search[1]; // Shorten full URL to just the ID
+  }
+
   const langElement = document.getElementById('languageForAnalysis');
   if (!langElement) {
     return;
@@ -44,86 +60,8 @@ async function gatherDocsInput() {
     }
   }
 
-  const text = await getTextFromDoc(idElement.value);
+  const text = await getTextFromDoc(id);
   handleInput(text, langElement.value, requestedAttributes, delimiter);
-}
-
-// Client ID and API key from the Developer Console
-const CLIENT_ID = 'CLIENT_ID';
-const API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
-
-// Array of API discovery doc URLs for APIs used by the quickstart
-const DISCOVERY_DOCS = ["https://docs.googleapis.com/$discovery/rest?version=v1"];
-
-// Authorization scopes required by the API; multiple scopes can be
-// included, separated by spaces.
-const SCOPES = "https://www.googleapis.com/auth/documents.readonly";
-
-let authorizeButton = document.getElementById('authorize_button');
-let signoutButton = document.getElementById('signout_button');
-let submitButton = document.getElementById('submit_button');
-
-/**
-  *  On load, called to load the auth2 library and API client library.
-  */
-function handleClientLoad() {
-  gapi.load('client:auth2', initClient);
-}
-
-/**
-  *  Initializes the API client library and sets up sign-in state
-  *  listeners.
-  */
-function initClient() {
-  gapi.client.init({
-    apiKey: API_KEY,
-    clientId: CLIENT_ID,
-    discoveryDocs: DISCOVERY_DOCS,
-    scope: SCOPES
-  }).then(function () {
-    // Listen for sign-in state changes.
-    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-    // Handle the initial sign-in state.
-    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-    authorizeButton.onclick = handleAuthClick;
-    signoutButton.onclick = handleSignoutClick;
-  }, function(error) {
-    console.log(JSON.stringify(error, null, 2));
-  });
-}
-
-/**
-  *  Called when the signed in status changes, to update the UI
-  *  appropriately. After a sign-in, the API is called.
-  */
-async function updateSigninStatus(isSignedIn) {
-  authorizeButton = document.getElementById('authorize_button');
-  signoutButton = document.getElementById('signout_button');
-  submitButton = document.getElementById('submit_button');
-  if (isSignedIn) {
-    authorizeButton.style.display = 'none';
-    signoutButton.style.display = 'block';
-    submitButton.style.display = 'block';
-  } else {
-    authorizeButton.style.display = 'block';
-    signoutButton.style.display = 'none';
-    submitButton.style.display = 'none';
-  }
-}
-
-/**
-  *  Sign in the user upon button click.
-  */
-function handleAuthClick(event) {
-  gapi.auth2.getAuthInstance().signIn();
-}
-
-/**
-  *  Sign out the user upon button click.
-  */
-function handleSignoutClick(event) {
-  gapi.auth2.getAuthInstance().signOut();
 }
 
 async function getTextFromDoc(documentId) {

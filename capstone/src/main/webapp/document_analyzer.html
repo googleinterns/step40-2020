@@ -15,6 +15,7 @@
     <link href="cover.css" rel="stylesheet">
     <script src="script.js"></script>
     <script src="docsScript.js"></script>
+    <script src="oAuth.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body class="text-center" onload="showAvailableAttributes()">
@@ -35,7 +36,16 @@
           </nav>
         </div>
       </header>
-      <h2>Attach a document and select the Perspective API attribute(s) you would like to be shown</h2>
+      <main role="main">
+        <section class="jumbotron text-center">
+          <div class="container">
+            <h1>Document Analysis</h1>
+            <p class="lead text-muted">Attach a document and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Format 1: https://docs.google.com/document/d/1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24/edit?pli=1</small>
+            <small id="disclaimer" class="form-text text-muted">Format 2: 1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24</small>
+          </div>
+        </section>
+      </main>
       <div class="text-analysis-module">
         <form onsubmit="gatherDocsInput(); return false;">
           <div class="form-group">
@@ -74,7 +84,6 @@
         <div id="chart-container"></div>
         <div id="analysis-container"></div>
       </div>
-
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
