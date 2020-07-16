@@ -21,6 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
+/** Category names are mapped to youtube category numbers */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -261,11 +262,11 @@ function showCategories() {
   radiobox.onclick = function() {
     disableTextInput(this);   
   }
-  const container = document.getElementById('category-container');
-  container.appendChild(radiobox);
-  container.appendChild(label);
-  container.appendChild(document.createTextNode (" "));
-  container.appendChild(document.createElement("br"));
+  const categoryContainer = document.getElementById('category-container');
+  categoryContainer.appendChild(radiobox);
+  categoryContainer.appendChild(label);
+  categoryContainer.appendChild(document.createTextNode (" "));
+  categoryContainer.appendChild(document.createElement("br"));
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
@@ -279,9 +280,9 @@ function showCategories() {
     radiobox.onclick = function() {
       enableTextInput(this);   
     }
-    const container = document.getElementById('category-container');
-    container.appendChild(radiobox);
-    container.appendChild(label);
-    container.appendChild(document.createTextNode (" "));
+    const categoryContainer = document.getElementById('category-container');
+    categoryContainer.appendChild(radiobox);
+    categoryContainer.appendChild(label);
+    categoryContainer.appendChild(document.createTextNode (" "));
   }
 }
