@@ -64,13 +64,15 @@ async function inputCommentsToPerspective(comments) {
   if (!requestedAttributes) {
       return;
   }
-  const attributeScores = [];
+  const attributeScoresPromises = [];
   for (const item in comments.items) {
-    const perspectiveScore = await callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
-    attributeScores.push(perspectiveScore);
+    const perspectiveScore = callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+    attributeScoresPromises.push(perspectiveScore);
   }
-  const attributeAverages = getAttributeAverages(attributeScores, comments.items.length);
-  loadChartsApi(attributeAverages);
+  await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
+    const attributeAverages = getAttributeAverages(resolvedAttributeScores, comments.items.length);
+    loadChartsApi(attributeAverages);
+  });
 }
 
 /** Returns a map containing atrributes and their averages from an array of JSON's and the amount of comments */
