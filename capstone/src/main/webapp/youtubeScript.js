@@ -49,11 +49,11 @@ async function callYoutube() {
   }
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   var response;
+  var responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    const response = await fetch('/youtube_servlet?channelId=' + channelId,)
-    const responseJson = await response.json();
+    response = await fetch('/youtube_servlet?channelId=' + channelId,)
+    responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
-      alert("Invalid Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
@@ -62,14 +62,13 @@ async function callYoutube() {
     const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
-      alert("Username Not found, Please Input Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    const response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
-    const responseJson = await response.json();
+    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
+    responseJson = await response.json();
   }
   inputCommentsToPerspective([responseJson]);
 }
@@ -86,28 +85,44 @@ async function inputCommentsToPerspective(commentsList) {
   if (!requestedAttributes) {
       return;
   }
-  const attributeTotals = new Map();
+  const attributeScoresPromises = [];
   for (const comments in commentsList) {
-    const attributeScores = [];
     for (const item in commentsList[comments].items) {
       const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
-      attributeScores.push(perspectiveScore);
+      attributeScoresPromises.push(perspectiveScore);
     }
-    for (var i = 0; i < requestedAttributes.length; i++) {
-      for (var j = 0; j < attributeScores.length; j++) {
-        if (attributeTotals.has(requestedAttributes[i])) {
-          attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-        } else {
-          attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-        }
+  }
+  await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
+    const attributeTotals = getAttributeTotals(resolvedAttributeScores);
+    const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
+    loadChartsApi(attributeAverages);
+    perspectiveToxicityScale(attributeAverages);
+  });
+}
+
+/** returns a map of attribute score sums from an array of JSON's */
+function getAttributeTotals(attributeScores) {
+  const requestedAttributes = getRequestedAttributes();
+  const attributeTotals = new Map();    
+  for (var i = 0; i < requestedAttributes.length; i++) {
+    for (var j = 0; j < attributeScores.length; j++) {
+      if (attributeTotals.has(requestedAttributes[i])) {
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+      } else {
+        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       }
     }
   }
+  return attributeTotals;
+}
+
+/** returns a map of attribute score averages from a map and an array */
+function getAttributeAverages(attributeTotals, commentsList) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute,attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
   }
-  loadChartsApi(attributeAverages);
+  return attributeAverages;
 }
 
 /** Returns the user's input */
