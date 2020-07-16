@@ -86,28 +86,42 @@ async function inputCommentsToPerspective(commentsList) {
   if (!requestedAttributes) {
       return;
   }
-  const attributeTotals = new Map();
+  const attributeScoresPromises = [];
   for (const comments in commentsList) {
-    const attributeScores = [];
     for (const item in commentsList[comments].items) {
       const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
-      attributeScores.push(perspectiveScore);
+      attributeScoresPromises.push(perspectiveScore);
     }
-    for (var i = 0; i < requestedAttributes.length; i++) {
-      for (var j = 0; j < attributeScores.length; j++) {
-        if (attributeTotals.has(requestedAttributes[i])) {
-          attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-        } else {
-          attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-        }
+  }
+  await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
+    const attributeTotals = getAttributeTotals(resolvedAttributeScores);
+    const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
+    loadChartsApi(attributeAverages);
+    perspectiveToxicityScale(attributeAverages);
+  });
+}
+
+function getAttributeTotals(attributeScores) {
+  const requestedAttributes = getRequestedAttributes();
+  const attributeTotals = new Map();    
+  for (var i = 0; i < requestedAttributes.length; i++) {
+    for (var j = 0; j < attributeScores.length; j++) {
+      if (attributeTotals.has(requestedAttributes[i])) {
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+      } else {
+        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       }
     }
   }
+  return attributeTotals;
+}
+
+function getAttributeAverages(attributeTotals, commentsList) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute,attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
   }
-  loadChartsApi(attributeAverages);
+  return attributeAverages;
 }
 
 /** Returns the user's input */
@@ -219,7 +233,8 @@ async function getTrending(categoryId) {
 function enableTextInput(button) {
   if (button.checked) { 
     document.getElementById('channelIdForAnalysis').value = button.id;
-    document.getElementById('channelIdForAnalysis').disabled = true;   
+    document.getElementById('channelIdForAnalysis').disabled = true;
+    document.getElementById("keywordSearch").disabled = true;
   }
 }
 
@@ -227,6 +242,7 @@ function disableTextInput(button) {
   if (button.checked) { 
     document.getElementById('channelIdForAnalysis').value = "";
     document.getElementById('channelIdForAnalysis').disabled = false;
+    document.getElementById("keywordSearch").disabled = false;   
   }
 }
 
