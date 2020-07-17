@@ -21,6 +21,12 @@ const TokenizerEnum = {
   SENTENCE: /([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g,
 };
 
+const DATAMUSE_ATTRIBUTES = {
+  'Means like': 'ml', 
+  'Synonym': 'syn',
+  'Antonym': 'ant',
+}
+
 const ATTRIBUTES_BY_LANGUAGE = {
   'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
   'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
@@ -67,6 +73,9 @@ async function gatherInput() {
 
 /** Submits the input to Perspective and loads the appropriate output */
 async function handleInput(text, lang, requestedAttributes, tokenizer) {
+	// Remove any previous output
+  document.getElementById('suggestions-input-container').innerHTML = '';
+	document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
   separator.innerHTML = '';
@@ -101,7 +110,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   }
   await Promise.all(promises).then(resolvedResponses => {
     for (i = 0; i < substrings.length; i++) {
-      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i])
+      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i], lang)
     }
   });
 
@@ -110,9 +119,9 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
 }
 
 /** Updates the HTML elements for a substring that will be added to the detailed analysis output */
-function addSubstring(substring, analysisContainer, result, loadingEl, response) {
+function addSubstring(substring, analysisContainer, result, loadingEl, response, lang) {
   // Check for errors and sort the attributes
-  if (typeof(response.error) != 'undefined') {
+  if (typeof(response.attributeScores) === 'undefined') {
     analysisContainer.removeChild(loadingEl);
     analysisContainer.appendChild(createAnyElement('p', 'Perspective API was not able to get scores for detailed analysis'));
     return;
@@ -122,12 +131,164 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response)
 
   // Color the substring appropriately	
   const substringEl = createAnyElement('span', substring);
+  substringEl.onclick = function() { setUpSuggestions(substring, lang); };
   colorSubstring(substringEl, toxicityScore);
      
   // Attach a tooltip (info-box for the substring)
   const tooltipEl = createTooltip(attributes);
   substringEl.appendChild(tooltipEl);
   result.appendChild(substringEl);
+}
+
+/** Sets up the suggestions module */
+function setUpSuggestions(text, lang) { 
+  // Set up the header containing the selected segment
+  const suggestionsContainer = document.getElementById('suggestions-input-container');
+  suggestionsContainer.innerHTML = '';
+  suggestionsContainer.appendChild(createAnyElement('p', text));
+ 
+  // Set up the input box for the substring the user wants suggestions for
+  const inputBox = document.createElement('input');
+  inputBox.className = 'form-control';
+  inputBox.setAttribute('id', 'input-box')
+  inputBox.setAttribute('placeholder', 'Input substring of this segment you woud like suggestions for');
+  suggestionsContainer.appendChild(inputBox);
+ 
+  // Set up radios for word type selection
+  const radiosEl = document.createElement('div');
+  radiosEl.appendChild(createAnyElement('b', 'Select type of word suggestion '));
+  for (let attribute of Object.keys(DATAMUSE_ATTRIBUTES)) {
+    radiosEl.appendChild(createIndividualRadio(attribute + '-radio', 'radio', DATAMUSE_ATTRIBUTES[attribute], 'form-check', attribute, 'datamuse-radios'));
+  }
+  suggestionsContainer.appendChild(radiosEl);
+  document.getElementsByName('datamuse-radios')[0].checked = true;
+ 
+  // Set up disclaimer text
+  const disclaimerEl = createAnyElement('small', 'Suggestions are NOT provided by Perspective API, but instead Datamuse API');
+  disclaimerEl.className = 'form-text text-muted';
+  suggestionsContainer.appendChild(disclaimerEl);
+ 
+  // Set up the submit button
+  const submitButton = document.createElement('button');
+  submitButton.innerHTML = 'Submit';
+  submitButton.className = 'btn btn-primary';
+  submitButton.onclick = function() { getSuggestions(text, lang); };
+  suggestionsContainer.appendChild(submitButton);
+}
+ 
+/** Creates an individual radio */
+function createIndividualRadio(id, type, value, radioClass, text, name) {
+  const inputEl = document.createElement('input');
+  inputEl.setAttribute('id', id);
+  inputEl.setAttribute('type', type);
+  inputEl.setAttribute('value', value);
+  inputEl.setAttribute('name', name);
+  inputEl.className = radioClass + '-input';
+ 
+  const labelEl = createAnyElement('label', text);
+  labelEl.setAttribute('for', id);
+  labelEl.className = radioClass + '-label';
+ 
+  const radioEl = document.createElement('div');
+  radioEl.className = 'form-check form-check-inline';
+  radioEl.appendChild(inputEl);
+  radioEl.appendChild(labelEl);
+  return radioEl;
+}
+ 
+/** Gets the suggestions & their score changes for a subtring based on the Datamuse API */
+async function getSuggestions(text, lang) {
+  // Clear previous results
+  const resultsContainer = document.getElementById('perspective-datamuse-analysis');
+  resultsContainer.innerHTML = '';
+ 
+  // Gather the input
+  const substringForSuggestions = getSuggestionsInput(text);
+  if (!substringForSuggestions) {
+    return;
+  }
+  const wordType = getSuggestionsWordType();
+  
+  // Get the toxicity score of original string 
+  const toxicityScoreOriginal = await getOriginalToxicityScore(text, lang, resultsContainer);
+  if (!toxicityScoreOriginal) {
+    return;
+  }
+  
+  // Get Datamuse API suggestions of substring
+  const suggestions = await callDatamuse(substringForSuggestions, wordType);
+  if (suggestions.length === 0) {
+    resultsContainer.appendChild(createAnyElement('p', 'Datamuse API did not find any words or phrases matching your query'));
+    return;
+  }
+ 
+  printSuggestions(text, substringForSuggestions, suggestions, toxicityScoreOriginal, lang, resultsContainer);
+}
+ 
+/** Prints the modified strings to the page with their Perspective scorings */
+async function printSuggestions(text, substringForSuggestions, suggestions, toxicityScoreOriginal, lang, container) {
+  const promises = [];
+  const newSentences = []
+  for (let i = 0; i < suggestions.length; i++) {
+    const suggestion = suggestions[i].word;
+    const newSentence = text.replace(substringForSuggestions, suggestion);
+    newSentences.push(newSentence);
+    promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
+  }
+  await Promise.all(promises).then(resolvedPromises => {
+    for (let i = 0; i < resolvedPromises.length; i++) {
+      const toxicityScoreSuggestion = resolvedPromises[i].attributeScores.TOXICITY.summaryScore.value;
+      const differenceInScores = toxicityScoreSuggestion - toxicityScoreOriginal;
+      container.appendChild(createAnyElement('p', newSentences[i] + ' -> Change in TOXICITY score: ' +  decimalToPercentage(differenceInScores)));
+    }
+  });
+}
+ 
+/** Gets the original toxicity score of the substring the user selected for suggestions */
+async function getOriginalToxicityScore(text, lang, container) {
+  const perspectiveCallForOriginal = await callPerspective(text, lang, ['TOXICITY']);
+  if (typeof(perspectiveCallForOriginal.attributeScores) === 'undefined') {
+    container.appendChild(createAnyElement('p', 'Perspective API was not able to get scores suggestions'));
+    return;
+  }
+  return perspectiveCallForOriginal.attributeScores.TOXICITY.summaryScore.value;
+}
+ 
+/** Gets the substring that the user wants suggestions on */
+function getSuggestionsInput(text) {
+  const inputBox = document.getElementById('input-box');
+  if (!inputBox) {
+    return;
+  }
+  const substringForSuggestions = inputBox.value;
+  if (text.indexOf(substringForSuggestions) == -1) {
+    alert("Substring must be in the selected segment");
+    return;
+  } else if (substringForSuggestions == '') {
+    alert('Input cannot be empty');
+    return;
+  }
+  return substringForSuggestions;
+}
+ 
+/** Gets the user's selected word type for the suggestions */
+function getSuggestionsWordType() {
+  const radios = document.getElementsByName('datamuse-radios');
+  let wordType; 
+  for (i = 0; i < radios.length; i++) {
+    if (radios[i].checked) {
+      wordType = radios[i].value;
+      break;
+    }
+  }
+  return wordType;
+}
+ 
+/** Gets a max of 5 word replacement suggestion from Datamuse API */
+async function callDatamuse(text, wordType) {
+  words = text.replace(' ', '+');
+  let response = await fetch('https://api.datamuse.com/words?' + wordType + '=' + words + '&max=5');
+  return await response.json();
 }
 
 /** Sorts a Perspective API response's attribute values in descending order */
