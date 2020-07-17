@@ -175,9 +175,9 @@ async function addFormatting(id, numRows, numCols) {
   const myRange = {
     sheetId: 0,
     startRowIndex: 1,
-    endRowIndex: numRows + 1,
+    endRowIndex: numRows,
     startColumnIndex: 1,
-    endColumnIndex: numCols + 1,
+    endColumnIndex: numCols,
   };
   var requests = [{
       addConditionalFormatRule: {
