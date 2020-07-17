@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // API key from the Developer Console
-const API_KEY = 'SHEETS_API_KEY'; // TODO: Create Java servlet to return key
+const API_KEY = 'AIzaSyDMRYIXlcVWOVh-TTvrpVl11KTIw14Mg3c'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs
 const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
@@ -88,48 +88,60 @@ async function getTextFromSheet(spreadsheetId) {
 }
 
 /**
- * Returns all text in a Google Doc with an id of documentId
+ * Create a Google Sheet with toxicityData
  */
-async function getTextFromDoc(documentId) {
-  const response = await gapi.client.docs.documents.get({
-    documentId: documentId
-  });
-  const content = await response.result.body.content;
-  return readStructrualElements(content);
-}
+async function createSheet(toxicityData) {
+  const userDecisionElement = document.getElementById('sheets-output-yes-no');
+  if (userDecisionElement == null || userDecisionElement.value === 'no') {
+    return;
+  }
 
-/** 
-  * Recurses through a list of Structural Elements to read a document's text where text may be in
-  * nested elements.
-  */
-function readStructrualElements(elements) {
-  let stringOutput = '';
-  for (const element of elements) {
-    if (element.paragraph != null) {
-      for (const paragraphElement of element.paragraph.elements) {
-        stringOutput = stringOutput + readParagraphElement(paragraphElement);
-      }
-    } else if (element.table != null) {
-      for (const row of element.table.tableRows) {
-        for (const cell of row.tableCells) {
-          stringOutput = stringOutput + readStructrualElements(cell.content);
-        }
-      }
-    } else if (element.tableOfContents != null) {
-      stringOutput = stringOutput + readStructrualElements(element.tableOfContents.content);
+  let title = 'Perspective Output';
+  const titleElement = document.getElementById('sheets-title');
+  if (titleElement != null) {
+    title = titleElement.value;
+  }
+
+  const response = await gapi.client.sheets.spreadsheets.create({
+    properties: {
+      title: title
     }
-  }
-  return stringOutput;
+  });
+  const id = await response.result.spreadsheetId;
+  await appendDataToSheet(id, toxicityData);
 }
 
-/** 
-  * Reads a document's paragraph element and returns its text
-  */
-function readParagraphElement(paragraphElement) {
-  const run = paragraphElement.textRun;
-  if (run == null || run.content == null) {
-    // The TextRun can be null if there is an inline object.
-    return "";
+/**
+ * Append toxicityData to the Sheet with id spreadsheetId
+ */
+async function appendDataToSheet(spreadsheetId, toxicityData) {
+  const body = { values: [] };
+  for (const attribute of Object.entries(toxicityData.attributeScores)) {
+    body.values.push([attribute[0], attribute[1].summaryScore.value]);
   }
-  return run.content;
+
+  await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId: spreadsheetId,
+    range: 'Sheet1!A1:YY',
+    valueInputOption: 'USER_ENTERED',
+    resource: body
+  });
+}
+
+function updateTitleElement() {
+  const userDecisionElement = document.getElementById('sheets-output-yes-no');
+  if (userDecisionElement == null) {
+    return;
+  } 
+  
+  const sheetsInputElement = document.getElementById('sheets-title-input');
+  if (sheetsInputElement == null) {
+    return;
+  }
+
+  if (userDecisionElement.value === 'no') {
+    sheetsInputElement.style.display = 'none';
+  } else if (userDecisionElement.value === 'yes') {
+    sheetsInputElement.style.display = 'block';
+  }
 }

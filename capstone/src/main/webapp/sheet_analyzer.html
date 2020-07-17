@@ -76,6 +76,21 @@
               <label class="form-check-label" for="noAnalysis">No analysis</label>
             </div>
           </div>
+          <div id="sheets-output">
+            <b>Would you like output written to a Google Sheet?</b>
+            <div class="form-check form-check-inline">
+              <select id="sheets-output-yes-no" class="form-control" onchange="updateTitleElement()">
+                <option value="yes">Yes</option>
+                <option value="no" selected>No</option>
+              </select>
+            </div>
+          </div>
+          <div id="sheets-title-input" style="display: none;">
+            <b>What would you like to title the Sheet?</b>
+            <div class="form-check form-check-inline">
+              <input id="sheets-title" placeholder="Perspective Output"></input>
+            </div>
+          </div>
           <button class="btn btn-primary" id="submit_button" style="display: none;" type="submit">Submit</button>
           <button class="btn btn-secondary" id="authorize_button" style="display: none;">Authorize</button>
           <button class="btn btn-secondary" id="signout_button" style="display: none;">Sign Out</button>
