@@ -60,74 +60,116 @@ async function gatherSheetsInput() {
     }
   }
 
-  const text = await getTextFromSheet(id);
+  
+  // Create spreadsheet if requested
+  const userDecisionElement = document.getElementById('sheets-output-yes-no');
+  if (userDecisionElement != null && userDecisionElement.value === 'yes') {
+    let title = 'Perspective Output';
+    const titleElement = document.getElementById('sheets-title');
+    if (titleElement != null) {
+      title = titleElement.value;
+    }
+
+    const newSheetId = await createSheet(title);
+    const body = await createSheetOutput(id, langElement.value, requestedAttributes);
+    await appendDataToSheet(newSheetId, body);
+  }
+
+  
+
+  // Show general output
+  const sheet = await getSpreadsheet(id);
+  const text = await getTextFromSheet(sheet);
   handleInput(text, langElement.value, requestedAttributes, delimiter);
 }
 
 /**
- * Returns all text in a Google Sheet with an id of spreadsheetId
+ * Returns a user's spreadsheet with an id of id
  */
-async function getTextFromSheet(spreadsheetId) {
+async function getSpreadsheet(id) {
   const response = await gapi.client.sheets.spreadsheets.values.get({
-    spreadsheetId: spreadsheetId,
+    spreadsheetId: id,
     range: 'Sheet1!A1:YY',
   });
-  const range = await response.result;
-  if (range.values.length > 0) {
+  return await response.result;
+}
+
+/**
+ * Returns all text in a Google Sheet
+ */
+function getTextFromSheet(sheet) {
+  if (sheet.values.length > 0) {
     let text = '';
-    for (i = 0; i < range.values.length; i++) {
-      let row = range.values[i];
+    for (i = 0; i < sheet.values.length; i++) {
+      let row = sheet.values[i];
       for (j = 0; j < row.length; j++) {
         text = text + row[j] + '\n';
       }
     }
     return text;
-  } else {
-    return 'No data found.';
   }
+  return 'No data found.';
 }
 
 /**
- * Create a Google Sheet with toxicityData
+ * Create a Google Sheet with a title of title and return its id
  */
-async function createSheet(toxicityData) {
-  const userDecisionElement = document.getElementById('sheets-output-yes-no');
-  if (userDecisionElement == null || userDecisionElement.value === 'no') {
-    return;
-  }
-
-  let title = 'Perspective Output';
-  const titleElement = document.getElementById('sheets-title');
-  if (titleElement != null) {
-    title = titleElement.value;
-  }
-
+async function createSheet(title) {
   const response = await gapi.client.sheets.spreadsheets.create({
     properties: {
       title: title
     }
   });
-  const id = await response.result.spreadsheetId;
-  await appendDataToSheet(id, toxicityData);
+  return await response.result.spreadsheetId;
 }
 
 /**
- * Append toxicityData to the Sheet with id spreadsheetId
+ * Return a JSON that contains row-by-row Perspective analysis for
+ * every cell in a Google Sheet
  */
-async function appendDataToSheet(spreadsheetId, toxicityData) {
-  const body = { values: [] };
-  for (const attribute of Object.entries(toxicityData.attributeScores)) {
-    body.values.push([attribute[0], attribute[1].summaryScore.value]);
-  }
+async function createSheetOutput(id, lang, requestedAttributes) {
+  const sheet = await getSpreadsheet(id);
 
+  if (sheet.values.length > 0) {
+    // Create a key as the top row
+    let body = [Array.from(requestedAttributes).sort()];
+    body[0].unshift('Comment');
+
+    let index = 0; // Track where we are as we add rows to body
+    for (i = 0; i < sheet.values.length; i++) {
+      let row = sheet.values[i];
+      for (j = 0; j < row.length; j++) {
+        const toxicityData = await callPerspective(row[j], lang, requestedAttributes);
+        // Create a new row with the comment and Perspective scores
+        if (toxicityData.attributeScores) {
+          body.push([row[j]]);
+          index++;
+          for (const attribute of Object.entries(toxicityData.attributeScores).sort()) {
+            body[index].push(attribute[1].summaryScore.value);
+          }
+        }
+      }
+    }
+    return body;
+  }
+  return 'No data found.';
+}
+
+/**
+ * Append body to the Sheet with id spreadsheetId
+ */
+async function appendDataToSheet(spreadsheetId, body) {
   await gapi.client.sheets.spreadsheets.values.append({
     spreadsheetId: spreadsheetId,
     range: 'Sheet1!A1:YY',
     valueInputOption: 'USER_ENTERED',
-    resource: body
+    resource: { values: body }
   });
 }
 
+/**
+ * Display or hide the Sheets title input element
+ */
 function updateTitleElement() {
   const userDecisionElement = document.getElementById('sheets-output-yes-no');
   if (userDecisionElement == null) {
