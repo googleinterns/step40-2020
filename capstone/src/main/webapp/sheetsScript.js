@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // API key from the Developer Console
-const API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
+const API_KEY = 'SHEETS_API_KEY'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs
 const DISCOVERY_DOCS = ['https://sheets.googleapis.com/$discovery/rest?version=v4'];
