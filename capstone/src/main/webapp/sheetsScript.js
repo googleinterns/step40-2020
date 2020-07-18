@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // API key from the Developer Console
-const API_KEY = 'AIzaSyDMRYIXlcVWOVh-TTvrpVl11KTIw14Mg3c'; // TODO: Create Java servlet to return key
+const API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs
 const DISCOVERY_DOCS = ['https://sheets.googleapis.com/$discovery/rest?version=v4'];
@@ -61,9 +61,14 @@ async function gatherSheetsInput() {
   }
 
   // Show general output
-  const sheet = await getSpreadsheet(id);
-  const text = await getTextFromSheet(sheet);
-  handleInput(text, langElement.value, requestedAttributes, delimiter);
+  const sheetNames = await getSheetNames(id);
+  let totalText = '';
+  for (const name of sheetNames) {
+    const sheet = await getSpreadsheet(id, name);
+    const text = await getTextFromSheet(sheet);
+    totalText += text + '\n';
+  }
+  handleInput(totalText, langElement.value, requestedAttributes, delimiter);
 
   // Create spreadsheet if requested
   const userDecisionElement = document.getElementById('sheets-output-yes-no');
@@ -75,21 +80,58 @@ async function gatherSheetsInput() {
     }
 
     const newSheetId = await createSheet(title);
-    const body = await createSheetOutput(id, langElement.value, requestedAttributes);
-    await appendDataToSheet(newSheetId, body);
-    const numRows = body.length;
-    const numCols = body[0].length;
-    await addFormatting(newSheetId, numRows, numCols);
+    await preprocessSheet(newSheetId, sheetNames);
+
+    for (let i = 0; i < sheetNames.length; i++) {
+      const body = await createSheetOutput(id, sheetNames[i], langElement.value, requestedAttributes);
+      await appendDataToSheet(newSheetId, sheetNames[i], body);
+      const numRows = body.length;
+      const numCols = body[0].length;
+      const sheetId = await getSheetId(newSheetId, sheetNames[i]);
+      await addFormatting(newSheetId, sheetId, numRows, numCols);
+    } 
   }
 }
 
 /**
- * Returns a user's spreadsheet with an id of id
+ * Returns the name(s) of every sheet in the Google Sheet with an id of id
  */
-async function getSpreadsheet(id) {
+async function getSheetNames(id) {
+  const response = await gapi.client.sheets.spreadsheets.get({
+    spreadsheetId: id,
+  });
+  const sheets = await response.result.sheets;
+  const sheetNames = [];
+  for (const sheet of sheets) {
+    sheetNames.push(sheet.properties.title);
+  }
+  return sheetNames;
+}
+
+/**
+ * Returns the id of a sheet in the Google Sheet
+ * with corresponding spreadsheet id and name
+ * and returns 0 if not found
+ */
+async function getSheetId(id, name) {
+  const response = await gapi.client.sheets.spreadsheets.get({
+    spreadsheetId: id,
+  });
+  const sheets = await response.result.sheets;
+  for (const sheet of sheets) {
+    if (sheet.properties.title === name)
+    return sheet.properties.sheetId;
+  }
+  return 0;
+}
+
+/**
+ * Returns a user's spreadsheet with the id and name specified
+ */
+async function getSpreadsheet(id, name) {
   const response = await gapi.client.sheets.spreadsheets.values.get({
     spreadsheetId: id,
-    range: 'Sheet1!A1:YY',
+    range: name + '!A1:YY',
   });
   return await response.result;
 }
@@ -124,32 +166,59 @@ async function createSheet(title) {
 }
 
 /**
+ * Make the new spreadsheet contain the same sheet names
+ * as the one being analyzed
+ */
+async function preprocessSheet(id, sheetNames) {
+  var requests = [];
+
+  for (const name of sheetNames) {
+    requests.push({ addSheet: { properties: { title: name }}});
+  }
+
+  requests.push({ deleteSheet: { sheetId: 0 }});
+
+  await gapi.client.sheets.spreadsheets.batchUpdate({
+    spreadsheetId: id,
+    resource: { requests }
+  });
+}
+
+/**
  * Return a JSON that contains row-by-row Perspective analysis for
  * every cell in a Google Sheet
  */
-async function createSheetOutput(id, lang, requestedAttributes) {
-  const sheet = await getSpreadsheet(id);
+async function createSheetOutput(id, name, lang, requestedAttributes) {
+  const sheet = await getSpreadsheet(id, name);
 
   if (sheet.values.length > 0) {
     // Create a key as the top row
     let body = [Array.from(requestedAttributes).sort()];
     body[0].unshift('Comment');
 
-    let index = 0; // Track where we are as we add rows to body
+    // Create Perspective calls
+    const promises = [];
     for (i = 0; i < sheet.values.length; i++) {
       let row = sheet.values[i];
       for (j = 0; j < row.length; j++) {
-        const toxicityData = await callPerspective(row[j], lang, requestedAttributes);
-        // Create a new row with the comment and Perspective scores
-        if (toxicityData.attributeScores) {
+        if (row[j] != '') {
+          promises.push(callPerspective(row[j], lang, requestedAttributes));
           body.push([row[j]]);
-          index++;
-          for (const attribute of Object.entries(toxicityData.attributeScores).sort()) {
-            body[index].push(attribute[1].summaryScore.value);
-          }
         }
       }
     }
+
+    // Evaluate Perspective calls
+    const resolvedResponses = await Promise.all(promises);
+    for (index = 0; index < promises.length; index++) {
+      if (resolvedResponses[index].attributeScores) {
+        // Create a new row with the comment and Perspective scores
+        for (const attribute of Object.entries(resolvedResponses[index].attributeScores).sort()) {
+          body[index + 1].push(attribute[1].summaryScore.value);
+        }
+      }
+    }
+
     return body;
   }
   return 'No data found.';
@@ -158,10 +227,10 @@ async function createSheetOutput(id, lang, requestedAttributes) {
 /**
  * Append body to the Sheet with an id of id
  */
-async function appendDataToSheet(id, body) {
+async function appendDataToSheet(id, name, body) {
   await gapi.client.sheets.spreadsheets.values.append({
     spreadsheetId: id,
-    range: 'Sheet1!A1:YY',
+    range: name + '!A1:YY',
     valueInputOption: 'USER_ENTERED',
     resource: { values: body }
   });
@@ -169,14 +238,14 @@ async function appendDataToSheet(id, body) {
 
 /**
  * Color code number values within the row and column range
- * in the Sheet with an id of id
+ * in the Sheet with corresponding spreadsheetId and sheetId
  */
-async function addFormatting(id, numRows, numCols) {
+async function addFormatting(spreadsheetId, sheetId, numRows, numCols) {
   const myRange = {
-    sheetId: 0,
-    startRowIndex: 1,
+    sheetId: sheetId,
+    startRowIndex: 0,
     endRowIndex: numRows,
-    startColumnIndex: 1,
+    startColumnIndex: 0,
     endColumnIndex: numCols,
   };
   var requests = [{
@@ -193,7 +262,7 @@ async function addFormatting(id, numRows, numCols) {
       }}];
 
   await gapi.client.sheets.spreadsheets.batchUpdate({
-    spreadsheetId: id,
+    spreadsheetId: spreadsheetId,
     resource: { requests }
   });
 }
