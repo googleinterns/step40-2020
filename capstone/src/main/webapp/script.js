@@ -18,7 +18,7 @@
  */
 const TokenizerEnum = {
   WORD: /\S+\s*/g, 
-  SENTENCE: /([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g,
+  SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
 const DATAMUSE_ATTRIBUTES = {
@@ -423,7 +423,7 @@ function loadChartsApi(toxicityData) {
 }
 
 /** Draws a Google BarChart for Datamuse replacement analysis. */
-function drawDatamuseChart(responses, substringForreplacements, toxicityOfOriginal, replacements) {
+function drawDatamuseChart(responses, substringForReplacements, toxicityOfOriginal, replacements) {
   const chartContainer = document.getElementById('perspective-datamuse-chart');
   chartContainer.innerHTML = '';
   const loadingEl = document.createElement('div');
@@ -446,7 +446,7 @@ function drawDatamuseChart(responses, substringForreplacements, toxicityOfOrigin
   data.sort({column: 1, desc: false});
 
   const options = {
-    title: 'Perpsective TOXICITY Score When "' + substringForreplacements + '" is Replaced With...',
+    title: 'Perpsective TOXICITY Score When "' + substringForReplacements + '" is Replaced With...',
     bars: 'horizontal',
     height: 300,
     legend: {position: "none"},
