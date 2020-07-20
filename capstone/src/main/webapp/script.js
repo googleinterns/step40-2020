@@ -148,13 +148,24 @@ function setUpReplacements(text, lang) {
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
 
-  // Set up the header containing the selected segment
+  // Set up the header containing the selected segment & disclaimer 
   const replacementsContainer = document.getElementById('replacements-input-container');
   replacementsContainer.innerHTML = '';
+  const aboutContainer = document.createElement('div');
+  aboutContainer.setAttribute('style', 'background-color:#F5F5F5');
+  const paragraph = 'This tool is only meant to test Perspective API\'s scores'
+    + ' and to see how they can change. The replacement words or phrases are' 
+    + ' not meant to be taken as suggestions. Do not use them as a means to '
+    + 'mask any toxicity. When a score lowers, it is not an indication that '
+    + 'the text is necessrily less toxic. The replacements are obtained '
+    + 'through a word-finding API, Datamuse. The models Perspective uses do '
+    + 'have bias, and uncommon words might have inaccurate scores. ';
+  aboutContainer.appendChild(createAnyElement('p', paragraph));
   replacementsContainer.appendChild(document.createElement('hr'));
   replacementsContainer.appendChild(createAnyElement('b', 'Perspective Testing Tool'));
+  replacementsContainer.appendChild(aboutContainer);
   replacementsContainer.appendChild(createAnyElement('p', text));
- 
+
   // Set up the input box for the substring the user wants replacements for
   const inputBox = document.createElement('input');
   inputBox.className = 'form-control';
@@ -170,12 +181,7 @@ function setUpReplacements(text, lang) {
   }
   replacementsContainer.appendChild(radiosEl);
   document.getElementsByName('datamuse-radios')[0].checked = true;
- 
-  // Set up disclaimer text
-  const disclaimerEl = createAnyElement('small', 'Replacements are provided by Datamuse API, NOT Perspective API. Use this tool only for exploration of score changes.');
-  disclaimerEl.className = 'form-text text-muted';
-  replacementsContainer.appendChild(disclaimerEl);
- 
+
   // Set up the submit button
   const submitButton = document.createElement('button');
   submitButton.innerHTML = 'Submit';
