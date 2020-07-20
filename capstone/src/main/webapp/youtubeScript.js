@@ -28,7 +28,6 @@ const YOUTUBE_CATEGORIES = {
   'Entertainment': 24,
   'Film&Animation': 1,
   'Gaming': 20,
-  'How-to&Style' : 26,
   'Music': 10,
   'Pets&Animals': 15,
   'Science&Technology': 28,
@@ -49,11 +48,12 @@ async function callYoutube() {
     return;
   }
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
-  var response;
+  let response;
+  let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    const response = await fetch('/youtube_servlet?channelId=' + channelId);
-    const responseJson = await response.json();
-    if (response.hasOwnProperty('error')) {
+    response = await fetch('/youtube_servlet?channelId=' + channelId);
+    responseJson = await response.json();
+    if (responseJson.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
       inputCommentsToPerspective([]);
       return;
@@ -69,8 +69,8 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    const response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
-    const responseJson = await response.json();
+    response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
+    responseJson = await response.json();
   }
   inputCommentsToPerspective([responseJson]);
 }
@@ -223,13 +223,15 @@ async function getTrending(categoryId) {
     const videoId = trendingResponseJson.items[item].id;
     trendingVideoIds.push(videoId);
   }
-  const commentsList = [];
+  const commentsListPromises = [];
   for (const id in trendingVideoIds) {
     const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
     const videoCommentListJson = await videoCommentList.json();
-    commentsList.push(videoCommentListJson);
+    commentsListPromises.push(videoCommentListJson);
   }
-  inputCommentsToPerspective(commentsList);
+  await Promise.all(commentsListPromises).then(resolvedCommentsList => {
+    inputCommentsToPerspective(resolvedCommentsList);
+  });
 }
 
 function enableTextInput(button) {
@@ -292,17 +294,17 @@ function showCategories() {
 /** Converts perspective results to knoop scale then to mohs*/
 function perspectiveToxicityScale(attributeAverages) {
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
-  var totalToxicityScore = 0;
+  let totalToxicityScore = 0;
   for (const [attribute, attributeAverage] of attributeAverages) {
     totalToxicityScore += attributeAverage;
   }
   const inputLength = attributeAverages.size;
   const averageToxicityScore = totalToxicityScore / inputLength;
   const knoopScore = averageToxicityScore * 7000;
-  var knoopLow;
-  var knoopHigh;
-  var mohs;
-  for (var i = 0; i < knoopScale.length; i++) {
+  let knoopLow;
+  let knoopHigh;
+  let mohs;
+  for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
       if(knoopScore < 1) {
         knoopLow = 0;
@@ -327,18 +329,20 @@ async function getKeywordSearchResults() {
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
-  var videoIds = [];
+  let videoIds = [];
   for (const item in responseJson.items) {
     if(responseJson.items[item].id.videoId != undefined){
       videoIds.push(responseJson.items[item].id.videoId);
     }
   }   
-  const commentsList = [];
+  const commentsListPromises = [];
   for (const id in videoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoID=' + videoIds[id]);
+    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIds[id]);
     videoCommentListJson = await videoCommentList.json();
-    commentsList.push(videoCommentListJson);
+    commentsListPromises.push(videoCommentListJson);
   }
-  inputCommentsToPerspective(commentsList);
+  await Promise.all(commentsListPromises).then(resolvedCommentsList => {
+    inputCommentsToPerspective(resolvedCommentsList);
+  });
   document.getElementById('search-type').innerHTML = "Keyword Search";
 }
