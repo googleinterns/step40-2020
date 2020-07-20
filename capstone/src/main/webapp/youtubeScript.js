@@ -49,8 +49,8 @@ async function callYoutube() {
     return;
   }
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
-  var response;
-  var responseJson;
+  let response;
+  let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId);
     responseJson = await response.json();
@@ -208,11 +208,7 @@ function showAvailableAttributes() {
 
 /** Checks if a character is a letter */
 function isLetter(character) {
-  if ((character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122)) {
-    return true;
-  } else {
-    return false;
-  }
+  return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
 async function getTrending(categoryId) {
@@ -290,17 +286,17 @@ function showCategories() {
 /** Converts perspective results to knoop scale then to mohs*/
 function perspectiveToxicityScale(attributeAverages) {
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
-  var totalToxicityScore = 0;
+  let totalToxicityScore = 0;
   for (const [attribute, attributeAverage] of attributeAverages) {
     totalToxicityScore += attributeAverage;
   }
   const inputLength = attributeAverages.size;
   const averageToxicityScore = totalToxicityScore / inputLength;
   const knoopScore = averageToxicityScore * 7000;
-  var knoopLow;
-  var knoopHigh;
-  var mohs;
-  for (var i = 0; i < knoopScale.length; i++) {
+  let knoopLow;
+  let knoopHigh;
+  let mohs;
+  for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
       if(knoopScore < 1) {
         knoopLow = 0;
