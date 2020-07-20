@@ -64,6 +64,7 @@ async function callYoutube() {
     const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
+      alert("Username Not found, Please Input Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
