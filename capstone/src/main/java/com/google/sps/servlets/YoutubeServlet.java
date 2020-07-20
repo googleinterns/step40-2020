@@ -34,7 +34,7 @@ import java.util.Arrays;
 /** Servlet that returns youtube api data. */
 @WebServlet("/youtube_servlet")
 public class YoutubeServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies&allThreadsRelatedToChannelId=";
+  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies&allThreadsRelatedToChannelId=";
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -43,8 +43,8 @@ public class YoutubeServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String channelId = request.getParameter("channelId");
-    String url = URL + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
-    String output = get(url);
+    String completeUrl = BASE_URL + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
+    String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }

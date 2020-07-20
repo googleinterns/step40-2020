@@ -27,7 +27,7 @@ async function callYoutube() {
   if (!channelId) {
     return;
   }
-  var response;
+  let response;
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId);
@@ -79,8 +79,8 @@ async function inputCommentsToPerspective(comments) {
 function getAttributeAverages(attributeScores, amountOfComments) {
   const requestedAttributes = getRequestedAttributes();
   const attributeTotals = new Map();
-  for (var i = 0; i < requestedAttributes.length; i++) {
-    for (var j = 0; j < attributeScores.length; j++) {
+  for (let i = 0; i < requestedAttributes.length; i++) {
+    for (let j = 0; j < attributeScores.length; j++) {
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       } else {
