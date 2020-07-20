@@ -21,6 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
+/** Category names are mapped to youtube category numbers */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -36,7 +37,7 @@ const YOUTUBE_CATEGORIES = {
 
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
-  document.getElementById('search-type').innerHTML = ""
+  document.getElementById('search-type').innerHTML = "";
   const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
     return;
@@ -50,7 +51,7 @@ async function callYoutube() {
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   var response;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    const response = await fetch('/youtube_servlet?channelId=' + channelId,)
+    const response = await fetch('/youtube_servlet?channelId=' + channelId);
     const responseJson = await response.json();
     if (response.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
@@ -59,7 +60,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
+    const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
@@ -68,7 +69,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    const response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
+    const response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
     const responseJson = await response.json();
   }
   inputCommentsToPerspective([responseJson]);
@@ -101,11 +102,12 @@ async function inputCommentsToPerspective(commentsList) {
   });
 }
 
+/** Returns a map of attribute score sums from an array of JSON's */
 function getAttributeTotals(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
   const attributeTotals = new Map();    
-  for (var i = 0; i < requestedAttributes.length; i++) {
-    for (var j = 0; j < attributeScores.length; j++) {
+  for (let i = 0; i < requestedAttributes.length; i++) {
+    for (let j = 0; j < attributeScores.length; j++) {
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       } else {
@@ -200,7 +202,7 @@ function showAvailableAttributes() {
     label.appendChild(document.createTextNode(attribute));
     avaiableAttributesElement.appendChild(checkbox);
     avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode (" "));
+    avaiableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
 
@@ -208,13 +210,12 @@ function showAvailableAttributes() {
 function isLetter(character) {
   if ((character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122)) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
 async function getTrending(categoryId) {
-  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
+  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
@@ -223,7 +224,7 @@ async function getTrending(categoryId) {
   }
   const commentsList = []
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoID=' + trendingVideoIds[id],)
+    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
     const videoCommentListJson = await videoCommentList.json();
     commentsList.push(videoCommentListJson);
   }
@@ -262,11 +263,11 @@ function showCategories() {
   radiobox.onclick = function() {
     disableTextInput(this);   
   }
-  const container = document.getElementById('category-container');
-  container.appendChild(radiobox);
-  container.appendChild(label);
-  container.appendChild(document.createTextNode (" "));
-  container.appendChild(document.createElement("br"));
+  const categoryContainer = document.getElementById('category-container');
+  categoryContainer.appendChild(radiobox);
+  categoryContainer.appendChild(label);
+  categoryContainer.appendChild(document.createTextNode(" "));
+  categoryContainer.appendChild(document.createElement("br"));
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
@@ -280,16 +281,16 @@ function showCategories() {
     radiobox.onclick = function() {
       enableTextInput(this);   
     }
-    const container = document.getElementById('category-container');
-    container.appendChild(radiobox);
-    container.appendChild(label);
-    container.appendChild(document.createTextNode (" "));
+    const categoryContainer = document.getElementById('category-container');
+    categoryContainer.appendChild(radiobox);
+    categoryContainer.appendChild(label);
+    categoryContainer.appendChild(document.createTextNode(" "));
   }
 }
 
 async function getKeywordSearchResults() {
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
-  const response = await fetch('/searchh_servlet?searchTerm=' + searchTerm,)
+  const response = await fetch('/searchh_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
   var videoIds = [];
   for (const item in responseJson.items) {
@@ -299,7 +300,7 @@ async function getKeywordSearchResults() {
   }   
   const commentsList = [];
   for (const id in videoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoID=' + videoIds[id],)
+    videoCommentList = await fetch('/youtube_servlet?videoID=' + videoIds[id]);
     videoCommentListJson = await videoCommentList.json();
     commentsList.push(videoCommentListJson);
   }
