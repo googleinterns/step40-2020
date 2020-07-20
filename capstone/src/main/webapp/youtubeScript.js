@@ -49,8 +49,8 @@ async function callYoutube() {
     return;
   }
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
-  var response;
-  var responseJson;
+  let response;
+  let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId,)
     responseJson = await response.json();
@@ -105,8 +105,8 @@ async function inputCommentsToPerspective(commentsList) {
 function getAttributeTotals(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
   const attributeTotals = new Map();    
-  for (var i = 0; i < requestedAttributes.length; i++) {
-    for (var j = 0; j < attributeScores.length; j++) {
+  for (let i = 0; i < requestedAttributes.length; i++) {
+    for (let j = 0; j < attributeScores.length; j++) {
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       } else {
