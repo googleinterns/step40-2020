@@ -55,6 +55,7 @@ async function callYoutube() {
     response = await fetch('/youtube_servlet?channelId=' + channelId);
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
+      alert("Invalid Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
@@ -117,7 +118,7 @@ function getAttributeTotals(attributeScores) {
   return attributeTotals;
 }
 
-/** returns a map of attribute score averages from a map and an array */
+/** Returns a map of attribute score averages from a map and an array */
 function getAttributeAverages(attributeTotals, commentsList) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
