@@ -118,6 +118,7 @@ function getAttributeTotals(attributeScores) {
   return attributeTotals;
 }
 
+/** Returns a map of attribute score averages from a map and an array */
 function getAttributeAverages(attributeTotals, commentsList) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
@@ -222,7 +223,7 @@ async function getTrending(categoryId) {
     const videoId = trendingResponseJson.items[item].id;
     trendingVideoIds.push(videoId);
   }
-  const commentsList = []
+  const commentsList = [];
   for (const id in trendingVideoIds) {
     const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
     const videoCommentListJson = await videoCommentList.json();
