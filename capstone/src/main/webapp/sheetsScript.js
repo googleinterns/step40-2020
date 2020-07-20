@@ -63,10 +63,11 @@ async function gatherSheetsInput() {
   }
 
   // Show general output
-  const sheetNames = await getSheetNames(id);
+  let sheetNames = await getSheetNames(id);
   let totalText = '';
+  let range = '!A1:YY';
   for (const name of sheetNames) {
-    const sheet = await getSpreadsheet(id, name);
+    const sheet = await getSpreadsheet(id, name, range);
     const text = await getTextFromSheet(sheet);
     totalText += text + '\n';
   }
@@ -82,16 +83,36 @@ async function gatherSheetsInput() {
     }
 
     const newSheetId = await createSheet(title);
-    await preprocessSheet(newSheetId, sheetNames);
+
+    // Check if user has entered a custom range
+    const userRangeElement = document.getElementById('sheets-range-yes-no');
+    if (userRangeElement != null && userRangeElement.value === 'yes') {
+      // Check if this is a valid Sheets range
+      const rangeElement = document.getElementById('sheets-range');
+      if (rangeElement != null) {
+        const rangeRegEx = rangeElement.value.match(/(.+)(![\w]*[\d]*(:[\w]*[\d]*)?)/);
+        if (rangeRegEx != null) {
+          sheetNames = [rangeRegEx[1]];
+          range = rangeRegEx[2];
+        } else {
+          alert('Please input a range in a valid format.');
+        }
+      }
+    }
+
+    // Make the new spreadsheet mirror sheet names of the input
+    if (sheetNames[0] != 'Sheet1') {
+      await preprocessSheet(newSheetId, sheetNames);
+    }
 
     for (let i = 0; i < sheetNames.length; i++) {
-      const body = await createSheetOutput(id, sheetNames[i], langElement.value, requestedAttributes);
+      const body = await createSheetOutput(id, sheetNames[i], range, langElement.value, requestedAttributes);
       await appendDataToSheet(newSheetId, sheetNames[i], body);
       const numRows = body.length;
       const numCols = body[0].length;
       const sheetId = await getSheetId(newSheetId, sheetNames[i]);
       await addFormatting(newSheetId, sheetId, numRows, numCols);
-    } 
+    }
   }
 }
 
@@ -130,10 +151,10 @@ async function getSheetId(id, name) {
 /**
  * Returns a user's spreadsheet with the id and name specified
  */
-async function getSpreadsheet(id, name) {
+async function getSpreadsheet(id, name, range) {
   const response = await gapi.client.sheets.spreadsheets.values.get({
     spreadsheetId: id,
-    range: name + '!A1:YY',
+    range: name + range,
   });
   return await response.result;
 }
@@ -190,8 +211,8 @@ async function preprocessSheet(id, sheetNames) {
  * Return a JSON that contains row-by-row Perspective analysis for
  * every cell in a Google Sheet
  */
-async function createSheetOutput(id, name, lang, requestedAttributes) {
-  const sheet = await getSpreadsheet(id, name);
+async function createSheetOutput(id, name, range, lang, requestedAttributes) {
+  const sheet = await getSpreadsheet(id, name, range);
 
   if (sheet.values.length > 0) {
     // Create a key as the top row
@@ -287,5 +308,26 @@ function updateTitleElement() {
     sheetsInputElement.style.display = 'none';
   } else if (userDecisionElement.value === 'yes') {
     sheetsInputElement.style.display = 'block';
+  }
+}
+
+/**
+ * Display or hide the Sheets range input element
+ */
+function updateRangeElement() {
+  const userDecisionElement = document.getElementById('sheets-range-yes-no');
+  if (userDecisionElement == null) {
+    return;
+  } 
+  
+  const sheetsRangeElement = document.getElementById('sheets-range-input');
+  if (sheetsRangeElement == null) {
+    return;
+  }
+
+  if (userDecisionElement.value === 'no') {
+    sheetsRangeElement.style.display = 'none';
+  } else if (userDecisionElement.value === 'yes') {
+    sheetsRangeElement.style.display = 'block';
   }
 }
