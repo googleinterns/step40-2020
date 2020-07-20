@@ -60,7 +60,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId);
+    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
@@ -289,6 +289,40 @@ function showCategories() {
   }
 }
 
+/** Converts perspective results to knoop scale then to mohs*/
+function perspectiveToxicityScale(attributeAverages) {
+  const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
+  var totalToxicityScore = 0;
+  for (const [attribute, attributeAverage] of attributeAverages) {
+    totalToxicityScore += attributeAverage;
+  }
+  const inputLength = attributeAverages.size;
+  const averageToxicityScore = totalToxicityScore / inputLength;
+  const knoopScore = averageToxicityScore * 7000;
+  var knoopLow;
+  var knoopHigh;
+  var mohs;
+  for (var i = 0; i < knoopScale.length; i++) {
+    if (knoopScore < knoopScale[i]) {
+      if(knoopScore < 1) {
+        knoopLow = 0;
+      } else {
+        knoopLow = knoopScale[i-1];
+      }
+      knoopHigh = knoopScale[i];
+      mohsScore = i;  
+      break;
+    }
+  }
+  const knoopRange = knoopHigh - knoopLow;
+  const amountMoreThanKnoop = knoopScore - knoopLow;
+  const mohsDecimal = amountMoreThanKnoop / knoopRange;
+  const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+}
+
+/** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
   const response = await fetch('/searchh_servlet?searchTerm=' + searchTerm);

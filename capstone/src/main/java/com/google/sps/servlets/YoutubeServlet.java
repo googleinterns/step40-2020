@@ -45,7 +45,7 @@ public class YoutubeServlet extends HttpServlet {
     String channelId = request.getParameter("channelId");
     String videoId = request.getParameter("videoId");
     String url;
-    if (ChannelId!=null) {
+    if (ChannelId != null) {
       url = URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
     } else {
       url = URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
