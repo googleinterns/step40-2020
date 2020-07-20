@@ -325,7 +325,7 @@ function perspectiveToxicityScale(attributeAverages) {
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
-  const response = await fetch('/searchh_servlet?searchTerm=' + searchTerm);
+  const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
   var videoIds = [];
   for (const item in responseJson.items) {

@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /** Servlet that returns youtube api data. */
-@WebServlet("/searchh_servlet")
-public class search extends HttpServlet {
+@WebServlet("/keyword_search_servlet")
+public class YoutubeKeywordServlet extends HttpServlet {
   private static final String URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "5";
