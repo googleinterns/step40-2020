@@ -52,7 +52,7 @@ async function callYoutube() {
   var response;
   var responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId,)
+    response = await fetch('/youtube_servlet?channelId=' + channelId);
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
       inputCommentsToPerspective([]);
@@ -60,7 +60,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId,)
+    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       inputCommentsToPerspective([]);
@@ -68,7 +68,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
+    response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
     responseJson = await response.json();
   }
   inputCommentsToPerspective([responseJson]);
@@ -101,12 +101,12 @@ async function inputCommentsToPerspective(commentsList) {
   });
 }
 
-/** returns a map of attribute score sums from an array of JSON's */
+/** Returns a map of attribute score sums from an array of JSON's */
 function getAttributeTotals(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
   const attributeTotals = new Map();    
-  for (var i = 0; i < requestedAttributes.length; i++) {
-    for (var j = 0; j < attributeScores.length; j++) {
+  for (let i = 0; i < requestedAttributes.length; i++) {
+    for (let j = 0; j < attributeScores.length; j++) {
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       } else {
@@ -202,7 +202,7 @@ function showAvailableAttributes() {
     label.appendChild(document.createTextNode(attribute));
     avaiableAttributesElement.appendChild(checkbox);
     avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode (" "));
+    avaiableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
 
@@ -216,7 +216,7 @@ function isLetter(character) {
 }
 
 async function getTrending(categoryId) {
-  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
+  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
@@ -225,7 +225,7 @@ async function getTrending(categoryId) {
   }
   const commentsList = [];
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoID=' + trendingVideoIds[id],)
+    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
     const videoCommentListJson = await videoCommentList.json();
     commentsList.push(videoCommentListJson);
   }
@@ -265,7 +265,7 @@ function showCategories() {
   const categoryContainer = document.getElementById('category-container');
   categoryContainer.appendChild(radiobox);
   categoryContainer.appendChild(label);
-  categoryContainer.appendChild(document.createTextNode (" "));
+  categoryContainer.appendChild(document.createTextNode(" "));
   categoryContainer.appendChild(document.createElement("br"));
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
@@ -283,7 +283,7 @@ function showCategories() {
     const categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
     categoryContainer.appendChild(label);
-    categoryContainer.appendChild(document.createTextNode (" "));
+    categoryContainer.appendChild(document.createTextNode(" "));
   }
 }
 
