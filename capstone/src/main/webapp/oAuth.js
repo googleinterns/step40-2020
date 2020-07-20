@@ -15,9 +15,9 @@
 // Client ID from the Developer Console 
 const CLIENT_ID = 'CLIENT_ID';
 
-let authorizeButton = document.getElementById('authorize_button');
-let signoutButton = document.getElementById('signout_button');
-let submitButton = document.getElementById('submit_button');
+const authorizeButton = document.getElementById('authorize_button');
+const signoutButton = document.getElementById('signout_button');
+const submitButton = document.getElementById('submit_button');
 
 /**
   *  On load, called to load the auth2 library and API client library.
@@ -54,9 +54,9 @@ function initClient() {
   *  appropriately. After a sign-in, the API is called.
   */
 async function updateSigninStatus(isSignedIn) {
-  authorizeButton = document.getElementById('authorize_button');
-  signoutButton = document.getElementById('signout_button');
-  submitButton = document.getElementById('submit_button');
+  // authorizeButton = document.getElementById('authorize_button');
+  // signoutButton = document.getElementById('signout_button');
+  // submitButton = document.getElementById('submit_button');
   if (isSignedIn) {
     authorizeButton.style.display = 'none';
     signoutButton.style.display = 'block';

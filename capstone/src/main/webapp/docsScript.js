@@ -30,6 +30,8 @@ async function gatherDocsInput() {
     return;
   }
   let id = idElement.value;
+
+  // Search for a URL in the format ".../d/DOC_ID/..."
   const search = idElement.value.match(/\/d\/([\w-]+)/);
   if (search != null) {
     id = search[1]; // Shorten full URL to just the ID
@@ -64,6 +66,9 @@ async function gatherDocsInput() {
   handleInput(text, langElement.value, requestedAttributes, delimiter);
 }
 
+/**
+ * Returns all text contained within the Google Doc with corresponsing documentId
+ */
 async function getTextFromDoc(documentId) {
   const response = await gapi.client.docs.documents.get({
     documentId: documentId
@@ -74,8 +79,8 @@ async function getTextFromDoc(documentId) {
 
 
 /** 
-  * Recurses through a list of Structural Elements to read a document's text where text may be in
-  * nested elements.
+  * Recurses through a list of Structural Elements to read 
+  * a document's text where text may be in nested elements.
   */
 function readStructrualElements(elements) {
   let stringOutput = '';
