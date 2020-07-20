@@ -15,9 +15,9 @@
 // Client ID from the Developer Console 
 const CLIENT_ID = 'CLIENT_ID';
 
-const authorizeButton = document.getElementById('authorize_button');
-const signoutButton = document.getElementById('signout_button');
-const submitButton = document.getElementById('submit_button');
+const AUTHORIZE_BUTTON = document.getElementById('authorize_button');
+const SIGNOUT_BUTTON = document.getElementById('signout_button');
+const SUBMIT_BUTTON = document.getElementById('submit_button');
 
 /**
   *  On load, called to load the auth2 library and API client library.
@@ -42,8 +42,8 @@ function initClient() {
 
     // Handle the initial sign-in state.
     updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-    authorizeButton.onclick = handleAuthClick;
-    signoutButton.onclick = handleSignoutClick;
+    AUTHORIZE_BUTTON.onclick = handleAuthClick;
+    SIGNOUT_BUTTON.onclick = handleSignoutClick;
   }, function(error) {
     console.log(JSON.stringify(error, null, 2));
   });
@@ -54,17 +54,14 @@ function initClient() {
   *  appropriately. After a sign-in, the API is called.
   */
 async function updateSigninStatus(isSignedIn) {
-  // authorizeButton = document.getElementById('authorize_button');
-  // signoutButton = document.getElementById('signout_button');
-  // submitButton = document.getElementById('submit_button');
   if (isSignedIn) {
-    authorizeButton.style.display = 'none';
-    signoutButton.style.display = 'block';
-    submitButton.style.display = 'block';
+    AUTHORIZE_BUTTON.style.display = 'none';
+    SIGNOUT_BUTTON.style.display = 'block';
+    SUBMIT_BUTTON.style.display = 'block';
   } else {
-    authorizeButton.style.display = 'block';
-    signoutButton.style.display = 'none';
-    submitButton.style.display = 'none';
+    AUTHORIZE_BUTTON.style.display = 'block';
+    SIGNOUT_BUTTON.style.display = 'none';
+    SUBMIT_BUTTON.style.display = 'none';
   }
 }
 
