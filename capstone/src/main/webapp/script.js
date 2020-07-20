@@ -75,7 +75,7 @@ async function gatherInput() {
 async function handleInput(text, lang, requestedAttributes, tokenizer) {
 	// Remove any previous output
   document.getElementById('replacements-input-container').innerHTML = '';
-	document.getElementById('perspective-datamuse-analysis').innerHTML = '';
+  document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extremes').innerHTML = '';
 
