@@ -34,7 +34,7 @@ import java.util.Arrays;
 /** Servlet that returns youtube api data. */
 @WebServlet("/keyword_search_servlet")
 public class YoutubeKeywordServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
+  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -42,8 +42,8 @@ public class YoutubeKeywordServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String searchTerm = request.getParameter("searchTerm");
-    String url = URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
-    String output = get(url);
+    String completeURL = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
+    String output = get(completeURL);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }

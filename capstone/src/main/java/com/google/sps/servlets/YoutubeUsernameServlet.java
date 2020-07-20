@@ -38,7 +38,7 @@ import java.net.URLEncoder;
 /** Servlet that converts a youtube username to a channelID. */
 @WebServlet("youtube_username_servlet")
 public class YoutubeUsernameServlet extends HttpServlet {
-  private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
+  private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
@@ -47,8 +47,8 @@ public class YoutubeUsernameServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String userName = request.getParameter("channelId");
     String ecodedUserName = URLEncoder.encode(userName, "UTF-8");
-    String url = URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
-    String output = get(url);
+    String completeURL = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
+    String output = get(completeURL);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }

@@ -34,7 +34,7 @@ import java.util.Arrays;
 /** Servlet that returns youtube api data. */
 @WebServlet("/youtube_servlet")
 public class YoutubeServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
+  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -44,13 +44,13 @@ public class YoutubeServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String channelId = request.getParameter("channelId");
     String videoId = request.getParameter("videoId");
-    String url;
+    String completeURL;
     if (channelId != null) {
-      url = URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
+      completeURL = BASE_URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
     } else {
-      url = URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
+      completeURL = BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
     }
-    String output = get(url);
+    String output = get(completeURL);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }

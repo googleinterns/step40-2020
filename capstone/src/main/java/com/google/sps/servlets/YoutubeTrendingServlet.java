@@ -34,7 +34,7 @@ import java.util.Arrays;
 /** Servlet that fetches trending results of a certain category. */
 @WebServlet("/trending_servlet")
 public class YoutubeTrendingServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
+  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "2";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -43,8 +43,8 @@ public class YoutubeTrendingServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String videoCategoryId = request.getParameter("videoCategoryId");
-    String url = URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
-    String output = get(url);
+    String completeURL = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
+    String output = get(completeURL);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
