@@ -29,6 +29,8 @@ async function gatherSheetsInput() {
   if (!idElement) {
     return;
   }
+
+  // Search for a URL in the format ".../d/SHEET_ID/..."
   let id = idElement.value;
   const search = idElement.value.match(/\/d\/([\w-]+)/);
   if (search != null) {
@@ -52,10 +54,10 @@ async function gatherSheetsInput() {
   // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  let delimiter = '';
+  let tokenizer;
   for (i = 0; i < radios.length; i++) {
-    if (radios[i].checked) {
-      delimiter = radios[i].value;
+    if (radios[i].checked && radios[i].value != 'NONE') {
+      tokenizer = TokenizerEnum[radios[i].value];
       break;
     }
   }
@@ -68,7 +70,7 @@ async function gatherSheetsInput() {
     const text = await getTextFromSheet(sheet);
     totalText += text + '\n';
   }
-  handleInput(totalText, langElement.value, requestedAttributes, delimiter);
+  handleInput(totalText, langElement.value, requestedAttributes, tokenizer);
 
   // Create spreadsheet if requested
   const userDecisionElement = document.getElementById('sheets-output-yes-no');
