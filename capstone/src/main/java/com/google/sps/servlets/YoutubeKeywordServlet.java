@@ -42,8 +42,8 @@ public class YoutubeKeywordServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String searchTerm = request.getParameter("searchTerm");
-    String completeURL = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
-    String output = get(completeURL);
+    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
+    String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }

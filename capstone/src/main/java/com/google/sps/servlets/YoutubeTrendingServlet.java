@@ -43,8 +43,8 @@ public class YoutubeTrendingServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String videoCategoryId = request.getParameter("videoCategoryId");
-    String completeURL = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
-    String output = get(completeURL);
+    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
+    String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
