@@ -34,7 +34,7 @@ import java.util.Arrays;
 /** Servlet that converts a youtube username to a channelID. */
 @WebServlet("/username_servlet")
 public class UsernameConverter extends HttpServlet {
-  private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
+  private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
@@ -42,8 +42,8 @@ public class UsernameConverter extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String userName = request.getParameter("channelId");
-    String url = URL + KEY + "&forUsername=" + userName + "&part=id";
-    String output = get(url);
+    String completeUrl = BASE_URL + KEY + "&forUsername=" + userName + "&part=id";
+    String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
