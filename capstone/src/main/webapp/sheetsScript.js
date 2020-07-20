@@ -54,16 +54,16 @@ async function gatherSheetsInput() {
   // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  let delimiter = "";
+  let tokenizer;
   for (i = 0; i < radios.length; i++) {
-    if (radios[i].checked) {
-      delimiter = radios[i].value;
+    if (radios[i].checked && radios[i].value != 'NONE') {
+      tokenizer = TokenizerEnum[radios[i].value];
       break;
     }
   }
 
   const text = await getTextFromSheet(id);
-  handleInput(text, langElement.value, requestedAttributes, delimiter);
+  handleInput(text, langElement.value, requestedAttributes, tokenizer);
 }
 
 /**
