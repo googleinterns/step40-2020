@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // API key from the Developer Console
-const API_KEY = 'API_KEY'; // TODO: Create Java servlet to return key
+const API_KEY = 'DOCS_API_KEY'; // TODO: Create Java servlet to return key
 
 // Array of API discovery doc URLs for APIs used by the quickstart
 const DISCOVERY_DOCS = ["https://docs.googleapis.com/$discovery/rest?version=v1"];
@@ -54,16 +54,16 @@ async function gatherDocsInput() {
   // Get the selected analysis type
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
-  let delimiter = "";
+  let tokenizer;
   for (i = 0; i < radios.length; i++) {
-    if (radios[i].checked) {
-      delimiter = radios[i].value;
+    if (radios[i].checked && radios[i].value != 'NONE') {
+      tokenizer = TokenizerEnum[radios[i].value];
       break;
     }
   }
 
   const text = await getTextFromDoc(id);
-  handleInput(text, langElement.value, requestedAttributes, delimiter);
+  handleInput(text, langElement.value, requestedAttributes, tokenizer);
 }
 
 /**
