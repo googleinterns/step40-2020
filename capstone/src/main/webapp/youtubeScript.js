@@ -208,11 +208,7 @@ function showAvailableAttributes() {
 
 /** Checks if a character is a letter */
 function isLetter(character) {
-  if ((character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122)) {
-    return true;
-  } else {
-    return false;
-  }
+  return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
 async function getTrending(categoryId) {
