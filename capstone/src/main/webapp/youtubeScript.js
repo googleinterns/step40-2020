@@ -252,7 +252,7 @@ function disableTextInput(button) {
 
 /** Creates radio buttons to allow the user to select between various categories*/
 function showCategories() {
-  // Creates button to enable manual input
+  // Creates button to enable manual text input
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
@@ -271,6 +271,7 @@ function showCategories() {
   categoryContainer.appendChild(label);
   categoryContainer.appendChild(document.createTextNode(" "));
   categoryContainer.appendChild(document.createElement("br"));
+  // creates buttons for all youtube categories
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
