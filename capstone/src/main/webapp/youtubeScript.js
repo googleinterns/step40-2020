@@ -41,13 +41,13 @@ async function callYoutube() {
   if (!channelId) {
     return;
   }
-  /** Checks if input is a category, if so directs input to be handled by get trending*/
+  // Checks if input is a category, if so directs input to be handled by get trending
   if (YOUTUBE_CATEGORIES[channelId] != undefined) {
     document.getElementById('search-type').innerHTML = "Category Search";
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
-  /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
+  // Checks if input follows channel ID format, if not attempts to convert it to channel ID
   let response;
   let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
@@ -212,6 +212,7 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
+/** Category names are mapped to youtube category numbers */
 async function getTrending(categoryId) {
   const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
@@ -231,6 +232,7 @@ async function getTrending(categoryId) {
   });
 }
 
+/** Enables user from entering text into the text field */
 function enableTextInput(button) {
   if (button.checked) { 
     document.getElementById('channelIdForAnalysis').value = button.id;
@@ -239,6 +241,7 @@ function enableTextInput(button) {
   }
 }
 
+/** Disables user from entering text into the text field */
 function disableTextInput(button) {
   if (button.checked) { 
     document.getElementById('channelIdForAnalysis').value = "";
@@ -247,9 +250,9 @@ function disableTextInput(button) {
   }
 }
 
-/** Creates radio buttons to allow teh user to select between various categories*/
+/** Creates radio buttons to allow the user to select between various categories*/
 function showCategories() {
-  /** Creates button to enable manual input*/
+  // Creates button to enable manual input
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
