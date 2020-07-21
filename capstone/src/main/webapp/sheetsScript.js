@@ -32,6 +32,8 @@ async function gatherSheetsInput() {
 
   // Search for a URL in the format ".../d/SHEET_ID/..."
   let id = idElement.value;
+
+  // Search for a URL in the format ".../d/DOC_ID/..."
   const search = idElement.value.match(/\/d\/([\w-]+)/);
   if (search != null) {
     id = search[1]; // Shorten full URL to just the ID
