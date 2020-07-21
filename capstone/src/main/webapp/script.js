@@ -17,8 +17,8 @@
  * @enum {regexp}
  */
 const TokenizerEnum = {
-  WORD: /\S+\s*/g, 
-  SENTENCE: /([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g,
+  WORD: /(\S+\s*)|(\s*\S+)/g, 
+  SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
 const DATAMUSE_ATTRIBUTES = {
@@ -35,6 +35,14 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
+
+const ABOUT_PARAGRAPH = 'This tool is only meant to test Perspective API\'s scores'
+  + ' and to see how they can change. The replacement words or phrases are' 
+  + ' not meant to be taken as suggestions. Do not use them as a means to '
+  + 'mask any toxicity. When a score lowers, it is not an indication that '
+  + 'the text is necessrily less toxic. The replacements are obtained '
+  + 'through a word-finding API, Datamuse. The models Perspective uses do '
+  + 'have unintentional bias, and uncommon words might have inaccurate scores. ';
 
 /** Collects the user's input and submits it for analysis */
 async function gatherInput() {
@@ -78,6 +86,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extremes').innerHTML = '';
+  document.getElementById('perspective-datamuse-header').innerHTML = '';
 
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
@@ -132,9 +141,16 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
   const attributes = sortAttributes(response);
 
-  // Color the substring appropriately	
-  const substringEl = createAnyElement('span', substring);
-  substringEl.onclick = function() { setUpReplacements(substring, lang); };
+  // Set up replacements function call and color the substring appropriately	
+  const substringEl = document.createElement('span');
+  const words = getSubstrings(substring, TokenizerEnum['WORD']);
+  for (let i = 0; i < words.length; i++) {
+    const wordEl = createAnyElement('span', words[i]);
+    const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
+    wordEl.onclick = function() { setUpReplacements(substring, lang, bareWord); }
+    wordEl.classList.add('output-word'); 
+    substringEl.appendChild(wordEl);
+  }
   colorSubstring(substringEl, toxicityScore);
      
   // Attach a tooltip (info-box for the substring)
@@ -142,61 +158,24 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   substringEl.appendChild(tooltipEl);
   result.appendChild(substringEl);
 }
-
-/** Sets up the replacements module */
-function setUpReplacements(text, lang) {
-  // Remove any previous output
-  document.getElementById('perspective-datamuse-analysis').innerHTML = '';
+ 
+/** Sets up the replacements section */
+function setUpReplacements(text, lang, substringForReplacements) {
+  // Clear previous results
+  const headerContainer = document.getElementById('perspective-datamuse-header');
+  headerContainer.innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extremes').innerHTML = '';
+  document.getElementById('perspective-datamuse-extras').innerHTML = '';
 
-  // Set up the header containing the selected segment & disclaimer 
-  const replacementsContainer = document.getElementById('replacements-input-container');
-  replacementsContainer.innerHTML = '';
+  // Set up about container 
   const aboutContainer = document.createElement('div');
-  aboutContainer.setAttribute('style', 'background-color:#F5F5F5');
-  const paragraph = 'This tool is only meant to test Perspective API\'s scores'
-    + ' and to see how they can change. The replacement words or phrases are' 
-    + ' not meant to be taken as suggestions. Do not use them as a means to '
-    + 'mask any toxicity. When a score lowers, it is not an indication that '
-    + 'the text is necessrily less toxic. The replacements are obtained '
-    + 'through a word-finding API, Datamuse. The models Perspective uses do '
-    + 'have bias, and uncommon words might have inaccurate scores. ';
-  aboutContainer.appendChild(createAnyElement('p', paragraph));
-  replacementsContainer.appendChild(document.createElement('hr'));
-  replacementsContainer.appendChild(createAnyElement('b', 'Perspective Testing Tool'));
-  replacementsContainer.appendChild(aboutContainer);
-  replacementsContainer.appendChild(createAnyElement('p', text));
+  aboutContainer.setAttribute('style', 'background-color:#FAEBD7');
+  aboutContainer.appendChild(createAnyElement('p', ABOUT_PARAGRAPH));
+  headerContainer.appendChild(aboutContainer);
 
-  // Set up the input box for the substring the user wants replacements for
-  const inputBox = document.createElement('input');
-  inputBox.className = 'form-control';
-  inputBox.setAttribute('id', 'input-box')
-  inputBox.setAttribute('placeholder', 'Input substring of this segment you woud like replacements for');
-  replacementsContainer.appendChild(inputBox);
- 
-  // Set up radios for word type selection
-  const radiosEl = document.createElement('div');
-  radiosEl.appendChild(createAnyElement('b', 'Type of word replacement '));
-  for (let attribute of Object.keys(DATAMUSE_ATTRIBUTES)) {
-    radiosEl.appendChild(createIndividualRadio(attribute + '-radio', 'radio', DATAMUSE_ATTRIBUTES[attribute], 'form-check', attribute, 'datamuse-radios'));
-  }
-  replacementsContainer.appendChild(radiosEl);
-  document.getElementsByName('datamuse-radios')[0].checked = true;
-
-  // Set up the submit button
-  const submitButton = document.createElement('button');
-  submitButton.innerHTML = 'Submit';
-  submitButton.className = 'btn btn-primary';
-  submitButton.onclick = function() { getReplacements(text, lang); };
-  replacementsContainer.appendChild(submitButton);
-
-  // Set up extremes analysis button
-  const extremesButton = document.createElement('button');
-  extremesButton.innerHTML = 'Get Extremes (no input)';
-  extremesButton.className = 'btn btn-primary';
-  extremesButton.onclick = function() { getExtremes(text, lang); };
-  replacementsContainer.appendChild(extremesButton);
+  getReplacements(text, lang, substringForReplacements);
+  setUpExtras(text, lang, substringForReplacements);
 }
 
 /** Gets the most extreme word replacements on a string */
@@ -267,24 +246,27 @@ function createIndividualRadio(id, type, value, radioClass, text, name) {
   radioEl.appendChild(inputEl);
   radioEl.appendChild(labelEl);
   return radioEl;
-}
- 
+
 /** Gets the replacements & their score changes for a subtring based on the Datamuse API */
-async function getReplacements(text, lang) {
+async function getReplacements(text, lang, substringForReplacements) {
   // Clear previous results
-  const resultsContainer = document.getElementById('perspective-datamuse-analysis');
-  resultsContainer.innerHTML = '';
+  const analysisContainer = document.getElementById('perspective-datamuse-analysis');
+  analysisContainer.innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
-  
-  // Gather the input
-  const substringForReplacements = getReplacementsInput(text);
-  if (!substringForReplacements) {
-    return;
+
+  // Set up loading spinner
+  const loadingEl = document.createElement('p');
+  loadingEl.className = 'spinner-border';
+  analysisContainer.appendChild(loadingEl);
+
+  // Get the word type
+  let wordType = getReplacementsWordType();
+  if (!wordType) {
+    wordType = DATAMUSE_ATTRIBUTES['Means like'];
   }
-  const wordType = getReplacementsWordType();
-  
+
   // Get the toxicity score of original string 
-  const toxicityOfOriginal = await getOriginalToxicity(text, lang, resultsContainer);
+  const toxicityOfOriginal = await getOriginalToxicity(text, lang, analysisContainer, loadingEl);
   if (!toxicityOfOriginal) {
     return;
   }
@@ -292,15 +274,16 @@ async function getReplacements(text, lang) {
   // Get Datamuse API replacements of substring
   const replacements = await callDatamuse(substringForReplacements, wordType, 5);
   if (replacements.length === 0) {
-    resultsContainer.appendChild(createAnyElement('p', 'Datamuse API did not find any words or phrases matching your query'));
+    analysisContainer.removeChild(loadingEl)
+    analysisContainer.appendChild(createAnyElement('b', 'Datamuse API did not find any words or phrases matching your query'));
     return;
   }
  
-  printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, resultsContainer);
+  printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, analysisContainer, loadingEl);
 }
- 
+
 /** Prints the modified strings to the page with their Perspective TOXICITY scorings */
-async function printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container) {
+async function printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
   // Get Perspective scores on new sentences
   const promises = [];
   const newSentences = []
@@ -327,6 +310,8 @@ async function printReplacements(text, substringForReplacements, replacements, t
       return a.scoreDiff - b.scoreDiff;
     });
  
+    container.removeChild(loadingEl);
+
     // Print the new sentences and their score differences
     for (let i = 0; i < sentenceData.length; i++) {
       printSentence(container, sentenceData[i])
@@ -347,33 +332,69 @@ function printSentence(container, sentenceData) {
   container.appendChild(createAnyElement('p', styledSentence + ' -> ' + scoreEl));
 }
 
+/** Gives the user extra options after they get the replacement data */
+function setUpExtras(text, lang, substringForReplacements) {
+  // Clear any previous options & print separating line
+  container = document.getElementById('perspective-datamuse-extras');
+  container.innerHTML = '';
+  container.appendChild(document.createElement('hr'));
+
+  // Set up radios for word type selection
+  const radiosEl = document.createElement('div');
+  radiosEl.appendChild(createAnyElement('p', 'Different type of word replacement?'));
+  for (let attribute of Object.keys(DATAMUSE_ATTRIBUTES)) {
+    radiosEl.appendChild(createIndividualRadio(attribute + '-radio', 'radio', DATAMUSE_ATTRIBUTES[attribute], 'form-check', attribute, 'datamuse-radios'));
+  }
+  container.appendChild(radiosEl);
+  document.getElementsByName('datamuse-radios')[0].checked = true;
+
+  // Set up submit button for word type selection
+  const submitButton = document.createElement('button');
+  submitButton.innerHTML = 'Submit';
+  submitButton.className = 'btn btn-primary';
+  submitButton.onclick = function() { getReplacements(text, lang, substringForReplacements); };
+  container.appendChild(submitButton);
+  
+    // Set up extremes analysis button
+  const extremesButton = document.createElement('button');
+  extremesButton.innerHTML = 'Get Extremes (no input)';
+  extremesButton.className = 'btn btn-primary';
+  extremesButton.onclick = function() { getExtremes(text, lang); };
+  container.appendChild(extremesButton);
+}
+
 /** Gets the original toxicity score of the substring the user selected for replacements */
-async function getOriginalToxicity(text, lang, container) {
+async function getOriginalToxicity(text, lang, container, loadingEl) {
   const response = await callPerspective(text, lang, ['TOXICITY']);
   if (typeof(response.attributeScores) === 'undefined') {
-    container.appendChild(createAnyElement('p', 'Perspective API was not able to get scores replacements'));
+    container.removeChild(loadingEl)
+    container.appendChild(
+      AnyElement('p', 'Perspective API was not able to get scores replacements'));
     return;
   }
   return response.attributeScores.TOXICITY.summaryScore.value;
 }
+
+/** Creates an individual radio */
+function createIndividualRadio(id, type, value, radioClass, text, name) {
+  const inputEl = document.createElement('input');
+  inputEl.setAttribute('id', id);
+  inputEl.setAttribute('type', type);
+  inputEl.setAttribute('value', value);
+  inputEl.setAttribute('name', name);
+  inputEl.className = radioClass + '-input';
  
-/** Gets the substring that the user wants replacements on */
-function getReplacementsInput(text) {
-  const inputBox = document.getElementById('input-box');
-  if (!inputBox) {
-    return;
-  }
-  const substringForReplacements = inputBox.value;
-  if (text.indexOf(substringForReplacements) == -1) {
-    alert("Substring must be in the selected segment");
-    return;
-  } else if (substringForReplacements == '') {
-    alert('Input cannot be empty');
-    return;
-  }
-  return substringForReplacements;
+  const labelEl = createAnyElement('label', text);
+  labelEl.setAttribute('for', id);
+  labelEl.className = radioClass + '-label';
+ 
+  const radioEl = document.createElement('div');
+  radioEl.className = 'form-check form-check-inline';
+  radioEl.appendChild(inputEl);
+  radioEl.appendChild(labelEl);
+  return radioEl;
 }
- 
+
 /** Gets the user's selected word type for the replacements */
 function getReplacementsWordType() {
   const radios = document.getElementsByName('datamuse-radios');
@@ -429,7 +450,7 @@ function createTooltip(attributes) {
   const imageEl = document.createElement('img');
   const bodyEl = document.createElement('div');
   const titleEl = createAnyElement('h3', 'Perspective Feedback');
-  const subtitleEl = createAnyElement('p', 'based on selected attributes');
+  const subtitleEl = createAnyElement('p', 'click to get replacements for this word');
 
   tooltipEl.className = 'tooltip';      
   headerEl.className = 'header';
@@ -482,7 +503,7 @@ function loadChartsApi(toxicityData) {
 }
 
 /** Draws a Google BarChart for Datamuse replacement analysis. */
-function drawDatamuseChart(responses, substringForreplacements, toxicityOfOriginal, replacements) {
+function drawDatamuseChart(responses, substringForReplacements, toxicityOfOriginal, replacements) {
   const chartContainer = document.getElementById('perspective-datamuse-chart');
   chartContainer.innerHTML = '';
   const loadingEl = document.createElement('div');
@@ -505,7 +526,7 @@ function drawDatamuseChart(responses, substringForreplacements, toxicityOfOrigin
   data.sort({column: 1, desc: false});
 
   const options = {
-    title: 'Perpsective TOXICITY Score When "' + substringForreplacements + '" is Replaced With...',
+    title: 'Perpsective TOXICITY Score When "' + substringForReplacements + '" is Replaced With...',
     bars: 'horizontal',
     height: 300,
     legend: {position: "none"},

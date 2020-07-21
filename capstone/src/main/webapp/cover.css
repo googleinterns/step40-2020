@@ -129,6 +129,10 @@ hr {
   border-bottom: #d10fd8 0.125em solid;
 }
 
+.output-word:hover {
+  background-color: antiquewhite;
+}
+
 .tooltip {
   position: absolute;
   left: calc(50% - 70px);
