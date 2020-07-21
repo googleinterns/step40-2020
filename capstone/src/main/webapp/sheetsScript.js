@@ -72,7 +72,13 @@ async function gatherSheetsInput() {
     totalText += text + '\n';
   }
   handleInput(totalText, langElement.value, requestedAttributes, tokenizer);
+  handleSheetsInput(id, sheetNames, range, langElement, requestedAttributes);
+}
 
+/**
+ * Output the user-requested attributes to a Google Sheet
+ */
+async function handleSheetsInput(id, sheetNames, range, langElement, requestedAttributes) {
   // Create spreadsheet if requested
   const userDecisionElement = document.getElementById('sheets-output-yes-no');
   if (userDecisionElement != null && userDecisionElement.value === 'yes') {
@@ -105,6 +111,7 @@ async function gatherSheetsInput() {
       await preprocessSheet(newSheetId, sheetNames);
     }
 
+    // Add data and color coding to the new Sheet
     for (let i = 0; i < sheetNames.length; i++) {
       const body = await createSheetOutput(id, sheetNames[i], range, langElement.value, requestedAttributes);
       await appendDataToSheet(newSheetId, sheetNames[i], body);
