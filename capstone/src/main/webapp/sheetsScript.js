@@ -87,9 +87,9 @@ async function gatherSheetsInput() {
     // Check if user has entered a custom range
     const userRangeElement = document.getElementById('sheets-range-yes-no');
     if (userRangeElement != null && userRangeElement.value === 'yes') {
-      // Check if this is a valid Sheets range
       const rangeElement = document.getElementById('sheets-range');
       if (rangeElement != null) {
+        // Check if this is a valid Sheets range
         const rangeRegEx = rangeElement.value.match(/(.+)(![\w]*[\d]*(:[\w]*[\d]*)?)/);
         if (rangeRegEx != null) {
           sheetNames = [rangeRegEx[1]];
@@ -142,8 +142,9 @@ async function getSheetId(id, name) {
   });
   const sheets = await response.result.sheets;
   for (const sheet of sheets) {
-    if (sheet.properties.title === name)
-    return sheet.properties.sheetId;
+    if (sheet.properties.title === name) {
+      return sheet.properties.sheetId;
+    }
   }
   return 0;
 }
