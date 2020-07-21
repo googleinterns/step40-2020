@@ -194,7 +194,7 @@ async function createSheet(title) {
  * as the one being analyzed
  */
 async function preprocessSheet(id, sheetNames) {
-  var requests = [];
+  let requests = [];
 
   for (const name of sheetNames) {
     requests.push({ addSheet: { properties: { title: name }}});
@@ -272,7 +272,7 @@ async function addFormatting(spreadsheetId, sheetId, numRows, numCols) {
     startColumnIndex: 0,
     endColumnIndex: numCols,
   };
-  var requests = [{
+  let requests = [{
       addConditionalFormatRule: {
         rule: {
           ranges: [ myRange ],
