@@ -82,11 +82,11 @@ async function gatherInput() {
 /** Submits the input to Perspective and loads the appropriate output */
 async function handleInput(text, lang, requestedAttributes, tokenizer) {
 	// Remove any previous output
-  document.getElementById('replacements-input-container').innerHTML = '';
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extremes').innerHTML = '';
   document.getElementById('perspective-datamuse-header').innerHTML = '';
+  document.getElementById('perspective-datamuse-extras').innerHTML = '';
 
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
@@ -188,7 +188,7 @@ async function getExtremes(text, lang) {
   container.appendChild(loadingEl);
 
   // Get the words and all their possible replacements
-  const words = text.split(' ');
+  const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
   const mostToxic = { string : '', score : Number.MIN_VALUE};
   const leastToxic = { string : '', score : Number.MAX_VALUE};
   for (let word of words) {
@@ -246,6 +246,7 @@ function createIndividualRadio(id, type, value, radioClass, text, name) {
   radioEl.appendChild(inputEl);
   radioEl.appendChild(labelEl);
   return radioEl;
+}
 
 /** Gets the replacements & their score changes for a subtring based on the Datamuse API */
 async function getReplacements(text, lang, substringForReplacements) {
@@ -339,13 +340,35 @@ function setUpExtras(text, lang, substringForReplacements) {
   container.innerHTML = '';
   container.appendChild(document.createElement('hr'));
 
+  const optionsRow = document.createElement('div');
+  optionsRow.className = 'row';
+
+  setUpWordTypeSelection(container, optionsRow, text, lang, substringForReplacements);
+  
+  // Set up extremes analysis button
+  const extremesSection = document.createElement('div')
+  extremesSection.className = 'col-6'; 
+  const extremesButton = document.createElement('button');
+  extremesButton.innerHTML = 'Get Extremes';
+  extremesButton.className = 'btn btn-primary';
+  extremesButton.onclick = function() { getExtremes(text, lang); };
+  extremesSection.appendChild(extremesButton)
+  optionsRow.appendChild(extremesSection);
+}
+
+function setUpWordTypeSelection(container, optionsRow, text, lang, substringForReplacements) {
+  const wordTypeSection = document.createElement('div');
+  wordTypeSection.className = 'col-6';
+	
   // Set up radios for word type selection
   const radiosEl = document.createElement('div');
   radiosEl.appendChild(createAnyElement('p', 'Different type of word replacement?'));
   for (let attribute of Object.keys(DATAMUSE_ATTRIBUTES)) {
     radiosEl.appendChild(createIndividualRadio(attribute + '-radio', 'radio', DATAMUSE_ATTRIBUTES[attribute], 'form-check', attribute, 'datamuse-radios'));
   }
-  container.appendChild(radiosEl);
+  wordTypeSection.appendChild(radiosEl);
+  optionsRow.appendChild(wordTypeSection);
+  container.appendChild(optionsRow);
   document.getElementsByName('datamuse-radios')[0].checked = true;
 
   // Set up submit button for word type selection
@@ -353,14 +376,7 @@ function setUpExtras(text, lang, substringForReplacements) {
   submitButton.innerHTML = 'Submit';
   submitButton.className = 'btn btn-primary';
   submitButton.onclick = function() { getReplacements(text, lang, substringForReplacements); };
-  container.appendChild(submitButton);
-  
-    // Set up extremes analysis button
-  const extremesButton = document.createElement('button');
-  extremesButton.innerHTML = 'Get Extremes (no input)';
-  extremesButton.className = 'btn btn-primary';
-  extremesButton.onclick = function() { getExtremes(text, lang); };
-  container.appendChild(extremesButton);
+  wordTypeSection.appendChild(submitButton);
 }
 
 /** Gets the original toxicity score of the substring the user selected for replacements */
