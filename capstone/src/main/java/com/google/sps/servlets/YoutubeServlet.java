@@ -50,7 +50,6 @@ public class YoutubeServlet extends HttpServlet {
     } else {
       completeUrl = BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
     }
-    System.out.println(completeUrl);
     String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
