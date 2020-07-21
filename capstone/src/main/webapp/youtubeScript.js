@@ -20,7 +20,8 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
-
+let arrayData  = [];
+let words =[];
 /** Category names are mapped to youtube category numbers */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
@@ -36,6 +37,8 @@ const YOUTUBE_CATEGORIES = {
 
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
+    arrayData  = [];
+   words =[];
   document.getElementById('search-type').innerHTML = "";
   const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
@@ -90,6 +93,7 @@ async function inputCommentsToPerspective(commentsList) {
   const attributeScoresPromises = [];
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
+      words.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
       const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
@@ -105,9 +109,18 @@ async function inputCommentsToPerspective(commentsList) {
 /** Returns a map of attribute score sums from an array of JSON's */
 function getAttributeTotals(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
-  const attributeTotals = new Map();    
+  const attributeTotals = new Map();
+        
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
+    //alert(arrayData[j] == null);
+      if(arrayData[j] == null) {
+           //arrayData[j] = [1];
+          arrayData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value)];
+      } else {
+          //arrayData[j].push(2);
+         arrayData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+      }
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       } else {
@@ -327,6 +340,8 @@ function perspectiveToxicityScale(attributeAverages) {
 
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
+    arrayData  = [];
+   words =[];
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
@@ -346,4 +361,39 @@ async function getKeywordSearchResults() {
     inputCommentsToPerspective(resolvedCommentsList);
   });
   document.getElementById('search-type').innerHTML = "Keyword Search";
+}
+
+const export_csv = (arrayHeader, arrayData, delimiter, fileName) => {
+            let header = arrayHeader.join(delimiter) + '\n';
+            let csv = header;
+            arrayData.forEach( array => {
+                csv += array.join(delimiter)+"\n";
+            });
+ 
+            let csvData = new Blob([csv], { type: 'text/csv' });  
+            let csvUrl = URL.createObjectURL(csvData);
+ 
+            let hiddenElement = document.createElement('a');
+            hiddenElement.href = csvUrl;
+            hiddenElement.target = '_blank';
+            hiddenElement.download = fileName + '.csv';
+            hiddenElement.click();
+        }
+
+function magic() { 
+    let requestedAttributes = getRequestedAttributes();
+    requestedAttributes.unshift('COMMENT');
+    let arrayHeader = requestedAttributes;
+let delimiter = ','
+alert(arrayData.length==words.length);
+for(let i=0; i<arrayData.length;i++){
+    alert(words[i]);
+   let thisword=words[i].replace(/(\r\n|\n|\r)/gm," ");
+    thisword=thisword.replace(/,/g, "");
+    thisword = thisword.replace(/\s+/g," ");
+    arrayData[i].unshift(thisword);
+    //.replace(/(\r\n|\n|\r)/gm," "));
+}
+let fileName = 'testrr'
+  export_csv(arrayHeader, arrayData, delimiter, fileName);
 }
