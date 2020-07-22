@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // Client ID from the Developer Console
-const CLIENT_ID = '829584540184-uhjij62s65igq2r5n29sevp1ehbu0u93.apps.googleusercontent.com';
+const CLIENT_ID = 'CLIENT_ID';
 
 const AUTHORIZE_BUTTON = document.getElementById('authorize_button');
 const SIGNOUT_BUTTON = document.getElementById('signout_button');
