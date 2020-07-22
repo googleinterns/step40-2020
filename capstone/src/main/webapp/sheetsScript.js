@@ -68,13 +68,31 @@ async function gatherSheetsInput() {
   let sheetNames = await getSheetNames(id);
   let totalText = '';
   let range = '!A1:YY';
+
+  // Check if user has entered a custom range
+  const userRangeElement = document.getElementById('sheets-range-yes-no');
+  if (userRangeElement != null && userRangeElement.value === 'yes') {
+    const rangeElement = document.getElementById('sheets-range');
+    if (rangeElement != null) {
+      // Check if this is a valid Sheets range
+      const rangeRegEx = rangeElement.value.match(/(.+)(![\w]*[\d]*(:[\w]*[\d]*)?)/);
+      if (rangeRegEx != null) {
+        sheetNames = [rangeRegEx[1]];
+        range = rangeRegEx[2];
+      } else {
+        alert('Please input a range in a valid format.');
+      }
+    }
+  }
+
   for (const name of sheetNames) {
     const sheet = await getSpreadsheet(id, name, range);
     const text = await getTextFromSheet(sheet);
     totalText += text + '\n';
   }
-  handleInput(totalText, langElement.value, requestedAttributes, tokenizer);
-  handleSheetsInput(id, sheetNames, range, langElement, requestedAttributes);
+
+  await handleInput(totalText, langElement.value, requestedAttributes, tokenizer);
+  await handleSheetsInput(id, sheetNames, range, langElement, requestedAttributes);
 }
 
 /**
@@ -91,22 +109,6 @@ async function handleSheetsInput(id, sheetNames, range, langElement, requestedAt
     }
 
     const newSheetId = await createSheet(title);
-
-    // Check if user has entered a custom range
-    const userRangeElement = document.getElementById('sheets-range-yes-no');
-    if (userRangeElement != null && userRangeElement.value === 'yes') {
-      const rangeElement = document.getElementById('sheets-range');
-      if (rangeElement != null) {
-        // Check if this is a valid Sheets range
-        const rangeRegEx = rangeElement.value.match(/(.+)(![\w]*[\d]*(:[\w]*[\d]*)?)/);
-        if (rangeRegEx != null) {
-          sheetNames = [rangeRegEx[1]];
-          range = rangeRegEx[2];
-        } else {
-          alert('Please input a range in a valid format.');
-        }
-      }
-    }
 
     // Make the new spreadsheet mirror sheet names of the input
     if (sheetNames[0] != 'Sheet1') {
