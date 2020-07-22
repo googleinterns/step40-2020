@@ -330,8 +330,8 @@ function perspectiveToxicityScale(attributeAverages) {
   const amountMoreThanKnoop = knoopScore - knoopLow;
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
   const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
-  document.getElementById('search-type').appendChild(document.createElement("br"));  
-  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+  // document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('perspective-toxicity-score').innerHTML = ("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
 
 /** Returns top Youtube results by keyword to have their comments analyzed*/
@@ -358,38 +358,46 @@ async function getKeywordSearchResults() {
   document.getElementById('search-type').innerHTML = "Keyword Search";
 }
 
-function donwloadFile(sheetHeader, sheetdata, csvDelimiter, sheetFileName) {
-  let header = sheetHeader.join(csvDelimiter) + '\n';
+/** Prepares CSV download*/
+function prepareDownload(sheetHeader, sheetData, sheetName) {
+  const header = sheetHeader.join(',') + '\n';
   let csv = header;
-  sheetdata.forEach( array => {
-    csv += array.join(csvDelimiter)+ "\n";
-  });
-  let csvData = new Blob([csv], { type: 'text/csv' });  
-  let csvUrl = URL.createObjectURL(csvData);
-  let hiddenElement = document.createElement('a');
-  hiddenElement.href = csvUrl;
-  hiddenElement.target = '_blank';
-  hiddenElement.download = sheetFileName + '.csv';
-  hiddenElement.click();
+  for(const data of sheetData) {
+    csv += data.join(',') + "\n";
+  }
+  const outputCsv = new Blob([csv], { type: 'text/csv' });  
+  const downloadUrl = URL.createObjectURL(outputCsv);
+  const downloadElement = document.createElement('a');
+  downloadElement.href = downloadUrl;
+  downloadElement.download = sheetName + '.csv';
+  downloadElement.click();
 }
 
-function exportFile() { 
-  let requestedAttributes = getRequestedAttributes();
+/** Formats data and initiates download of CSV file*/
+function beginDownload() { 
+  const requestedAttributes = getRequestedAttributes();
   requestedAttributes.unshift('COMMENT');
-  const arrayHeader = requestedAttributes;
-  const delimiter = ','
+  const sheetHeader = requestedAttributes;
   for (let i = 0; i < attributeData.length; i++) {
-    let comment = analyzedComments[i].replace(/(\r\n|\n|\r)/gm," ");
-    comment = comment.replace(/,/g, "");
-    comment = comment.replace(/\s+/g," ");
+    const comment = formatCommentForSpreadsheet(analyzedComments[i]);
     attributeData[i].unshift(comment);
   }
-  const fileName = 'Perspective_Output';
-  donwloadFile(arrayHeader, attributeData, delimiter, fileName);
+  const sheetName = 'Perspective_Output';
+  prepareDownload(sheetHeader, attributeData, sheetName);
 }
 
+/** Clears on screen elements and empties arrays associated with CSV creation*/
 function resetChartAndCsv() {
-  inputCommentsToPerspective([]);
+  document.getElementById('chart-container').innerHTML = "";
+  document.getElementById('perspective-toxicity-score').innerHTML = "";
   attributeData = [];
   analyzedComments = [];
+}
+
+/** Removes whitespace, commas and newlines to allow comments to be comaptible with CSV*/
+function formatCommentForSpreadsheet(comment) {
+  let formattedComment = comment.replace(/(\r\n|\n|\r)/gm, " ");
+  formattedComment = formattedComment.replace(/,/g, "");
+  formattedComment = formattedComment.replace(/\s+/g, " ");
+  return formattedComment;    
 }
