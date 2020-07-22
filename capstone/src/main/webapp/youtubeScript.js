@@ -52,7 +52,7 @@ async function callYoutube() {
   let response;
   let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId,)
+    response = await fetch('/youtube_servlet?channelId=' + channelId);
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
       inputCommentsToPerspective([]);
@@ -60,7 +60,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId,)
+    const usernameConverterResponse = await fetch('/username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       inputCommentsToPerspective([]);
@@ -68,7 +68,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName,)
+    response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
     responseJson = await response.json();
   }
   inputCommentsToPerspective([responseJson]);
@@ -159,7 +159,7 @@ function drawBarChart(toxicityData) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
   for (const [attribute, attributeScoresAvg] of toxicityData) {
-    var color = '#6B8E23'; // Green
+    let color = '#6B8E23'; // Green
     const score = attributeScoresAvg;
     if (score >= 0.8) {
       color = '#DC143C'; // Red
@@ -212,7 +212,7 @@ function isLetter(character) {
 }
 
 async function getTrending(categoryId) {
-  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId,)
+  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
@@ -221,7 +221,7 @@ async function getTrending(categoryId) {
   }
   const commentsList = []
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id],)
+    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
     const videoCommentListJson = await videoCommentList.json();
     commentsList.push(videoCommentListJson);
   }
@@ -244,7 +244,7 @@ function disableTextInput(button) {
 
 /** Creates radio buttons to allow teh user to select between various categories*/
 function showCategories() {
-  /** Creates button to enable manual input*/
+  // Creates button to enable manual input
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
