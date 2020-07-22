@@ -200,11 +200,14 @@ async function getExtremes(text, lang) {
       }
     }
     const newSentences = [];
+    const styledSentences = [];
     const promises = [];
     for (let i = 0; i < replacements.length; i++) {
       // Get the Perspective scores on the new sentences
       const newSentence = text.replace(word, replacements[i]);
+      const styledSentence = text.replace(word, '<b>' + replacements[i] + '</b>');
       newSentences.push(newSentence);
+      styledSentences.push(styledSentence);
       promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
     }
     await Promise.all(promises).then(resolvedResponses => {
@@ -213,11 +216,11 @@ async function getExtremes(text, lang) {
         const toxicityScore = resolvedResponses[i].attributeScores.TOXICITY.summaryScore.value;
         if (toxicityScore > mostToxic.score) {
           mostToxic.score = toxicityScore;
-          mostToxic.string = newSentences[i];
+          mostToxic.string = styledSentences[i];
         }
         else if (toxicityScore < leastToxic.score) {
           leastToxic.score = toxicityScore;
-          leastToxic.string = newSentences[i];
+          leastToxic.string = styledSentences[i];
         }
       }
     });
