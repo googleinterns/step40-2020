@@ -189,8 +189,8 @@ async function getExtremes(text, lang) {
 
   // Get the words and all their possible replacements
   const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
-  const mostToxic = { string : '', score : Number.MIN_VALUE};
-  const leastToxic = { string : '', score : Number.MAX_VALUE};
+  const mostToxic = { string: '', score: Number.MIN_VALUE };
+  const leastToxic = { string: '', score: Number.MAX_VALUE };
   for (let word of words) {
     const replacements = [];
     for (let attribute of Object.values(DATAMUSE_ATTRIBUTES)) {
@@ -217,8 +217,7 @@ async function getExtremes(text, lang) {
         if (toxicityScore > mostToxic.score) {
           mostToxic.score = toxicityScore;
           mostToxic.string = styledSentences[i];
-        }
-        else if (toxicityScore < leastToxic.score) {
+        } else if (toxicityScore < leastToxic.score) {
           leastToxic.score = toxicityScore;
           leastToxic.string = styledSentences[i];
         }
