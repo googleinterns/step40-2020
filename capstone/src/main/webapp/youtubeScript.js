@@ -33,6 +33,7 @@ const YOUTUBE_CATEGORIES = {
   'Science&Technology': 28,
   'Sports' : 17,
 };
+
 /** These variables will keep track of the data required for CSV output */
 let attributeData = [];
 let analyzedComments = [];
@@ -113,9 +114,9 @@ function getAttributeTotals(attributeScores) {
     for (let j = 0; j < attributeScores.length; j++) {
       // populates attributeData to support CSV output and attributeTotals to support averaging
       if(attributeData[j] == null) {
-          attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value)];
+        attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value)];
       } else {
-         attributeData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       }
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
@@ -330,7 +331,6 @@ function perspectiveToxicityScale(attributeAverages) {
   const amountMoreThanKnoop = knoopScore - knoopLow;
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
   const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
-  // document.getElementById('search-type').appendChild(document.createElement("br"));  
   document.getElementById('perspective-toxicity-score').innerHTML = ("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
 
