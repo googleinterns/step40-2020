@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Client ID from the Developer Console 
+// Client ID from the Developer Console
 const CLIENT_ID = '829584540184-uhjij62s65igq2r5n29sevp1ehbu0u93.apps.googleusercontent.com';
 
 const AUTHORIZE_BUTTON = document.getElementById('authorize_button');

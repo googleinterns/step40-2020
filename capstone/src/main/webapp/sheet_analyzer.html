@@ -28,13 +28,24 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link active" href="document_analyzer.html">Document Analyzer</a>
+            <a class="nav-link active" href="sheet_analyzer.html">Sheet Analyzer</a>
+            <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
+            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
             <a class="nav-link" href="https://support.perspectiveapi.com/s/" target="_blank">Support</a>
             <a class="nav-link" href="https://medium.com/the-false-positive" target="_blank">Blog</a>
           </nav>
         </div>
       </header>
-      <h2>Attach a document and select the Perspective API attribute(s) you would like to be shown</h2>
+      <main role="main">
+        <section class="jumbotron text-center">
+          <div class="container">
+            <h1>Google Sheets Analysis</h1>
+            <p class="lead text-muted">Attach a Google Sheet and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Format 1: https://docs.google.com/spreadsheets/d/1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24/edit#gid=0</small>
+            <small id="disclaimer" class="form-text text-muted">Format 2: 1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24</small>
+          </div>
+        </section>
+      </main>
       <div class="text-analysis-module">
         <form onsubmit="gatherSheetsInput(); return false;">
           <div class="form-group">
@@ -53,15 +64,15 @@
           <div id="analysis-type">
             <b>Select analysis type</b>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="." checked>
+              <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
               <label class="form-check-label" for="bySentence">By sentence</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value=" ">
+              <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
               <label class="form-check-label" for="byWord">By word</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="">
+              <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
               <label class="form-check-label" for="noAnalysis">No analysis</label>
             </div>
           </div>
@@ -73,13 +84,13 @@
         <div id="chart-container"></div>
         <div id="analysis-container"></div>
       </div>
-
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu.</p>
         </div>
       </footer>
     </div>
+    <script src="oAuth.js"></script>
     <script async defer src="https://apis.google.com/js/api.js"
       onload="this.onload=function(){};handleClientLoad()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
