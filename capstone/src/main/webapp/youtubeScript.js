@@ -161,7 +161,7 @@ function drawBarChart(toxicityData) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
   for (const [attribute, attributeScoresAvg] of toxicityData) {
-    var color = '#6B8E23'; // Green
+    let color = '#6B8E23'; // Green
     const score = attributeScoresAvg;
     if (score >= 0.8) {
       color = '#DC143C'; // Red
@@ -246,7 +246,7 @@ function disableTextInput(button) {
 
 /** Creates radio buttons to allow teh user to select between various categories*/
 function showCategories() {
-  /** Creates button to enable manual input*/
+  // Creates button to enable manual input
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
