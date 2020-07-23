@@ -37,12 +37,12 @@ const YOUTUBE_CATEGORIES = {
 /** These variables will keep track of the data required for CSV output */
 let attributeData = [];
 let analyzedComments = [];
-
+//declare function greet(greeting: string): void;
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
   resetChartAndCsv();
   document.getElementById('search-type').innerHTML = "";
-  const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
+  const channelId = (<HTMLInputElement>document.getElementById('channelIdForAnalysis')).value.replace(/ /g, '');
   if (!channelId) {
     return;
   }
@@ -80,7 +80,7 @@ async function callYoutube() {
 
 /** Calls perspective to analyze an array of comment JSON's */
 async function inputCommentsToPerspective(commentsList) {
-  const langElement = document.getElementById('languageForAnalysis');
+  const langElement = (<HTMLInputElement> document.getElementById('languageForAnalysis'));
   if (!langElement) {
     return;
   }
@@ -101,7 +101,7 @@ async function inputCommentsToPerspective(commentsList) {
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
-    loadChartsApi(attributeAverages);
+    //loadChartsApi(attributeAverages);
     perspectiveToxicityScale(attributeAverages);
   });
 }
@@ -131,15 +131,16 @@ function getAttributeTotals(attributeScores) {
 /** Returns a map of attribute score averages from a map and an array */
 function getAttributeAverages(attributeTotals, commentsList) {
   const attributeAverages = new Map();
-  for (const [attribute, attributeScoresTotal] of attributeTotals) {
+  // forEach(value,key)
+  attributeTotals.forEach((attributeScoresTotal, attribute) => { 
     attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
-  }
+  });
   return attributeAverages;
 }
 
 /** Returns the user's input */
 function getRequestedAttributes() {
-  const attributes = document.getElementById("available-attributes").getElementsByTagName('input');
+  const attributes = Array.from(document.getElementById("available-attributes").getElementsByTagName('input'));
   const requestedAttributes = [];
   for (const attribute of attributes) {
     if (attribute.checked == true) {
@@ -162,11 +163,11 @@ async function callPerspective(text, lang, requestedAttributes) {
 /** Loads the Google Charts API */
 function loadChartsApi(toxicityData) {
   google.charts.load('current', {'packages':['corechart']});
-  google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
+  //google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
 }
 
 /** Draws a Google BarChart from a map. */
-function drawBarChart(toxicityData) {
+/*function drawBarChart(toxicityData) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
   for (const [attribute, attributeScoresAvg] of toxicityData) {
@@ -190,11 +191,11 @@ function drawBarChart(toxicityData) {
   };
   const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
   chart.draw(data, options);
-}
+}*/
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-  const langElement = document.getElementById('languageForAnalysis');
+  const langElement = (<HTMLInputElement>document.getElementById('languageForAnalysis'));
   if (!langElement) {
     return;
   }
@@ -245,18 +246,18 @@ async function getTrending(categoryId) {
 /** Enables user from entering text into the text field */
 function enableTextInput(button) {
   if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = button.id;
-    document.getElementById('channelIdForAnalysis').disabled = true;
-    document.getElementById("keywordSearch").disabled = true;
+    (<HTMLInputElement>document.getElementById('channelIdForAnalysis')).value = button.id;
+    (<HTMLInputElement>document.getElementById('channelIdForAnalysis')).disabled = true;
+    (<HTMLInputElement>document.getElementById("keywordSearch")).disabled = true;
   }
 }
 
 /** Disables user from entering text into the text field */
 function disableTextInput(button) {
   if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = "";
-    document.getElementById('channelIdForAnalysis').disabled = false;
-    document.getElementById("keywordSearch").disabled = false;   
+    (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value = "";
+    (<HTMLInputElement>document.getElementById('channelIdForAnalysis')).disabled = false;
+    (<HTMLInputElement>document.getElementById("keywordSearch")).disabled = false;   
   }
 }
 
@@ -306,15 +307,16 @@ function showCategories() {
 function perspectiveToxicityScale(attributeAverages) {
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
   let totalToxicityScore = 0;
-  for (const [attribute, attributeAverage] of attributeAverages) {
+  // forEach(value,key)
+  attributeAverages.forEach((attributeAverage, attribute) => {
     totalToxicityScore += attributeAverage;
-  }
+  });
   const inputLength = attributeAverages.size;
   const averageToxicityScore = totalToxicityScore / inputLength;
   const knoopScore = averageToxicityScore * 7000;
-  let knoopLow;
-  let knoopHigh;
-  let mohsScore;
+  let knoopLow = 0;
+  let knoopHigh = 0;
+  let mohsScore = 0;
   for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
       if(knoopScore < 1) {
@@ -337,7 +339,7 @@ function perspectiveToxicityScale(attributeAverages) {
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
   resetChartAndCsv();
-  const searchTerm = document.getElementById('channelIdForAnalysis').value;
+  const searchTerm = (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
   let videoIds = [];
@@ -348,8 +350,8 @@ async function getKeywordSearchResults() {
   }   
   const commentsListPromises = [];
   for (const id in videoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIds[id]);
-    videoCommentListJson = await videoCommentList.json();
+    const videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIds[id]);
+    const videoCommentListJson = await videoCommentList.json();
     commentsListPromises.push(videoCommentListJson);
   }
   await Promise.all(commentsListPromises).then(resolvedCommentsList => {

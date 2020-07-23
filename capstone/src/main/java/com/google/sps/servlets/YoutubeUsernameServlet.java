@@ -39,7 +39,7 @@ import java.net.URLEncoder;
 @WebServlet("youtube_username_servlet")
 public class YoutubeUsernameServlet extends HttpServlet {
   private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
-  private static final String KEY = "API_KEY";
+  private static final String KEY = "AIzaSyCNknbH7wekG_bz1RcP1muXy9plNQhZaAY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
