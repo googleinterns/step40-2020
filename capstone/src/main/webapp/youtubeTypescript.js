@@ -68,8 +68,9 @@ var YOUTUBE_CATEGORIES = {
     'Sports': 17
 };
 /** These variables will keep track of the data required for CSV output */
-var attributeData = [];
-var analyzedComments = [];
+var attributeData;
+var analyzedComments;
+//declare function greet(greeting: string): void;
 /** Calls youtube servlet and passes output to perspctive */
 function callYoutube() {
     return __awaiter(this, void 0, void 0, function () {
@@ -177,7 +178,7 @@ function inputCommentsToPerspective(commentsList) {
                 case 6: return [4 /*yield*/, Promise.all(attributeScoresPromises).then(function (resolvedAttributeScores) {
                         var attributeTotals = getAttributeTotals(resolvedAttributeScores);
                         var attributeAverages = getAttributeAverages(attributeTotals, commentsList);
-                        //loadChartsApi(attributeAverages);
+                        loadChartsApi(attributeAverages);
                         perspectiveToxicityScale(attributeAverages);
                     })];
                 case 7:
@@ -195,7 +196,7 @@ function getAttributeTotals(attributeScores) {
         for (var j = 0; j < attributeScores.length; j++) {
             // populates attributeData to support CSV output and attributeTotals to support averaging
             if (attributeData[j] == null) {
-                attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value)];
+                attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
             }
             else {
                 attributeData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
@@ -255,34 +256,36 @@ function callPerspective(text, lang, requestedAttributes) {
 /** Loads the Google Charts API */
 function loadChartsApi(toxicityData) {
     google.charts.load('current', { 'packages': ['corechart'] });
-    //google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
+    google.charts.setOnLoadCallback(function () { drawBarChart(toxicityData); });
 }
 /** Draws a Google BarChart from a map. */
-/*function drawBarChart(toxicityData) {
-  document.getElementById('chart-container').innerHTML = '';
-  const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
-  for (const [attribute, attributeScoresAvg] of toxicityData) {
-    let color = '#6B8E23'; // Green
-    const score = attributeScoresAvg;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
-    data.addRow([attribute, score, color]);
-  }
-  data.sort({column: 1, desc: false});
-  const options = {
-    title: 'Perspective Feedback',
-    bars: 'horizontal',
-    height: 700,
-    legend: {position: "none"},
-    theme: 'material',
-    hAxis: {viewWindow: {min: 0, max: 1}}
-  };
-  const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
-  chart.draw(data, options);
-}*/
+function drawBarChart(toxicityData) {
+    document.getElementById('chart-container').innerHTML = '';
+    var data = google.visualization.arrayToDataTable([[{ label: 'Attribute' }, { label: 'Score', type: 'number' }, { role: "style" }]]);
+    // forEach(value,key)
+    toxicityData.forEach(function (attributeScoresAvg, attribute) {
+        var color = '#6B8E23'; // Green
+        var score = attributeScoresAvg;
+        if (score >= 0.8) {
+            color = '#DC143C'; // Red
+        }
+        else if (score >= 0.2) {
+            color = '#ffd800'; // Yellow
+        }
+        data.addRow([attribute, score, color]);
+    });
+    data.sort({ column: 1, desc: false });
+    var options = {
+        title: 'Perspective Feedback',
+        bars: 'horizontal',
+        height: 700,
+        legend: { position: "none" },
+        theme: 'material',
+        hAxis: { viewWindow: { min: 0, max: 1 } }
+    };
+    var chart = new google.visualization.BarChart(document.getElementById('chart-container'));
+    chart.draw(data, options);
+}
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
     var langElement = document.getElementById('languageForAnalysis');

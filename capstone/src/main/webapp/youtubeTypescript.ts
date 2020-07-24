@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+declare let google;
+
 const ATTRIBUTES_BY_LANGUAGE = {
   'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
   'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
@@ -21,7 +23,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Category names are mapped to youtube category numbers */
+/** Category names are correlated to youtube category numbers */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -35,9 +37,9 @@ const YOUTUBE_CATEGORIES = {
 };
 
 /** These variables will keep track of the data required for CSV output */
-let attributeData = [];
-let analyzedComments = [];
-//declare function greet(greeting: string): void;
+let attributeData: string[][];
+let analyzedComments: string[];
+
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
   resetChartAndCsv();
@@ -53,7 +55,7 @@ async function callYoutube() {
     return;
   }
   // Checks if input follows channel ID format, if not attempts to convert it to channel ID
-  let response;
+  let response: Response;
   let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId);
@@ -79,7 +81,7 @@ async function callYoutube() {
 }
 
 /** Calls perspective to analyze an array of comment JSON's */
-async function inputCommentsToPerspective(commentsList) {
+async function inputCommentsToPerspective(commentsList: any[]) {
   const langElement = (<HTMLInputElement> document.getElementById('languageForAnalysis'));
   if (!langElement) {
     return;
@@ -101,20 +103,20 @@ async function inputCommentsToPerspective(commentsList) {
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
-    //loadChartsApi(attributeAverages);
+    loadChartsApi(attributeAverages);
     perspectiveToxicityScale(attributeAverages);
   });
 }
 
 /** Returns a map of attribute score sums from an array of JSON's */
-function getAttributeTotals(attributeScores) {
+function getAttributeTotals(attributeScores: any[]) {
   const requestedAttributes = getRequestedAttributes();
-  const attributeTotals = new Map();    
+  const attributeTotals = new Map<string, number>();   
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
       // populates attributeData to support CSV output and attributeTotals to support averaging
       if(attributeData[j] == null) {
-        attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value)];
+        attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
       } else {
         attributeData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       }
@@ -129,8 +131,8 @@ function getAttributeTotals(attributeScores) {
 }
 
 /** Returns a map of attribute score averages from a map and an array */
-function getAttributeAverages(attributeTotals, commentsList) {
-  const attributeAverages = new Map();
+function getAttributeAverages(attributeTotals: Map<string, number>, commentsList: any[]) {
+  const attributeAverages = new Map<string, number>(); 
   // forEach(value,key)
   attributeTotals.forEach((attributeScoresTotal, attribute) => { 
     attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
@@ -141,7 +143,7 @@ function getAttributeAverages(attributeTotals, commentsList) {
 /** Returns the user's input */
 function getRequestedAttributes() {
   const attributes = Array.from(document.getElementById("available-attributes").getElementsByTagName('input'));
-  const requestedAttributes = [];
+  const requestedAttributes: string[] = [];
   for (const attribute of attributes) {
     if (attribute.checked == true) {
       requestedAttributes.push(attribute.value);	
@@ -151,7 +153,7 @@ function getRequestedAttributes() {
 }
 
 /** Calls the perspective API */
-async function callPerspective(text, lang, requestedAttributes) {
+async function callPerspective(text: string, lang: string, requestedAttributes:string[]) {
   const response = await fetch('/call_perspective', {
     method: 'POST',
     headers: {'Content-Type': 'application/json',},
@@ -161,16 +163,17 @@ async function callPerspective(text, lang, requestedAttributes) {
 }
 
 /** Loads the Google Charts API */
-function loadChartsApi(toxicityData) {
+function loadChartsApi(toxicityData: Map<string, number>) {
   google.charts.load('current', {'packages':['corechart']});
-  //google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
+  google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
 }
 
 /** Draws a Google BarChart from a map. */
-/*function drawBarChart(toxicityData) {
+function drawBarChart(toxicityData: Map<string, number>) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
-  for (const [attribute, attributeScoresAvg] of toxicityData) {
+  // forEach(value,key)
+  toxicityData.forEach((attributeScoresAvg, attribute) => {
     let color = '#6B8E23'; // Green
     const score = attributeScoresAvg;
     if (score >= 0.8) {
@@ -179,7 +182,7 @@ function loadChartsApi(toxicityData) {
       color = '#ffd800'; // Yellow
     }
     data.addRow([attribute, score, color]);
-  }
+  });
   data.sort({column: 1, desc: false});
   const options = {
     title: 'Perspective Feedback',
@@ -191,7 +194,7 @@ function loadChartsApi(toxicityData) {
   };
   const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
   chart.draw(data, options);
-}*/
+}
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
@@ -224,7 +227,7 @@ function isLetter(character) {
 }
 
 /** Category names are mapped to youtube category numbers */
-async function getTrending(categoryId) {
+async function getTrending(categoryId: number) {
   const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
@@ -304,7 +307,7 @@ function showCategories() {
 }
 
 /** Converts perspective results to knoop scale then to mohs*/
-function perspectiveToxicityScale(attributeAverages) {
+function perspectiveToxicityScale(attributeAverages: Map<string, number>) {
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
   let totalToxicityScore = 0;
   // forEach(value,key)
@@ -361,7 +364,7 @@ async function getKeywordSearchResults() {
 }
 
 /** Prepares CSV download*/
-function prepareDownload(sheetHeader, sheetData, sheetName) {
+function prepareDownload(sheetHeader: string[], sheetData, sheetName:string) {
   const header = sheetHeader.join(',') + '\n';
   let csv = header;
   for(const data of sheetData) {
@@ -397,7 +400,7 @@ function resetChartAndCsv() {
 }
 
 /** Removes whitespace, commas and newlines to allow comments to be comaptible with CSV*/
-function formatCommentForSpreadsheet(comment) {
+function formatCommentForSpreadsheet(comment: string) {
   let formattedComment = comment.replace(/(\r\n|\n|\r)/gm, " ");
   formattedComment = formattedComment.replace(/,/g, "");
   formattedComment = formattedComment.replace(/\s+/g, " ");
