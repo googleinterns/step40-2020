@@ -70,7 +70,15 @@ public class SuggestCommentServlet extends HttpServlet {
   }
  
  
-  /** Builds the JSON for the body of the call to Perspective API. */
+  /** 
+	 * Builds the JSON for the body of the call to Perspective API. 
+	 * It follows the form below   
+	 * { 
+	 *  "comment": { "text": ____ } , 
+	 *  "languages": ____ ,
+	 *  "attributeScores": {  ____: "summaryScore": {"value": ____ }, ... },
+	 * }
+	 */
   private String makePerspectiveJson(String text, String lang, HashMap<String, String> feedback) {
     JSONObject json = new JSONObject();  
     JSONObject commentValue = new JSONObject();
