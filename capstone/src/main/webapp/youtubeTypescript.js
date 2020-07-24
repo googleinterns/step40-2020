@@ -68,8 +68,8 @@ var YOUTUBE_CATEGORIES = {
     'Sports': 17
 };
 /** These variables will keep track of the data required for CSV output */
-var attributeData;
-var analyzedComments;
+var ATTRIBUTE_DATA;
+var ANALYZED_COMMENTS;
 /** Calls youtube servlet and passes output to perspctive */
 function callYoutube() {
     return __awaiter(this, void 0, void 0, function () {
@@ -78,6 +78,7 @@ function callYoutube() {
             switch (_a.label) {
                 case 0:
                     resetChartAndCsv();
+                    document.getElementById("download").disabled = false;
                     document.getElementById('search-type').innerHTML = "";
                     channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
                     if (!channelId) {
@@ -162,7 +163,7 @@ function inputCommentsToPerspective(commentsList) {
                 case 2:
                     if (!(_e < _c.length)) return [3 /*break*/, 5];
                     item = _c[_e];
-                    analyzedComments.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
+                    ANALYZED_COMMENTS.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
                     return [4 /*yield*/, callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes)];
                 case 3:
                     perspectiveScore = _f.sent();
@@ -194,11 +195,11 @@ function getAttributeTotals(attributeScores) {
     for (var i = 0; i < requestedAttributes.length; i++) {
         for (var j = 0; j < attributeScores.length; j++) {
             // populates attributeData to support CSV output and attributeTotals to support averaging
-            if (attributeData[j] == null) {
-                attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
+            if (ATTRIBUTE_DATA[j] == null) {
+                ATTRIBUTE_DATA[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
             }
             else {
-                attributeData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+                ATTRIBUTE_DATA[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
             }
             if (attributeTotals.has(requestedAttributes[i])) {
                 attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
@@ -255,7 +256,9 @@ function callPerspective(text, lang, requestedAttributes) {
 /** Loads the Google Charts API */
 function loadChartsApi(toxicityData) {
     google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.load('current', { 'packages': ['table'] });
     google.charts.setOnLoadCallback(function () { drawBarChart(toxicityData); });
+    google.charts.setOnLoadCallback(function () { drawTableChart(); });
 }
 /** Draws a Google BarChart from a map. */
 function drawBarChart(toxicityData) {
@@ -458,6 +461,7 @@ function getKeywordSearchResults() {
             switch (_c.label) {
                 case 0:
                     resetChartAndCsv();
+                    document.getElementById("download").disabled = false;
                     searchTerm = document.getElementById('channelIdForAnalysis').value;
                     return [4 /*yield*/, fetch('/keyword_search_servlet?searchTerm=' + searchTerm)];
                 case 1:
@@ -504,11 +508,10 @@ function getKeywordSearchResults() {
 }
 /** Prepares CSV download*/
 function prepareDownload(sheetHeader, sheetData, sheetName) {
-    var header = sheetHeader.join(',') + '\n';
-    var csv = header;
+    var csv = sheetHeader.join(',') + '\n';
     for (var _i = 0, sheetData_1 = sheetData; _i < sheetData_1.length; _i++) {
         var data = sheetData_1[_i];
-        csv += data.join(',') + "\n";
+        csv += data.join(',') + '\n';
     }
     var outputCsv = new Blob([csv], { type: 'text/csv' });
     var downloadUrl = URL.createObjectURL(outputCsv);
@@ -519,22 +522,24 @@ function prepareDownload(sheetHeader, sheetData, sheetName) {
 }
 /** Formats data and initiates download of CSV file*/
 function beginDownload() {
+    document.getElementById("download").disabled = true;
     var requestedAttributes = getRequestedAttributes();
     requestedAttributes.unshift('COMMENT');
     var sheetHeader = requestedAttributes;
-    for (var i = 0; i < attributeData.length; i++) {
-        var comment = formatCommentForSpreadsheet(analyzedComments[i]);
-        attributeData[i].unshift(comment);
+    for (var i = 0; i < ATTRIBUTE_DATA.length; i++) {
+        var comment = formatCommentForSpreadsheet(ANALYZED_COMMENTS[i]);
+        ATTRIBUTE_DATA[i].unshift(comment);
     }
     var sheetName = 'Perspective_Output';
-    prepareDownload(sheetHeader, attributeData, sheetName);
+    prepareDownload(sheetHeader, ATTRIBUTE_DATA, sheetName);
 }
 /** Clears on screen elements and empties arrays associated with CSV creation*/
 function resetChartAndCsv() {
     document.getElementById('chart-container').innerHTML = "";
+    document.getElementById('table-container').innerHTML = "";
     document.getElementById('perspective-toxicity-score').innerHTML = "";
-    attributeData = [];
-    analyzedComments = [];
+    ATTRIBUTE_DATA = [];
+    ANALYZED_COMMENTS = [];
 }
 /** Removes whitespace, commas and newlines to allow comments to be comaptible with CSV*/
 function formatCommentForSpreadsheet(comment) {
@@ -542,4 +547,24 @@ function formatCommentForSpreadsheet(comment) {
     formattedComment = formattedComment.replace(/,/g, "");
     formattedComment = formattedComment.replace(/\s+/g, " ");
     return formattedComment;
+}
+/** Creates chart of analyzed comments and requested attributes*/
+function drawTableChart() {
+    var requestedAttributes = getRequestedAttributes();
+    var data = new google.visualization.DataTable();
+    // Add columns
+    data.addColumn('string', 'COMMENT');
+    for (var i = 0; i < requestedAttributes.length; i++) {
+        data.addColumn('number', requestedAttributes[i]);
+    }
+    // Add rows
+    data.addRows(ANALYZED_COMMENTS.length);
+    for (var i = 0; i < ANALYZED_COMMENTS.length; i++) {
+        data.setCell(i, 0, ANALYZED_COMMENTS[i]);
+        for (var j = 1; j < ATTRIBUTE_DATA[i].length + 1; j++) {
+            data.setCell(i, j, ATTRIBUTE_DATA[i][j - 1]);
+        }
+    }
+    var table = new google.visualization.Table(document.getElementById('table-container'));
+    table.draw(data, { showRowNumber: false, width: '100%', height: '100%' });
 }
