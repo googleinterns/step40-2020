@@ -55,7 +55,7 @@ var ATTRIBUTES_BY_LANGUAGE = {
     'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
     'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
-/** Category names are mapped to youtube category numbers */
+/** Category names are correlated to youtube category numbers */
 var YOUTUBE_CATEGORIES = {
     'Autos&Vehicles': 2,
     'Comedy': 23,
@@ -70,7 +70,6 @@ var YOUTUBE_CATEGORIES = {
 /** These variables will keep track of the data required for CSV output */
 var attributeData;
 var analyzedComments;
-//declare function greet(greeting: string): void;
 /** Calls youtube servlet and passes output to perspctive */
 function callYoutube() {
     return __awaiter(this, void 0, void 0, function () {
