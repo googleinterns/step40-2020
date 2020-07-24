@@ -43,7 +43,7 @@
             <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
           </div>
         </section>
-      </main>                       
+      </main>
       <div class="text-analysis-module">
         <!--Returns false so the page does not reload-->
         <form onsubmit="gatherInput(); return false;">
@@ -59,7 +59,12 @@
             <option value="it">Italian</option>
             <option value="pt">Portuguese</option>
           </select>
-          <div id="available-attributes"></div>
+          <div id="attribute-dropdown">
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
+              <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
+            </div>
+          </div>
           <div id="analysis-type">
             <b>Select analysis type</b>
             <div class="form-check form-check-inline">
@@ -96,5 +101,14 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" 
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
     </script>
+    <!-- <script>
+      $(".checkbox-menu").on("change", "input[type='checkbox']", function() {
+        $(this).closest("li").toggleClass("active", this.checked);
+      });
+
+      $(document).on('click', '.allow-focus', function (e) {
+        e.stopPropagation();
+      });
+    </script> -->
   </body>
 </html>
