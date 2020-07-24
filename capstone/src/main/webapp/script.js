@@ -122,7 +122,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   }
   await Promise.all(promises).then(resolvedResponses => {
     for (i = 0; i < substrings.length; i++) {
-      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i], lang)
+      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i], lang, requestedAttributes)
     }
   });
 
@@ -131,7 +131,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
 }
 
 /** Updates the HTML elements for a substring that will be added to the detailed analysis output */
-function addSubstring(substring, analysisContainer, result, loadingEl, response, lang) {
+function addSubstring(substring, analysisContainer, result, loadingEl, response, lang, requestedAttributes) {
   // Check for errors and sort the attributes
   if (typeof(response.attributeScores) === 'undefined') {
     analysisContainer.removeChild(loadingEl);
@@ -154,7 +154,7 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   colorSubstring(substringEl, toxicityScore);
      
   // Attach a tooltip (info-box for the substring)
-  const tooltipEl = createTooltip(attributes);
+  const tooltipEl = createTooltip(attributes, substring, lang, requestedAttributes);
   substringEl.appendChild(tooltipEl);
   result.appendChild(substringEl);
 }
@@ -461,7 +461,7 @@ function colorSubstring(substringEl, toxicityScore) {
 }
 
 /** Creates a tooltip for a substring in the detailed analysis */
-function createTooltip(attributes) {
+function createTooltip(attributes, text, lang,requestedAttributes) {
   const tooltipEl = document.createElement('div');
   const headerEl = document.createElement('div');
   const titleInfoEl = document.createElement('div');
@@ -490,7 +490,67 @@ function createTooltip(attributes) {
   for (const attribute of attributes) {
     bodyEl.appendChild(createAnyElement('p', attribute[0] + ': ' + decimalToPercentage(attribute[1])));
   }
+
+  // Attach button for feedback
+  const feedbackButton = document.createElement('button');
+  feedbackButton.innerHTML = 'Are these scores inaccurate?';
+  feedbackButton.className = 'btn btn-primary';
+  feedbackButton.onclick = function() { setUpFeedback(text, lang, tooltipEl, feedbackButton, requestedAttributes); };
+  tooltipEl.appendChild(feedbackButton);
+
   return tooltipEl;
+}
+
+/** Sets up the feedback section in tooltips */
+function setUpFeedback(text, lang, tooltipEl, feedbackButton, requestedAttributes) {
+  tooltipEl.removeChild(feedbackButton)
+  
+	// Create labels for feedback on each requested attribute
+  const inputDiv = document.createElement('div');
+  for (let attribute of requestedAttributes) {
+    const input = document.createElement('input');
+    input.className = 'form-control';
+    input.setAttribute('id', attribute);
+    input.setAttribute('placeholder', attribute + ' score');
+    inputDiv.appendChild(input);
+  }
+  tooltipEl.appendChild(inputDiv);
+
+  // Create the submit button
+  const submitButton = document.createElement('button');
+  submitButton.innerHTML = 'Submit';
+  submitButton.className = 'btn btn-primary';
+  submitButton.onclick = function() { submitFeedback(text, lang, submitButton, tooltipEl, inputDiv); };
+  tooltipEl.appendChild(submitButton);
+}
+
+/** Submits feedback to Perspective API */
+function submitFeedback(text, lang, submitButton, tooltipEl, inputDiv) {
+  const requestedAttributes = [];
+  const attributeScores = [];
+
+  // Get the user's input and sent it to Perspective
+  const attributes = inputDiv.childNodes;
+  for (let i = 0; i < attributes.length; i++) {
+    const suggestedScore = attributes[i].value;
+    if (isNaN(suggestedScore) || suggestedScore < 0 || suggestedScore > 1) {
+      alert('All values must be numbers between 0 and 1');
+      return;
+    } else if (suggestedScore != '') {
+      requestedAttributes.push(attributes[i].id);
+      attributeScores.push(suggestedScore);
+    } 
+  }
+  fetch('/suggest_perspective', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes, attributeScores: attributeScores})
+  });
+
+  // Remove the form and thank the user
+  tooltipEl.removeChild(inputDiv);
+  tooltipEl.removeChild(submitButton);
+  tooltipEl.appendChild(createAnyElement('p', 'Thanks for the feedback!'));
 }
 
 /** Converts decimals to percentages */
