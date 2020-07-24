@@ -505,7 +505,7 @@ function createTooltip(attributes, text, lang,requestedAttributes) {
 function setUpFeedback(text, lang, tooltipEl, feedbackButton, requestedAttributes) {
   tooltipEl.removeChild(feedbackButton)
   
-	// Create labels for feedback on each requested attribute
+  // Create labels for feedback on each requested attribute
   const inputDiv = document.createElement('div');
   for (let attribute of requestedAttributes) {
     const input = document.createElement('input');

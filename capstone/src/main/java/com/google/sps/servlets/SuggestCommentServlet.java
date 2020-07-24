@@ -61,7 +61,7 @@ public class SuggestCommentServlet extends HttpServlet {
     
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
-		String json = makePerspectiveJson(text, lang, feedback);
+    String json = makePerspectiveJson(text, lang, feedback);
     String output = post(URL, json, client);
   
     // Return Perspective's results
