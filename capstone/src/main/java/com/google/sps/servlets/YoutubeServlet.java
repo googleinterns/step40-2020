@@ -31,7 +31,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/** Servlet that returns youtube api data. */
+/** Servlet that returns youtube comment data. */
 @WebServlet("/youtube_servlet")
 public class YoutubeServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
