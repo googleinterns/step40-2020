@@ -264,7 +264,7 @@ function showCategories() {
   const categoryContainer = document.getElementById('category-container');
   categoryContainer.appendChild(radiobox);
   categoryContainer.appendChild(label);
-  categoryContainer.appendChild(document.createTextNode (" "));
+  categoryContainer.appendChild(document.createTextNode(" "));
   categoryContainer.appendChild(document.createElement("br"));
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
@@ -282,6 +282,6 @@ function showCategories() {
     const categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
     categoryContainer.appendChild(label);
-    categoryContainer.appendChild(document.createTextNode (" "));
+    categoryContainer.appendChild(document.createTextNode(" "));
   }
 }
