@@ -322,7 +322,7 @@ function perspectiveToxicityScale(attributeAverages) {
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
   const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
   document.getElementById('search-type').appendChild(document.createElement("br"));  
-  document.getElementById('search-type').append"Perspective Toxicity Score" + " : " + perspectiveToxicityScore;
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
 
 /** Returns top Youtube results by keyword to have their comments analyzed*/
