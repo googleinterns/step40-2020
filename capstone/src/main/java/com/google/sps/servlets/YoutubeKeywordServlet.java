@@ -39,8 +39,8 @@ public class YoutubeKeywordServlet extends HttpServlet {
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
-  @Override
   
+  @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String searchTerm = request.getParameter("searchTerm");
     String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
