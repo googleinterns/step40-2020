@@ -1,7 +1,6 @@
 /* Base structure */
 html, body {
   height: 100%;
-  background-image: url(/assets/Pattern-Randomized.svg);
 }
 
 body {
@@ -83,6 +82,16 @@ a, a:focus, a:hover {
   }
 }
 
+/** Jumbotron */
+.jumbotron {
+  background-color: #F6EFF3;
+  color: #535765;
+}
+
+h1 {
+  color: black;
+}
+
 /* Footer */
 .mastfoot {
   color: #451735;
@@ -103,7 +112,6 @@ a, a:focus, a:hover {
 
 .text-analysis-module {
   background-color: white;
-  margin-top: 100px;
   margin-bottom: 100px;
   padding-bottom: 15px;
 }

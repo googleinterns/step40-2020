@@ -625,3 +625,22 @@ function showAvailableAttributes() {
     avaiableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
+
+/** Shows or hides the advanced options for text analysis */
+function toggleAdvancedOptions() {
+  const toggleButton = document.getElementById('toggle-advanced-options-button');
+  if (!toggleButton) {
+    return;
+  }
+  const advancedOptionsEl = document.getElementById('advanced-options');
+  if (!advancedOptionsEl) {
+    return;
+  }
+  if (toggleButton.innerHTML === 'Advanced options') {
+    advancedOptionsEl.style.display = 'block';
+    toggleButton.innerHTML = 'Hide advanced options';
+  } else {
+    advancedOptionsEl.style.display = 'none';
+    toggleButton.innerHTML = 'Advanced options';
+  }
+}
