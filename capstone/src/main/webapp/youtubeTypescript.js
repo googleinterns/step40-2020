@@ -68,8 +68,8 @@ var YOUTUBE_CATEGORIES = {
     'Sports': 17
 };
 /** These variables will keep track of the data required for CSV output */
-var attributeData;
-var analyzedComments;
+var ATTRIBUTE_DATA;
+var ANALYZED_COMMENTS;
 /** Calls youtube servlet and passes output to perspctive */
 function callYoutube() {
     return __awaiter(this, void 0, void 0, function () {
@@ -162,7 +162,7 @@ function inputCommentsToPerspective(commentsList) {
                 case 2:
                     if (!(_e < _c.length)) return [3 /*break*/, 5];
                     item = _c[_e];
-                    analyzedComments.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
+                    ANALYZED_COMMENTS.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
                     return [4 /*yield*/, callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes)];
                 case 3:
                     perspectiveScore = _f.sent();
@@ -194,11 +194,11 @@ function getAttributeTotals(attributeScores) {
     for (var i = 0; i < requestedAttributes.length; i++) {
         for (var j = 0; j < attributeScores.length; j++) {
             // populates attributeData to support CSV output and attributeTotals to support averaging
-            if (attributeData[j] == null) {
-                attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
+            if (ATTRIBUTE_DATA[j] == null) {
+                ATTRIBUTE_DATA[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
             }
             else {
-                attributeData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+                ATTRIBUTE_DATA[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
             }
             if (attributeTotals.has(requestedAttributes[i])) {
                 attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
@@ -448,7 +448,7 @@ function perspectiveToxicityScale(attributeAverages) {
     var amountMoreThanKnoop = knoopScore - knoopLow;
     var mohsDecimal = amountMoreThanKnoop / knoopRange;
     var perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
-    document.getElementById('perspective-toxicity-score').innerHTML = ("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+    document.getElementById('perspective-toxicity-score').innerHTML = "Perspective Toxicity Score" + " : " + perspectiveToxicityScore;
 }
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 function getKeywordSearchResults() {
@@ -522,19 +522,19 @@ function beginDownload() {
     var requestedAttributes = getRequestedAttributes();
     requestedAttributes.unshift('COMMENT');
     var sheetHeader = requestedAttributes;
-    for (var i = 0; i < attributeData.length; i++) {
-        var comment = formatCommentForSpreadsheet(analyzedComments[i]);
-        attributeData[i].unshift(comment);
+    for (var i = 0; i < ATTRIBUTE_DATA.length; i++) {
+        var comment = formatCommentForSpreadsheet(ANALYZED_COMMENTS[i]);
+        ATTRIBUTE_DATA[i].unshift(comment);
     }
     var sheetName = 'Perspective_Output';
-    prepareDownload(sheetHeader, attributeData, sheetName);
+    prepareDownload(sheetHeader, ATTRIBUTE_DATA, sheetName);
 }
 /** Clears on screen elements and empties arrays associated with CSV creation*/
 function resetChartAndCsv() {
     document.getElementById('chart-container').innerHTML = "";
     document.getElementById('perspective-toxicity-score').innerHTML = "";
-    attributeData = [];
-    analyzedComments = [];
+    ATTRIBUTE_DATA = [];
+    ANALYZED_COMMENTS = [];
 }
 /** Removes whitespace, commas and newlines to allow comments to be comaptible with CSV*/
 function formatCommentForSpreadsheet(comment) {

@@ -363,7 +363,7 @@ function prepareDownload(sheetHeader, sheetData, sheetName) {
   const header = sheetHeader.join(',') + '\n';
   let csv = header;
   for(const data of sheetData) {
-    csv += data.join(',') + "\n";
+    csv += data.join(',') + '\n';
   }
   const outputCsv = new Blob([csv], { type: 'text/csv' });  
   const downloadUrl = URL.createObjectURL(outputCsv);
