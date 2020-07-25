@@ -566,5 +566,20 @@ function drawTableChart() {
         }
     }
     var table = new google.visualization.Table(document.getElementById('table-container'));
-    table.draw(data, { showRowNumber: false, width: '100%', height: '100%' });
+    var formatter = new google.visualization.ColorFormat();
+    formatter.addRange(0, .2, 'white', '#6B8E23');
+    ;
+    formatter.addRange(.2, .8, 'white', '#ffd800');
+    formatter.addRange(.8, 1, 'white', '#DC143C');
+    for (var i = 0; i < requestedAttributes.length + 1; i++) {
+        formatter.format(data, i);
+    }
+    table.draw(data, { allowHtml: true, showRowNumber: false, width: '100%', height: '100%' });
 }
+/*let color = '#6B8E23'; // Green
+    const score = attributeScoresAvg;
+    if (score >= 0.8) {
+      color = '#DC143C'; // Red
+    } else if (score >= 0.2) {
+      color = '#ffd800'; // Yellow
+    }*/ 
