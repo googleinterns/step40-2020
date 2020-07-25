@@ -114,7 +114,7 @@ function getAttributeTotals(attributeScores: any[]) {
   const attributeTotals = new Map<string, number>();   
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
-      // populates attributeData to support CSV output and attributeTotals to support averaging
+      // Populates attributeData to support CSV output and attributeTotals to support averaging
       if (ATTRIBUTE_DATA[j] == null) {
         ATTRIBUTE_DATA[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
       } else {
