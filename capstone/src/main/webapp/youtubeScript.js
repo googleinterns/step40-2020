@@ -211,6 +211,7 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
+/** Fetches top videos based categoty Id */
 async function getTrending(categoryId) {
   const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
@@ -228,6 +229,7 @@ async function getTrending(categoryId) {
   inputCommentsToPerspective(commentsList);
 }
 
+/** Enables user from entering text into the text field */
 function enableTextInput(button) {
   if (button.checked) { 
     document.getElementById('channelIdForAnalysis').value = button.id;
@@ -235,6 +237,7 @@ function enableTextInput(button) {
   }
 }
 
+/** Disables user from entering text into the text field */
 function disableTextInput(button) {
   if (button.checked) { 
     document.getElementById('channelIdForAnalysis').value = "";
@@ -242,7 +245,7 @@ function disableTextInput(button) {
   }
 }
 
-/** Creates radio buttons to allow teh user to select between various categories*/
+/** Creates radio buttons to allow the user to select between various categories*/
 function showCategories() {
   // Creates button to enable manual input
   const radiobox = document.createElement('input');
