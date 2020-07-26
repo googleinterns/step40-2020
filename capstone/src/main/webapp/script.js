@@ -17,7 +17,7 @@
  * @enum {regexp}
  */
 const TokenizerEnum = {
-  WORD: /(\S+\s*)|(\s*\S+)/g, 
+  WORD: /(\S*\s*)/g, 
   SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
