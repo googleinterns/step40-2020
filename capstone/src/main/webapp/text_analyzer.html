@@ -49,10 +49,10 @@
             <p class="lead text-muted">Get started by writing below</p>
           </div>
         </section>
-      </main>                       
+      </main>      
       <div class="text-analysis-module">
         <!--Returns false so the page does not reload-->
-        <form onsubmit="gatherInput(); return false;" style="align-items: left">
+        <form onsubmit="gatherInput(); return false;">
           <div class="md-form">
             <textarea type="text" class="form-control md-textarea" id="textForAnalysis" aria-describedby="inputText" rows="3"></textarea>
             <label for="textForAnalysis">Text</label>
@@ -84,11 +84,18 @@
               </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-outline-elegant btn-rounded btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto">Submit</button>
-        </form>
-        <div id="separator-container"></div>
+          <button type="submit" class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto">Submit</button>
+        </form>     
         <div id="general-chart-container"></div>
-        <div id="general-analysis-container" class="d-flex flex-column"></div>
+        <div class="container" id="detailed-analysis">
+         <div id ="detailed-analysis-header"></div>
+          <div class="row">
+            <div id="colored-analysis-container" class="d-flex flex-column col-8"></div>
+            <div class="col-4">
+              <div id="segment-data" class="side-bar"></div>
+            </div>
+          </div>
+        </div>
         <div id="perspective-datamuse-header"></div>
         <div id="perspective-datamuse-analysis"></div>
         <div id="perspective-datamuse-chart"></div>
