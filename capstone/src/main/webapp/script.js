@@ -295,3 +295,9 @@ function showAvailableAttributes() {
     list.children[0].children[0].checked = true;
   });
 }
+
+function loadAnalysisDropdown() {
+  $('.checkbox-menu').on('change', "input[type='radio']", function() {
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+}
