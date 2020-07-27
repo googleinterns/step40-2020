@@ -17,7 +17,7 @@
  * @enum {regexp}
  */
 const TokenizerEnum = {
-  WORD: /(\S+\s*)|(\s*\S+)/g, 
+  WORD: /(\S+\s*)/g, 
   SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
@@ -147,7 +147,7 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   // Break up and color the segment appropriately	
   const substringEl = document.createElement('span');
   const wordElts = [];
-  const words = getSubstrings(substring, TokenizerEnum['WORD']);
+  const words = getSubstrings(substring, /(\S+\s*)/g);
   if (words) {
     for (let i = 0; i < words.length; i++) {
     const wordEl = createAnyElement('span', words[i]);
