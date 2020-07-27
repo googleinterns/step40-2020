@@ -55,7 +55,7 @@ async function gatherSheetsInput() {
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   let tokenizer;
-  for (i = 0; i < radios.length; i++) {
+  for (let i = 0; i < radios.length; i++) {
     if (radios[i].checked && radios[i].value != 'NONE') {
       tokenizer = TokenizerEnum[radios[i].value];
       break;
@@ -77,7 +77,7 @@ async function getTextFromSheet(spreadsheetId) {
   const range = await response.result;
   if (range.values.length > 0) {
     let text = '';
-    for (i = 0; i < range.values.length; i++) {
+    for (let i = 0; i < range.values.length; i++) {
       let row = range.values[i];
       for (j = 0; j < row.length; j++) {
         text = text + row[j] + '\n';
