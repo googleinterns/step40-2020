@@ -37,8 +37,9 @@ async function gatherInput() {
   if (!textElement) {
     return;
   }
-  const langElement = document.getElementById('languageForAnalysis');
-  if (!langElement) {
+
+  const lang = getRequestedLanguage();
+  if (lang == null) {
     return;
   }
 
@@ -62,7 +63,7 @@ async function gatherInput() {
     }
   }
 
-  handleInput(textElement.value, langElement.value, requestedAttributes, tokenizer);
+  handleInput(textElement.value, lang, requestedAttributes, tokenizer);
 }
 
 /** Submits the input to Perspective and loads the appropriate output */
@@ -259,19 +260,12 @@ function drawBarChart(toxicityData) {
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-  $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
-    $(this).closest('li').toggleClass('active', this.checked);
-  });
-
-  $(document).on('click', '.allow-focus', function(e) {
-    e.stopPropagation();
-  });
-
-  const langElement = document.getElementById('languageForAnalysis');
-  if (!langElement) {
+  const lang = getRequestedLanguage();
+  if (lang == null) {
     return;
   }
-  const lang = langElement.value;
+  document.getElementById('language-button').innerHTML = 'Language: ' + lang.toUpperCase();
+
   const avaiableAttributesElement = document.getElementById('available-attributes');
   avaiableAttributesElement.innerHTML = '';
 	
@@ -296,9 +290,42 @@ function showAvailableAttributes() {
   });
 }
 
-function loadAnalysisDropdown() {
-  $('.checkbox-menu').on('change', "input[type='radio']", function() {
+/**
+ * Highlight the currently selected choice(s) in dropdown menus
+ */
+function loadDropdowns() {
+  // Language selection
+  $('#available-languages').on('change', "input[type='radio']", function() {
+    $("input[name='languageRadios']").closest('li').toggleClass('active', false);
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+
+  // Available attributes
+  $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+
+  // Analysis type
+  $('#available-analysis').on('change', "input[type='radio']", function() {
     $("input[name='analysisRadios']").closest('li').toggleClass('active', false);
     $(this).closest('li').toggleClass('active', this.checked);
   });
+
+  // Keep the menu open when a choice is selected
+  $(document).on('click', '.allow-focus', function(e) {
+    e.stopPropagation();
+  });
+}
+
+function getRequestedLanguage() {
+  const langRadios = document.getElementsByName('languageRadios');
+  if (!langRadios) {
+    return null;
+  }
+  for (let i = 0; i < langRadios.length; i++) {
+    if (langRadios[i].checked) {
+      return langRadios[i].value;
+    }
+  }
+  return null;
 }
