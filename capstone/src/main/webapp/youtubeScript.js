@@ -229,19 +229,16 @@ async function getTrending(categoryId) {
   inputCommentsToPerspective(commentsList);
 }
 
-/** Enables user from entering text into the text field */
-function enableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = button.id;
-    document.getElementById('channelIdForAnalysis').disabled = true;   
-  }
-}
-
-/** Disables user from entering text into the text field */
-function disableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = "";
-    document.getElementById('channelIdForAnalysis').disabled = false;
+/** Enables and disables input into the text field */
+function textInputToggle(button, toEnable) {
+  if (button.checked) {
+    if (toEnable) {
+      document.getElementById('channelIdForAnalysis').value = button.id;
+      document.getElementById('channelIdForAnalysis').disabled = true;
+    } else {
+      document.getElementById('channelIdForAnalysis').value = "";
+      document.getElementById('channelIdForAnalysis').disabled = false;
+    }
   }
 }
 
@@ -259,7 +256,7 @@ function showCategories() {
   const description = document.createTextNode('ID/Username');
   label.appendChild(description);
   radiobox.onclick = function() {
-    disableTextInput(this);   
+    textInputToggle(this, false);   
   }
   const categoryContainer = document.getElementById('category-container');
   categoryContainer.appendChild(radiobox);
@@ -277,7 +274,7 @@ function showCategories() {
     const description = document.createTextNode(category);
     label.appendChild(description);
     radiobox.onclick = function() {
-      enableTextInput(this);   
+      textInputToggle(this, true);   
     }
     const categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
