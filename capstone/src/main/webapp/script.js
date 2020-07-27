@@ -189,41 +189,48 @@ async function getExtremes(text, lang) {
 
   // Get the words and all their possible replacements
   const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
+  const replacements = [];
+  const wordsCalled = [];
+  const datamuseCalls = [];
+  for (let word of words) {
+    for (let attribute of Object.values(DATAMUSE_ATTRIBUTES)) {
+      wordsCalled.push(word);
+      datamuseCalls.push(callDatamuse(word, attribute, 10));
+    }
+  }
+  await Promise.all(datamuseCalls).then(datamuseResponses => {
+    for (let i = 0; i < datamuseResponses.length; i++) {
+      for (let j = 0; j < datamuseResponses[i].length; j++) {
+        replacements.push([wordsCalled[i], datamuseResponses[i][j].word]);
+      }
+    }
+  });
+  const newSentences = [];
+  const styledSentences = [];
+  const promises = [];
+  for (let i = 0; i < replacements.length; i++) {
+    // Get the Perspective scores on the new sentences
+    const newSentence = text.replace(replacements[i][0], replacements[i][1]);
+    const styledSentence = text.replace(replacements[i][0], '<b>' + replacements[i][1] + '</b>');
+    newSentences.push(newSentence);
+    styledSentences.push(styledSentence);
+    promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
+  }
   const mostToxic = { string: '', score: Number.MIN_VALUE };
   const leastToxic = { string: '', score: Number.MAX_VALUE };
-  for (let word of words) {
-    const replacements = [];
-    for (let attribute of Object.values(DATAMUSE_ATTRIBUTES)) {
-      const datamuseResponse = await callDatamuse(word, attribute, 10);
-      for (let i = 0; i < datamuseResponse.length; i++) {
-        replacements.push(datamuseResponse[i].word);
+  await Promise.all(promises).then(resolvedResponses => {
+    for (let i = 0; i < resolvedResponses.length; i++) {
+      // Update the current extreme values if necessary
+      const toxicityScore = resolvedResponses[i].attributeScores.TOXICITY.summaryScore.value;
+      if (toxicityScore > mostToxic.score) {
+        mostToxic.score = toxicityScore;
+        mostToxic.string = styledSentences[i];
+      } else if (toxicityScore < leastToxic.score) {
+        leastToxic.score = toxicityScore;
+        leastToxic.string = styledSentences[i];
       }
     }
-    const newSentences = [];
-    const styledSentences = [];
-    const promises = [];
-    for (let i = 0; i < replacements.length; i++) {
-      // Get the Perspective scores on the new sentences
-      const newSentence = text.replace(word, replacements[i]);
-      const styledSentence = text.replace(word, '<b>' + replacements[i] + '</b>');
-      newSentences.push(newSentence);
-      styledSentences.push(styledSentence);
-      promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
-    }
-    await Promise.all(promises).then(resolvedResponses => {
-      for (let i = 0; i < resolvedResponses.length; i++) {
-        // Update the current extreme values if necessary
-        const toxicityScore = resolvedResponses[i].attributeScores.TOXICITY.summaryScore.value;
-        if (toxicityScore > mostToxic.score) {
-          mostToxic.score = toxicityScore;
-          mostToxic.string = styledSentences[i];
-        } else if (toxicityScore < leastToxic.score) {
-          leastToxic.score = toxicityScore;
-          leastToxic.string = styledSentences[i];
-        }
-      }
-    });
-  }
+  });
   // Print the results
   container.removeChild(loadingEl);
   container.appendChild(createAnyElement('p', 'Least toxic variation: ' + leastToxic.string + ' -> ' + decimalToPercentage(leastToxic.score)));
