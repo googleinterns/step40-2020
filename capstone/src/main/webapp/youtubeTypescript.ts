@@ -431,7 +431,7 @@ function drawTableChart(){
   }
   let table = new google.visualization.Table(document.getElementById('table-container'));
   let formatter = new google.visualization.ColorFormat();
-  formatter.addRange(0, .2, 'white', '#6B8E23');;
+  formatter.addRange(0, .2, 'white', '#6B8E23');
   formatter.addRange(.2, .8, 'white', '#ffd800');
   formatter.addRange(.8, 1, 'white', '#DC143C');
   for (let i = 0; i < requestedAttributes.length + 1; i++){
