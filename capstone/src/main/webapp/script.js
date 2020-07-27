@@ -116,7 +116,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Generate the results for every substring of the input text
   const substrings = getSubstrings(text, tokenizer);
   const promises = [];
-  for (i = 0; i < substrings.length; i++) {
+  for (let i = 0; i < substrings.length; i++) {
     promises.push(callPerspective(substrings[i], lang, requestedAttributes));
   }
   await Promise.all(promises).then(resolvedResponses => {
@@ -215,7 +215,7 @@ async function getReplacements(text, lang, substringForReplacements) {
 async function printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
   // Get Perspective scores on new sentences
   const promises = [];
-  const newSentences = []
+  const newSentences = [];
   for (let i = 0; i < replacements.length; i++) {
     const replacement = replacements[i].word;
     const newSentence = text.replace(substringForReplacements, replacement);
