@@ -385,9 +385,8 @@ function setUpWordTypeSelection(container, optionsRow, text, lang, substringForR
 async function getOriginalToxicity(text, lang, container, loadingEl) {
   const response = await callPerspective(text, lang, ['TOXICITY']);
   if (typeof(response.attributeScores) === 'undefined') {
-    container.removeChild(loadingEl)
-    container.appendChild(
-      AnyElement('p', 'Perspective API was not able to get scores replacements'));
+    container.removeChild(loadingEl);
+    container.appendChild(CreateAnyElement('p', 'Perspective API was not able to get scores replacements'));
     return;
   }
   return response.attributeScores.TOXICITY.summaryScore.value;
