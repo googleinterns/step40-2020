@@ -121,7 +121,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   }
   await Promise.all(promises).then(resolvedResponses => {
     for (i = 0; i < substrings.length; i++) {
-      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i], lang)
+      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i], lang, requestedAttributes)
     }
   });
 
@@ -134,7 +134,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
 }
 
 /** Updates the HTML elements for a substring that will be added to the detailed analysis output */
-function addSubstring(substring, analysisContainer, result, loadingEl, response, lang) {
+function addSubstring(substring, analysisContainer, result, loadingEl, response, lang, requestedAttributes) {
   // Check for errors and sort the attributes
   if (typeof(response.attributeScores) === 'undefined') {
     analysisContainer.removeChild(loadingEl);
@@ -161,13 +161,13 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   colorSubstring(substringEl, toxicityScore);
 
   // Set up analysis replacement function call after user clicks on segment
-  substringEl.onclick = function() { handleSegmentClick(attributes, substringEl, wordElts, substring, lang);  }
+  substringEl.onclick = function() { handleSegmentClick(attributes, substringEl, wordElts, substring, lang, requestedAttributes);  }
   result.appendChild(substringEl);
 }
 
 /** Appropriately sets the onclick attribute of a detailed analyis segment */ 
-function handleSegmentClick(attributes, substringEl, wordElts, substring, lang) {
-  showAttributes(attributes);
+function handleSegmentClick(attributes, substringEl, wordElts, substring, lang, requestedAttributes) {
+  setUpSidebar(attributes, substring, lang, requestedAttributes);
   // Remove properties from previously clicked-on segments
   const segments = document.getElementsByClassName('segment');
   for (let i = 0; i < segments.length; i++) {
@@ -185,15 +185,82 @@ function handleSegmentClick(attributes, substringEl, wordElts, substring, lang) 
   }
 }
 
-/** Displays the attributes for a clicked-on segment */
-function showAttributes(attributes) {
+/** Displays the attributes for a clicked-on segment and an option to submit feedback */
+function setUpSidebar(attributes, text, lang, requestedAttributes) {
+  // Populate the side bar with the Perspective data
   const container = document.getElementById('segment-data');
   container.innerHTML = '';
   container.appendChild(createAnyElement('b', 'Top attributes'));
   for (let i = 0; i < attributes.length && i < 3; i++) {
     container.appendChild(createAnyElement('p', attributes[i][0] + ': ' + decimalToPercentage(attributes[i][1])));
   }
-  container.appendChild(createAnyElement('b', 'Click on any word in selected segment for replacements'))
+  container.appendChild(createAnyElement('b', 'Click on any word in selected segment for replacements'));
+  
+  // Attach button for feedback
+  const feedbackButton = document.createElement('button');
+  feedbackButton.innerHTML = 'Are these scores inaccurate?';
+  feedbackButton.className = 'btn btn-outline-elegant waves-effect';
+  feedbackButton.onclick = function() { setUpFeedback(text, lang, container, feedbackButton, requestedAttributes); };
+  container.appendChild(feedbackButton);
+}
+
+/** Sets up the feedback section in tooltips */
+function setUpFeedback(text, lang, container, feedbackButton, requestedAttributes) {
+  container.removeChild(feedbackButton)
+
+  // Create inputs for feedback on each requested attribute
+  const inputDiv = document.createElement('div');
+  for (let attribute of requestedAttributes) {
+    const input = document.createElement('input');
+    input.className = 'form-control';
+    input.setAttribute('id', attribute);
+    input.setAttribute('type', 'text')
+    const inputLabel = document.createElement('label');
+    inputLabel.innerHTML = attribute + ' score';
+    inputLabel.setAttribute('for', attribute);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'md-form';
+    wrapper.appendChild(input);
+    wrapper.appendChild(inputLabel);
+    inputDiv.appendChild(wrapper);
+  }
+  container.appendChild(inputDiv);
+
+  // Create the submit button
+  const submitButton = document.createElement('button');
+  submitButton.innerHTML = 'Submit';
+  submitButton.className = 'btn btn-outline-elegant waves-effect';
+  submitButton.onclick = function() { submitFeedback(text, lang, submitButton, container, inputDiv); };
+  container.appendChild(submitButton);
+}
+
+/** Submits feedback to Perspective API */
+function submitFeedback(text, lang, submitButton, container, inputDiv) {
+  const requestedAttributes = [];
+  const attributeScores = [];
+
+  // Get the user's input and sent it to Perspective
+  const attributes = inputDiv.childNodes;
+  for (let i = 0; i < attributes.length; i++) {
+    const suggestedScore = attributes[i].getElementsByTagName('input')[0].value;
+    if (isNaN(suggestedScore) || suggestedScore < 0 || suggestedScore > 1) {
+      alert('All values must be numbers between 0 and 1');
+      return;
+    } else if (suggestedScore != '') {
+      requestedAttributes.push(attributes[i].id);
+      attributeScores.push(suggestedScore);
+    } 
+  }
+  fetch('/suggest_perspective', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes, attributeScores: attributeScores})
+  });
+
+  // Remove the form and thank the user
+  container.removeChild(inputDiv);
+  container.removeChild(submitButton);
+  container.appendChild(createAnyElement('p', 'Thanks for the feedback!'));
 }
 
 /** Sets up the replacements section */
