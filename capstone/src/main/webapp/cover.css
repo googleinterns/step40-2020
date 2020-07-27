@@ -222,3 +222,9 @@ hr {
 .checkbox-menu li.active label:focus {
   background-color: rgba(69, 23, 53, 0.5);
 }
+
+.dropdown {
+  margin-left: 0.25em;
+  margin-right: 0.25em;
+  margin-bottom: 0.5em;
+}
