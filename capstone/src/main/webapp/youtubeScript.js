@@ -97,7 +97,6 @@ async function inputCommentsToPerspective(commentsList) {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
     loadChartsApi(attributeAverages);
-    perspectiveToxicityScale(attributeAverages);
   });
 }
 
