@@ -161,7 +161,7 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   colorSubstring(substringEl, toxicityScore);
 
   // Set up analysis replacement function call after user clicks on segment
-  substringEl.onclick = function() { handleSegmentClick(attributes, substringEl, wordElts, substring, lang);  }
+  substringEl.onclick = function() { handleSegmentClick(attributes, substringEl, wordElts, substring, lang); }
   result.appendChild(substringEl);
 }
 
