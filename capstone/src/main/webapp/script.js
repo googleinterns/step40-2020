@@ -298,6 +298,7 @@ function showAvailableAttributes() {
 
 function loadAnalysisDropdown() {
   $('.checkbox-menu').on('change', "input[type='radio']", function() {
+    $("input[name='analysisRadios']").closest('li').toggleClass('active', false);
     $(this).closest('li').toggleClass('active', this.checked);
   });
 }
