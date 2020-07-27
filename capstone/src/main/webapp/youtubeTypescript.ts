@@ -249,7 +249,7 @@ async function getTrending(categoryId: number) {
   });
 }
 
-/** Enables and disables input into the text field */
+/** Enables and disables manual input into the text field */
 function textInputToggle (button, toEnable: boolean) {
   if (button.checked) { 
     if (toEnable) {

@@ -363,7 +363,7 @@ function getTrending(categoryId) {
         });
     });
 }
-/** Enables and disables input into the text field */
+/** Enables and disables manual input into the text field */
 function textInputToggle(button, toEnable) {
     if (button.checked) {
         if (toEnable) {
