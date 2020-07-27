@@ -249,21 +249,18 @@ async function getTrending(categoryId: number) {
   });
 }
 
-/** Enables user from entering text into the text field */
-function enableTextInput(button) {
+/** Enables and disables input into the text field */
+function textInputToggle (button, toEnable: boolean) {
   if (button.checked) { 
-    (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value = button.id;
-    (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).disabled = true;
-    (<HTMLInputElement> document.getElementById("keywordSearch")).disabled = true;
-  }
-}
-
-/** Disables user from entering text into the text field */
-function disableTextInput(button) {
-  if (button.checked) { 
-    (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value = "";
-    (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).disabled = false;
-    (<HTMLInputElement> document.getElementById("keywordSearch")).disabled = false;   
+    if (toEnable) {
+      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value = button.id;
+      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).disabled = true;
+      (<HTMLInputElement> document.getElementById("keywordSearch")).disabled = true;
+    } else {
+      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value = "";
+      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).disabled = false;
+      (<HTMLInputElement> document.getElementById("keywordSearch")).disabled = false;    
+    }
   }
 }
 
@@ -281,7 +278,7 @@ function showCategories() {
   const description = document.createTextNode('ID/Username');
   label.appendChild(description);
   radiobox.onclick = function() {
-    disableTextInput(this);   
+    textInputToggle(this, false);   
   }
   const categoryContainer = document.getElementById('category-container');
   categoryContainer.appendChild(radiobox);
@@ -300,7 +297,7 @@ function showCategories() {
     const description = document.createTextNode(category);
     label.appendChild(description);
     radiobox.onclick = function() {
-      enableTextInput(this);   
+      textInputToggle(this, true);   
     }
     const categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);

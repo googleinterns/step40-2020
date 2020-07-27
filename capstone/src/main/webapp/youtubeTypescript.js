@@ -363,20 +363,19 @@ function getTrending(categoryId) {
         });
     });
 }
-/** Enables user from entering text into the text field */
-function enableTextInput(button) {
+/** Enables and disables input into the text field */
+function textInputToggle(button, toEnable) {
     if (button.checked) {
-        document.getElementById('channelIdForAnalysis').value = button.id;
-        document.getElementById('channelIdForAnalysis').disabled = true;
-        document.getElementById("keywordSearch").disabled = true;
-    }
-}
-/** Disables user from entering text into the text field */
-function disableTextInput(button) {
-    if (button.checked) {
-        document.getElementById('channelIdForAnalysis').value = "";
-        document.getElementById('channelIdForAnalysis').disabled = false;
-        document.getElementById("keywordSearch").disabled = false;
+        if (toEnable) {
+            document.getElementById('channelIdForAnalysis').value = button.id;
+            document.getElementById('channelIdForAnalysis').disabled = true;
+            document.getElementById("keywordSearch").disabled = true;
+        }
+        else {
+            document.getElementById('channelIdForAnalysis').value = "";
+            document.getElementById('channelIdForAnalysis').disabled = false;
+            document.getElementById("keywordSearch").disabled = false;
+        }
     }
 }
 /** Creates radio buttons to allow the user to select between various categories*/
@@ -393,7 +392,7 @@ function showCategories() {
     var description = document.createTextNode('ID/Username');
     label.appendChild(description);
     radiobox.onclick = function () {
-        disableTextInput(this);
+        textInputToggle(this, false);
     };
     var categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
@@ -412,7 +411,7 @@ function showCategories() {
         var description_1 = document.createTextNode(category);
         label_1.appendChild(description_1);
         radiobox_1.onclick = function () {
-            enableTextInput(this);
+            textInputToggle(this, true);
         };
         var categoryContainer_1 = document.getElementById('category-container');
         categoryContainer_1.appendChild(radiobox_1);
