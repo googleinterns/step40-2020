@@ -461,7 +461,7 @@ function colorSubstring(substringEl, toxicityScore) {
 }
 
 /** Creates a tooltip for a substring in the detailed analysis */
-function createTooltip(attributes, text, lang,requestedAttributes) {
+function createTooltip(attributes, text, lang, requestedAttributes) {
   const tooltipEl = document.createElement('div');
   const headerEl = document.createElement('div');
   const titleInfoEl = document.createElement('div');
