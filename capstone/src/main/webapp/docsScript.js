@@ -55,7 +55,7 @@ async function gatherDocsInput() {
   document.getElementById('analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   let tokenizer;
-  for (i = 0; i < radios.length; i++) {
+  for (let i = 0; i < radios.length; i++) {
     if (radios[i].checked && radios[i].value != 'NONE') {
       tokenizer = TokenizerEnum[radios[i].value];
       break;
@@ -102,6 +102,9 @@ function readStructrualElements(elements) {
   return stringOutput;
 }
 
+/** 
+  * Returns the text in a paragraph element from a Google Doc
+  */
 function readParagraphElement(paragraphElement) {
   const run = paragraphElement.textRun;
   if (run == null || run.content == null) {
