@@ -386,7 +386,7 @@ async function getOriginalToxicity(text, lang, container, loadingEl) {
   const response = await callPerspective(text, lang, ['TOXICITY']);
   if (typeof(response.attributeScores) === 'undefined') {
     container.removeChild(loadingEl);
-    container.appendChild(CreateAnyElement('p', 'Perspective API was not able to get scores replacements'));
+    container.appendChild(createAnyElement('p', 'Perspective API was not able to get scores replacements'));
     return;
   }
   return response.attributeScores.TOXICITY.summaryScore.value;
