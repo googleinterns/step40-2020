@@ -36,7 +36,7 @@ import java.net.URL;
 import java.net.URLEncoder; 
 
 /** Servlet that converts a youtube username to a channelID. */
-@WebServlet("youtube_username_servlet")
+@WebServlet("/youtube_username_servlet")
 public class YoutubeUsernameServlet extends HttpServlet {
   private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";

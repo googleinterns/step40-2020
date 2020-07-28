@@ -55,7 +55,6 @@ async function callYoutube() {
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
-      inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
@@ -64,7 +63,6 @@ async function callYoutube() {
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
-      inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
@@ -90,13 +88,15 @@ async function inputCommentsToPerspective(commentsList) {
   const attributeScoresPromises = [];
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
-      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+      let commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+      const perspectiveScore = await callPerspective(commentText, langElement.value, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
   }
+  let totalNumberOfComments = commentsList[0].items.length * commentsList.length;
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
-    const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
+    const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
     loadChartsApi(attributeAverages);
     perspectiveToxicityScale(attributeAverages);
   });
@@ -108,10 +108,11 @@ function getAttributeTotals(attributeScores) {
   const attributeTotals = new Map();    
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (attributeTotals.has(requestedAttributes[i])) {
-        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
       } else {
-        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeScoreValue);
       }
     }
   }
@@ -119,10 +120,10 @@ function getAttributeTotals(attributeScores) {
 }
 
 /** Returns a map of attribute score averages from a map and an array */
-function getAttributeAverages(attributeTotals, commentsList) {
+function getAttributeAverages(attributeTotals, totalNumberOfComments) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+    attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
   }
   return attributeAverages;
 }
@@ -189,8 +190,8 @@ function showAvailableAttributes() {
     return;
   }
   const lang = langElement.value;
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
     const checkbox = document.createElement('input');
@@ -201,9 +202,9 @@ function showAvailableAttributes() {
     const label = document.createElement('label');
     label.htmlFor = attribute + '-checkbox';
     label.appendChild(document.createTextNode(attribute));
-    avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
+    availableAttributesElement.appendChild(checkbox);
+    availableAttributesElement.appendChild(label);
+    availableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
 
@@ -307,7 +308,7 @@ function perspectiveToxicityScale(attributeAverages) {
   let mohs;
   for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
-      if(knoopScore < 1) {
+      if (knoopScore < 1) {
         knoopLow = 0;
       } else {
         knoopLow = knoopScale[i-1];
@@ -332,7 +333,7 @@ async function getKeywordSearchResults() {
   const responseJson = await response.json();
   let videoIds = [];
   for (const item in responseJson.items) {
-    if(responseJson.items[item].id.videoId != undefined){
+    if (responseJson.items[item].id.videoId != undefined) {
       videoIds.push(responseJson.items[item].id.videoId);
     }
   }   
