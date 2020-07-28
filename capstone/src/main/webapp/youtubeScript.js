@@ -300,7 +300,7 @@ function perspectiveToxicityScale(attributeAverages) {
   let mohs;
   for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
-      if(knoopScore < 1) {
+      if (knoopScore < 1) {
         knoopLow = 0;
       } else {
         knoopLow = knoopScale[i-1];
