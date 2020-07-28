@@ -54,39 +54,8 @@
           <div class="row">
             <div class="col-12 justify-content-center form-inline">
               <div class="dropdown" id="language-dropdown" onchange="showAvailableAttributes()">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" id="language-button">Language: EN</button>
-                <ul class="dropdown-menu checkbox-menu allow-focus" id="available-languages">
-                  <li class="active">
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="en" checked> English
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="es"> Spanish
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="fr"> French
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="de"> German
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="it"> Italian
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="pt"> Portuguese
-                    </label>
-                  </li>
-                </ul>
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" id="language-button">Language</button>
+                <ul class="dropdown-menu checkbox-menu allow-focus" id="available-languages"></ul>
               </div>
               <div class="dropdown" id="attribute-dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
@@ -96,18 +65,18 @@
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Analysis Type</button>
                 <ul class="dropdown-menu checkbox-menu allow-focus" id="available-analysis">
                   <li class="active">
-                    <label class="form-check-label" for="bySentence">
-                      <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked> By sentence
+                    <label for="bySentence">
+                      <input type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked> By sentence
                     </label>
                   </li>
                   <li>
-                    <label class="form-check-label" for="byWord">
-                      <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD"> By word
+                    <label for="byWord">
+                      <input type="radio" name="analysisRadios" id="byWord" value="WORD"> By word
                     </label>
                   </li>
                   <li>
-                    <label class="form-check-label" for="noAnalysis">
-                      <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE"> No analysis
+                    <label for="noAnalysis">
+                      <input type="radio" name="analysisRadios" id="noAnalysis" value="NONE"> No analysis
                     </label>
                   </li>
                 </ul>

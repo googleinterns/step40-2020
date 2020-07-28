@@ -21,6 +21,15 @@ const TokenizerEnum = {
   SENTENCE: /([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g,
 };
 
+const LANGUAGES = {
+  'en': 'English',
+  'es': 'Spanish',
+  'fr': 'French',
+  'de': 'German',
+  'it': 'Italian',
+  'pt': 'Portuguese'
+}
+
 const ATTRIBUTES_BY_LANGUAGE = {
   'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
   'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
@@ -260,14 +269,14 @@ function drawBarChart(toxicityData) {
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-  const lang = getRequestedLanguage();
+  let lang = getRequestedLanguage();
   if (lang == null) {
-    return;
+    lang = 'en';
   }
-  document.getElementById('language-button').innerHTML = 'Language: ' + lang.toUpperCase();
+  document.getElementById('language-button').innerHTML = 'Language: ' + LANGUAGES[lang];
 
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
 	
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
@@ -283,7 +292,7 @@ function showAvailableAttributes() {
     list.className = 'active';
     list.appendChild(label);
   
-    avaiableAttributesElement.appendChild(list);
+    availableAttributesElement.appendChild(list);
 
     // Check the attribute's box; Ajax prevents doing this earlier
     list.children[0].children[0].checked = true;
@@ -294,6 +303,33 @@ function showAvailableAttributes() {
  * Highlight the currently selected choice(s) in dropdown menus
  */
 function loadDropdowns() {
+  // Create language options
+  const availableLanguagesElement = document.getElementById('available-languages');
+  if (availableLanguagesElement == null) {
+    return;
+  }
+  availableLanguagesElement.innerHTML = '';
+	
+  for (const lang of Object.keys(LANGUAGES)) {
+    const radio = document.createElement('input');
+    radio.name = 'languageRadios';
+    radio.type = 'radio';
+    radio.value = lang;
+  
+    const label = document.createElement('label');
+    label.appendChild(radio);
+    label.innerHTML += LANGUAGES[lang];
+
+    const list = document.createElement('li');
+    // list.className = 'active';
+    list.appendChild(label);
+  
+    availableLanguagesElement.appendChild(list);
+  }
+  // Select the first option
+  availableLanguagesElement.children[0].className = 'active';
+  availableLanguagesElement.children[0].children[0].children[0].checked = true;
+
   // Language selection
   $('#available-languages').on('change', "input[type='radio']", function() {
     $("input[name='languageRadios']").closest('li').toggleClass('active', false);
