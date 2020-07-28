@@ -89,7 +89,8 @@ async function inputCommentsToPerspective(commentsList) {
   const attributeScoresPromises = [];
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
-      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+      let commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+      const perspectiveScore = await callPerspective(commentText, langElement.value, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
   }
