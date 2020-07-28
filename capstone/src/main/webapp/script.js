@@ -321,7 +321,6 @@ function loadDropdowns() {
     label.innerHTML += LANGUAGES[lang];
 
     const list = document.createElement('li');
-    // list.className = 'active';
     list.appendChild(label);
   
     availableLanguagesElement.appendChild(list);
