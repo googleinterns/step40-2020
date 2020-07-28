@@ -93,9 +93,10 @@ async function inputCommentsToPerspective(commentsList) {
       attributeScoresPromises.push(perspectiveScore);
     }
   }
+  let totalNumberOfComments = commentsList[0].items.length * commentsList.length;
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
-    const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
+    const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
     loadChartsApi(attributeAverages);
     perspectiveToxicityScale(attributeAverages);
   });
@@ -118,10 +119,10 @@ function getAttributeTotals(attributeScores) {
 }
 
 /** Returns a map of attribute score averages from a map and an array */
-function getAttributeAverages(attributeTotals, commentsList) {
+function getAttributeAverages(attributeTotals, totalNumberOfComments) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+    attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
   }
   return attributeAverages;
 }
