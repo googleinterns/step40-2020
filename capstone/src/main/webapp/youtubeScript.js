@@ -190,8 +190,8 @@ function showAvailableAttributes() {
     return;
   }
   const lang = langElement.value;
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
     const checkbox = document.createElement('input');
@@ -202,9 +202,9 @@ function showAvailableAttributes() {
     const label = document.createElement('label');
     label.htmlFor = attribute + '-checkbox';
     label.appendChild(document.createTextNode(attribute));
-    avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
+    availableAttributesElement.appendChild(checkbox);
+    availableAttributesElement.appendChild(label);
+    availableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
 
