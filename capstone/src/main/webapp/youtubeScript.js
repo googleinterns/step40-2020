@@ -42,13 +42,13 @@ async function callYoutube() {
   if (!channelId) {
     return;
   }
-  /** Checks if input is a category, if so directs input to be handled by get trending*/
+  // Checks if input is a category, if so directs input to be handled by get trending
   if (YOUTUBE_CATEGORIES[channelId] != undefined) {
     document.getElementById('search-type').innerHTML = "Category Search";
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
-  /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
+  // Checks if input follows channel ID format, if not attempts to convert it to channel ID
   let response;
   let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
@@ -56,7 +56,6 @@ async function callYoutube() {
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
-      inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
@@ -65,7 +64,6 @@ async function callYoutube() {
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
-      inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
