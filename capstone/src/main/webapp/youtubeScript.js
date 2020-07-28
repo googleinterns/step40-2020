@@ -89,7 +89,8 @@ async function inputCommentsToPerspective(commentsList) {
   const attributeScoresPromises = [];
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
-      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+      let commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+      const perspectiveScore = await callPerspective(commentText, langElement.value, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
   }
@@ -103,13 +104,14 @@ async function inputCommentsToPerspective(commentsList) {
 /** returns a map of attribute score sums from an array of JSON's */
 function getAttributeTotals(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
-  const attributeTotals = new Map();    
+  const attributeTotals = new Map();   
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (attributeTotals.has(requestedAttributes[i])) {
-        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
       } else {
-        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeScoreValue);
       }
     }
   }
@@ -120,7 +122,8 @@ function getAttributeTotals(attributeScores) {
 function getAttributeAverages(attributeTotals, commentsList) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+    let totalNumberOfComments = commentsList[0].items.length * commentsList.length;
+    attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
   }
   return attributeAverages;
 }
