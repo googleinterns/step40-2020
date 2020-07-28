@@ -36,21 +36,28 @@ import java.net.URL;
 import java.net.URLEncoder; 
 
 /** Servlet that converts a youtube username to a channelID. */
-@WebServlet("youtube_username_servlet")
+@WebServlet("/youtube_username_servlet")
 public class YoutubeUsernameServlet extends HttpServlet {
   private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
-  private static final String KEY = "API_KEY";
+  private static final String KEY = "AIzaSyCNknbH7wekG_bz1RcP1muXy9plNQhZaAY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  private String postRequestBodyData;
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String userName = request.getParameter("channelId");
-    String ecodedUserName = URLEncoder.encode(userName, "UTF-8");
+    String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
     String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
+    System.out.println(completeUrl);
     String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
+  }
+
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    postRequestBodyData = request.getReader().readLine().replaceAll("^\"+|\"+$", "");
+    doGet(request, response);
   }
   
   /** Makes a GET request. */

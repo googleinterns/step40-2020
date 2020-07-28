@@ -52,7 +52,10 @@ async function callYoutube() {
   let response;
   let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId);
+    response = await fetch('/youtube_servlet', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json',},
+      body: channelId});
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
       inputCommentsToPerspective([]);
@@ -60,15 +63,22 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
+    const usernameConverterResponse = await fetch('/youtube_username_servlet', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json',},
+      body: JSON.stringify(channelId)});
     const usernameConverterResponseJson = await usernameConverterResponse.json();
+    console.log(usernameConverterResponseJson);
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
+    response = await fetch('/youtube_servlet', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json',},
+      body: convertedUserName});
     responseJson = await response.json();
   }
   inputCommentsToPerspective([responseJson]);
@@ -212,7 +222,10 @@ function isLetter(character) {
 
 /** Fetches top videos based categoty Id */
 async function getTrending(categoryId) {
-  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
+  const trendingResponse = await fetch('/trending_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: categoryId});
   const trendingResponseJson = await trendingResponse.json();
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
@@ -221,7 +234,10 @@ async function getTrending(categoryId) {
   }
   const commentsList = []
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
+    const videoCommentList = await fetch('/youtube_servlet', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json',},
+      body: trendingVideoIds[id]});
     const videoCommentListJson = await videoCommentList.json();
     commentsList.push(videoCommentListJson);
   }

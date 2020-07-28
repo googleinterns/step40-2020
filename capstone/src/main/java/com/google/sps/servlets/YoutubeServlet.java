@@ -35,23 +35,30 @@ import java.util.Arrays;
 @WebServlet("/youtube_servlet")
 public class YoutubeServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
-  private static final String KEY = "API_KEY";
+  private static final String KEY = "AIzaSyCNknbH7wekG_bz1RcP1muXy9plNQhZaAY";
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  private String postRequestBodyData;
+  private String channelId;
+  private String videoId; 
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String ChannelId = request.getParameter("channelId");
-    String videoId = request.getParameter("videoId");
-    String completeUrl = (ChannelId != null) ? 
-      (BASE_URL + "&allThreadsRelatedToChannelId=" + ChannelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
-        (BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
+    String completeUrl = (postRequestBodyData.length() == 24) ? 
+      (BASE_URL + "&allThreadsRelatedToChannelId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
+        (BASE_URL + "&videoId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
     String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
   
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    postRequestBodyData = request.getReader().readLine().replaceAll("^\"+|\"+$", "");
+    doGet(request, response);
+  }
+
   /** Makes a GET request. */
   private String get(String url) throws IOException {
     Request request = new Request.Builder()

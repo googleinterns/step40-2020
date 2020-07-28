@@ -38,7 +38,7 @@ import java.util.Arrays;
 @WebServlet("/call_perspective")
 public class CallPerspectiveServlet extends HttpServlet {
 
-  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
+  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyCNknbH7wekG_bz1RcP1muXy9plNQhZaAY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
   private ApiCaller apiCaller;
