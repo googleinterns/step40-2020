@@ -36,14 +36,6 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-const ABOUT_PARAGRAPH = 'This tool is only meant to test Perspective API\'s scores'
-  + ' and to see how they can change. The replacement words or phrases are' 
-  + ' not meant to be taken as suggestions. Do not use them as a means to '
-  + 'mask any toxicity. When a score lowers, it is not an indication that '
-  + 'the text is necessrily less toxic. The replacements are obtained '
-  + 'through a word-finding API, Datamuse. The models Perspective uses do '
-  + 'have unintentional bias, and uncommon words might have inaccurate scores. ';
-
 /** Collects the user's input and submits it for analysis */
 async function gatherInput() {
   // Get the submitted text and language
@@ -81,12 +73,11 @@ async function gatherInput() {
 
 /** Submits the input to Perspective and loads the appropriate output */
 async function handleInput(text, lang, requestedAttributes, tokenizer) {
-	// Remove any previous output
+  // Remove any previous output
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
-  document.getElementById('perspective-datamuse-extremes').innerHTML = '';
-  document.getElementById('perspective-datamuse-header').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
+  document.getElementById('about-container').style.display = 'none';
 
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
@@ -103,7 +94,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   }
 }
 
-/** Prints detailed analysis of text by word or sentence */
+/** Shows detailed analysis of text by word or sentence */
 async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Set up the detailed analysis section
   const analysisContainer = document.getElementById('general-analysis-container');
@@ -117,7 +108,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Generate the results for every substring of the input text
   const substrings = getSubstrings(text, tokenizer);
   const promises = [];
-  for (i = 0; i < substrings.length; i++) {
+  for (let i = 0; i < substrings.length; i++) {
     promises.push(callPerspective(substrings[i], lang, requestedAttributes));
   }
   await Promise.all(promises).then(resolvedResponses => {
@@ -162,20 +153,13 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
 /** Sets up the replacements section */
 function setUpReplacements(text, lang, substringForReplacements) {
   // Clear previous results
-  const headerContainer = document.getElementById('perspective-datamuse-header');
-  headerContainer.innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
-  document.getElementById('perspective-datamuse-extremes').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
 
-  // Set up about container 
-  const aboutContainer = document.createElement('div');
-  aboutContainer.setAttribute('style', 'background-color:#FAEBD7');
-  aboutContainer.appendChild(createAnyElement('p', ABOUT_PARAGRAPH));
-  headerContainer.appendChild(aboutContainer);
+  document.getElementById('about-container').style.display = 'block';
 
   getReplacements(text, lang, substringForReplacements);
-  setUpExtras(text, lang, substringForReplacements);
+  showDataMuseWordReplacementOptions(text, lang, substringForReplacements);
 }
 
 /** Gets the most extreme word replacements on a string */
@@ -237,26 +221,6 @@ async function getExtremes(text, lang) {
   container.appendChild(createAnyElement('p', 'Most toxic variation: ' + mostToxic.string + ' -> ' + decimalToPercentage(mostToxic.score)));
 }
 
-/** Creates an individual radio */
-function createIndividualRadio(id, type, value, radioClass, text, name) {
-  const inputEl = document.createElement('input');
-  inputEl.setAttribute('id', id);
-  inputEl.setAttribute('type', type);
-  inputEl.setAttribute('value', value);
-  inputEl.setAttribute('name', name);
-  inputEl.className = radioClass + '-input';
- 
-  const labelEl = createAnyElement('label', text);
-  labelEl.setAttribute('for', id);
-  labelEl.className = radioClass + '-label';
- 
-  const radioEl = document.createElement('div');
-  radioEl.className = 'form-check form-check-inline';
-  radioEl.appendChild(inputEl);
-  radioEl.appendChild(labelEl);
-  return radioEl;
-}
-
 /** Gets the replacements & their score changes for a subtring based on the Datamuse API */
 async function getReplacements(text, lang, substringForReplacements) {
   // Clear previous results
@@ -289,14 +253,14 @@ async function getReplacements(text, lang, substringForReplacements) {
     return;
   }
  
-  printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, analysisContainer, loadingEl);
+  renderReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, analysisContainer, loadingEl);
 }
 
-/** Prints the modified strings to the page with their Perspective TOXICITY scorings */
-async function printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
+/** Renders the modified strings to the page with their Perspective TOXICITY scorings */
+async function renderReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
   // Get Perspective scores on new sentences
   const promises = [];
-  const newSentences = []
+  const newSentences = [];
   for (let i = 0; i < replacements.length; i++) {
     const replacement = replacements[i].word;
     const newSentence = text.replace(substringForReplacements, replacement);
@@ -322,9 +286,9 @@ async function printReplacements(text, substringForReplacements, replacements, t
  
     container.removeChild(loadingEl);
 
-    // Print the new sentences and their score differences
+    // Render the new sentences and their score differences
     for (let i = 0; i < sentenceData.length; i++) {
-      printSentence(container, sentenceData[i])
+      renderSentence(container, sentenceData[i])
     }
 
     // Draw the chart
@@ -332,8 +296,8 @@ async function printReplacements(text, substringForReplacements, replacements, t
   });
 }
  
-/** Prints a sentence replacement with the correct style and data  */ 
-function printSentence(container, sentenceData) {
+/** Renders a sentence replacement with the correct style and data  */ 
+function renderSentence(container, sentenceData) {
   const isPositive = sentenceData.scoreDiff > 0;
   const className = isPositive ? 'red-background' : 'green-background';
   const sign = isPositive ? '+' : '';
@@ -343,7 +307,7 @@ function printSentence(container, sentenceData) {
 }
 
 /** Gives the user extra options after they get the replacement data */
-function setUpExtras(text, lang, substringForReplacements) {
+function showDataMuseWordReplacementOptions(text, lang, substringForReplacements) {
   // Clear any previous options & print separating line
   container = document.getElementById('perspective-datamuse-extras');
   container.innerHTML = '';
