@@ -177,7 +177,7 @@ async function getSpreadsheet(id, name, range) {
 function getTextFromSheet(sheet) {
   if (sheet.values.length > 0) {
     let text = '';
-    for (i = 0; i < sheet.values.length; i++) {
+    for (let i = 0; i < sheet.values.length; i++) {
       let row = sheet.values[i];
       for (j = 0; j < row.length; j++) {
         text = text + row[j] + '\n';
