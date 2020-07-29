@@ -51,35 +51,21 @@ async function callYoutube() {
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   let response;
   let responseJson;
-  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: channelId});
-    responseJson = await response.json();
+  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {;
+    responseJson = await callYoutubeServlet(channelId);
     if (responseJson.hasOwnProperty('error')) {
-      inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/youtube_username_servlet', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: JSON.stringify(channelId)});
-    const usernameConverterResponseJson = await usernameConverterResponse.json();
+    const usernameConverterResponseJson = await callYoutubeUsernameServlet(channelId);
     console.log(usernameConverterResponseJson);
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
-      inputCommentsToPerspective([]);
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: convertedUserName});
-    responseJson = await response.json();
+    responseJson = await callYoutubeServlet(convertedUserName);
   }
   inputCommentsToPerspective([responseJson]);
 }
@@ -222,11 +208,7 @@ function isLetter(character) {
 
 /** Fetches top videos based categoty Id */
 async function getTrending(categoryId) {
-  const trendingResponse = await fetch('/trending_servlet', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json',},
-    body: categoryId});
-  const trendingResponseJson = await trendingResponse.json();
+  const trendingResponseJson = await callYoutubeTrendingServlet(categoryId);
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
     const videoId = trendingResponseJson.items[item].id;
@@ -234,11 +216,7 @@ async function getTrending(categoryId) {
   }
   const commentsList = []
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json',},
-      body: trendingVideoIds[id]});
-    const videoCommentListJson = await videoCommentList.json();
+    const videoCommentListJson = await callYoutubeServlet(trendingVideoIds[id]);
     commentsList.push(videoCommentListJson);
   }
   inputCommentsToPerspective(commentsList);
@@ -296,4 +274,31 @@ function showCategories() {
     categoryContainer.appendChild(label);
     categoryContainer.appendChild(document.createTextNode(" "));
   }
+}
+
+async function callYoutubeServlet(channelId) {
+  const response = await fetch('/youtube_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: channelId});
+  const youtubeServletData = await response.json();
+  return youtubeServletData;
+}
+
+async function callYoutubeUsernameServlet(channelId) {
+  const response = await fetch('/youtube_username_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: channelId});
+  const usernameConverterResponseJson = await response.json();
+  return usernameConverterResponseJson;
+}
+
+async function callYoutubeTrendingServlet(categoryId) {
+  const response = await fetch('/trending_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: categoryId});
+  const trendingResponseJson = await response.json();
+  return trendingResponseJson;
 }
