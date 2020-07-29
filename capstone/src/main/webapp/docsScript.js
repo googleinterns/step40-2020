@@ -52,7 +52,7 @@ async function gatherDocsInput() {
   }
 
   // Get the selected analysis type
-  document.getElementById('analysis-container').innerHTML = '';
+  document.getElementById('general-analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   let tokenizer;
   for (let i = 0; i < radios.length; i++) {

@@ -28,10 +28,9 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
             <a class="nav-link active" href="document_analyzer.html">Document Analyzer</a>
-            <a class="nav-link" href="https://support.perspectiveapi.com/s/" target="_blank">Support</a>
-            <a class="nav-link" href="https://medium.com/the-false-positive" target="_blank">Blog</a>
+            <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
+            <a class="nav-link" href="about.html">About</a>
           </nav>
         </div>
       </header>
@@ -80,8 +79,22 @@
           <button class="btn btn-secondary" id="signout_button" style="display: none;">Sign Out</button>
         </form>
         <div id="separator-container"></div>
-        <div id="chart-container"></div>
-        <div id="analysis-container"></div>
+        <div id="general-chart-container"></div>
+        <div id="general-analysis-container" class="d-flex flex-column"></div>
+        <div id="perspective-datamuse-header" style="background-color:#FAEBD7">
+          <p id="about-container" style="display:none">
+            This tool is only meant to test Perspective API's scores
+            and to see how they can change. The replacement words or phrases are 
+            not meant to be taken as suggestions. Do not use them as a means to 
+            mask any toxicity. When a score lowers, it is not an indication that 
+            the text is necessarily less toxic. The replacements are obtained 
+            through a word-finding API, Datamuse. The models Perspective uses do 
+            have unintentional bias, and uncommon words might have inaccurate scores.            
+          </p>
+        </div>
+        <div id="perspective-datamuse-analysis"></div>
+        <div id="perspective-datamuse-chart"></div>
+        <div id="perspective-datamuse-extras"></div>
       </div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
