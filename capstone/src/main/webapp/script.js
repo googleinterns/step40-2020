@@ -36,14 +36,6 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-const ABOUT_PARAGRAPH = 'This tool is only meant to test Perspective API\'s scores'
-  + ' and to see how they can change. The replacement words or phrases are' 
-  + ' not meant to be taken as suggestions. Do not use them as a means to '
-  + 'mask any toxicity. When a score lowers, it is not an indication that '
-  + 'the text is necessrily less toxic. The replacements are obtained '
-  + 'through a word-finding API, Datamuse. The models Perspective uses do '
-  + 'have unintentional bias, and uncommon words might have inaccurate scores. ';
-
 /** Collects the user's input and submits it for analysis */
 async function gatherInput() {
   // Get the submitted text and language
@@ -85,7 +77,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
-  document.getElementById('perspective-datamuse-header').innerHTML = '';
+  document.getElementById('about-container').style.display = 'none';
 
   // Draw the separating line for the output
   const separator = document.getElementById('separator-container');
@@ -161,16 +153,10 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
 /** Sets up the replacements section */
 function setUpReplacements(text, lang, substringForReplacements) {
   // Clear previous results
-  const headerContainer = document.getElementById('perspective-datamuse-header');
-  headerContainer.innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
 
-  // Set up about container 
-  const aboutContainer = document.createElement('div');
-  aboutContainer.setAttribute('style', 'background-color:#FAEBD7');
-  aboutContainer.appendChild(createAnyElement('p', ABOUT_PARAGRAPH));
-  headerContainer.appendChild(aboutContainer);
+  document.getElementById('about-container').style.display = 'block';
 
   getReplacements(text, lang, substringForReplacements);
   showDataMuseWordReplacementOptions(text, lang, substringForReplacements);
