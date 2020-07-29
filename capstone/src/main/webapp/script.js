@@ -173,7 +173,7 @@ function setUpReplacements(text, lang, substringForReplacements) {
   headerContainer.appendChild(aboutContainer);
 
   getReplacements(text, lang, substringForReplacements);
-  setUpExtras(text, lang, substringForReplacements);
+  showDataMuseWordReplacementOptions(text, lang, substringForReplacements);
 }
 
 /** Gets the replacements & their score changes for a subtring based on the Datamuse API */
@@ -197,6 +197,8 @@ async function getReplacements(text, lang, substringForReplacements) {
   // Get the toxicity score of original string 
   const toxicityOfOriginal = await getOriginalToxicity(text, lang, analysisContainer, loadingEl);
   if (!toxicityOfOriginal) {
+    analysisContainer.removeChild(loadingEl)
+    analysisContainer.appendChild(createAnyElement('b', 'Perspective API was not able to score the original sentence'));
     return;
   }
   
@@ -262,7 +264,7 @@ function printSentence(container, sentenceData) {
 }
 
 /** Gives the user extra options after they get the replacement data */
-function setUpExtras(text, lang, substringForReplacements) {
+function showDataMuseWordReplacementOptions(text, lang, substringForReplacements) {
   // Clear any previous options & print separating line
   container = document.getElementById('perspective-datamuse-extras');
   container.innerHTML = '';
