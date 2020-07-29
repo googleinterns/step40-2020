@@ -21,7 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Category names are mapped to youtube category numbers */
+/** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -244,7 +244,7 @@ function disableTextInput(button) {
   }
 }
 
-/** Creates radio buttons to allow teh user to select between various categories*/
+/** Creates radio buttons to allow teh user to select between various categories */
 function showCategories() {
   // Creates button to enable manual input
   const radiobox = document.createElement('input');
@@ -285,7 +285,7 @@ function showCategories() {
   }
 }
 
-/** Converts perspective results to knoop scale then to mohs*/
+/** Converts perspective results to knoop scale then to mohs */
 function getScoreInMohs(attributeAverages) {
   // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
@@ -318,7 +318,7 @@ function getScoreInMohs(attributeAverages) {
   return completeMohsScore;
 }
 
-/** Displays the perspective toxicity scale score*/
+/** Displays the perspective toxicity scale score */
 function showPerspectiveToxicityScale(attributeAverages) {
   const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
   document.getElementById('search-type').appendChild(document.createElement("br"));  
