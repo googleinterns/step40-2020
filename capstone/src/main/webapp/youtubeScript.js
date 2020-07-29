@@ -21,7 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Category names are mapped to youtube category numbers */
+/** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -42,13 +42,13 @@ async function callYoutube() {
   if (!channelId) {
     return;
   }
-  /** Checks if input is a category, if so directs input to be handled by get trending*/
+  // Checks if input is a category, if so directs input to be handled by get trending
   if (YOUTUBE_CATEGORIES[channelId] != undefined) {
     document.getElementById('search-type').innerHTML = "Category Search";
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
-  /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
+  // Checks if input follows channel ID format, if not attempts to convert it to channel ID
   let response;
   let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
