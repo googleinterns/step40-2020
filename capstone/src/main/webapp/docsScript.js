@@ -13,19 +13,19 @@
 // limitations under the License.
 
 // API key from the Developer Console
-const API_KEY = 'SHEETS_API_KEY'; // TODO: Create Java servlet to return key
+const API_KEY = 'DOCS_API_KEY'; // TODO: Create Java servlet to return key
 
-// Array of API discovery doc URLs for APIs
-const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+// Array of API discovery doc URLs for APIs used by the quickstart
+const DISCOVERY_DOCS = ["https://docs.googleapis.com/$discovery/rest?version=v1"];
 
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
-const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+const SCOPES = "https://www.googleapis.com/auth/documents.readonly";
 
 /** Collects the user's input and submits it for analysis */
-async function gatherSheetsInput() {
+async function gatherDocsInput() {
   // Get the submitted id and language
-  const idElement = document.getElementById('sheet-id');
+  const idElement = document.getElementById('doc-id');
   if (!idElement) {
     return;
   }
@@ -47,7 +47,7 @@ async function gatherSheetsInput() {
   const requestedAttributes = [];
   for (const attribute of attributes) {
     if (attribute.checked) {
-      requestedAttributes.push(attribute.value);
+      requestedAttributes.push(attribute.value);	
     }	
   }
 
@@ -62,29 +62,54 @@ async function gatherSheetsInput() {
     }
   }
 
-  const text = await getTextFromSheet(id);
+  const text = await getTextFromDoc(id);
   handleInput(text, langElement.value, requestedAttributes, tokenizer);
 }
 
 /**
- * Returns all text in a Google Sheet with an id of spreadsheetId
+ * Returns all text contained within the Google Doc with corresponsing documentId
  */
-async function getTextFromSheet(spreadsheetId) {
-  const response = await gapi.client.sheets.spreadsheets.values.get({
-    spreadsheetId: spreadsheetId,
-    range: 'Sheet1!A1:YY',
+async function getTextFromDoc(documentId) {
+  const response = await gapi.client.docs.documents.get({
+    documentId: documentId
   });
-  const range = await response.result;
-  if (range.values.length > 0) {
-    let text = '';
-    for (let i = 0; i < range.values.length; i++) {
-      let row = range.values[i];
-      for (j = 0; j < row.length; j++) {
-        text = text + row[j] + '\n';
+  const content = await response.result.body.content;
+  return readStructrualElements(content);
+}
+
+
+/** 
+  * Recurses through a list of Structural Elements to read 
+  * a document's text where text may be in nested elements.
+  */
+function readStructrualElements(elements) {
+  let stringOutput = '';
+  for (const element of elements) {
+    if (element.paragraph != null) {
+      for (const paragraphElement of element.paragraph.elements) {
+        stringOutput = stringOutput + readParagraphElement(paragraphElement);
       }
+    } else if (element.table != null) {
+      for (const row of element.table.tableRows) {
+        for (const cell of row.tableCells) {
+          stringOutput = stringOutput + readStructrualElements(cell.content);
+        }
+      }
+    } else if (element.tableOfContents != null) {
+      stringOutput = stringOutput + readStructrualElements(element.tableOfContents.content);
     }
-    return text;
-  } else {
-    return 'No data found.';
   }
+  return stringOutput;
+}
+
+/** 
+  * Returns the text in a paragraph element from a Google Doc
+  */
+function readParagraphElement(paragraphElement) {
+  const run = paragraphElement.textRun;
+  if (run == null || run.content == null) {
+    // The TextRun can be null if there is an inline object.
+    return "";
+  }
+  return run.content;
 }

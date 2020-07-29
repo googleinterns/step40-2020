@@ -22,7 +22,7 @@ const SUBMIT_BUTTON = document.getElementById('submit_button');
 /**
   *  On load, called to load the auth2 library and API client library.
   */
-function handleClientLoad() {
+function initOAuth() {
   gapi.load('client:auth2', initClient);
 }
 
