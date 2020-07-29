@@ -331,15 +331,16 @@ async function getKeywordSearchResults() {
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
-  let videoIds = [];
+  let videoIdList = [];
   for (const item in responseJson.items) {
     if (responseJson.items[item].id.videoId != undefined) {
-      videoIds.push(responseJson.items[item].id.videoId);
+      let videoId = responseJson.items[item].id.videoId;
+      videoIdList.push(videoId);
     }
   }   
   const commentsListPromises = [];
-  for (const id in videoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIds[id]);
+  for (const id in videoIdList) {
+    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIdList[id]);
     videoCommentListJson = await videoCommentList.json();
     commentsListPromises.push(videoCommentListJson);
   }
