@@ -287,7 +287,7 @@ function showCategories() {
 
 /** Converts perspective results to knoop scale then to mohs */
 function getScoreInMohs(attributeAverages) {
-  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
   let totalToxicityScore = 0;
   for (const [attribute, attributeAverage] of attributeAverages) {
