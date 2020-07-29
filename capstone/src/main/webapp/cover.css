@@ -110,8 +110,11 @@ a, a:focus, a:hover {
 
 .detailed-analysis { 
   text-align: left;
+<<<<<<< HEAD
+=======
   line-height: 1.8;
   white-space: pre-wrap;
+>>>>>>> master
 }
 
 hr {
