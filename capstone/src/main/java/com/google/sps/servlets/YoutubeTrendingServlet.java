@@ -1,5 +1,3 @@
-// Copyright 2019 Google LLC
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -30,24 +28,20 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.io.UnsupportedEncodingException; 
-import java.net.MalformedURLException; 
-import java.net.URL; 
-import java.net.URLEncoder; 
 
-/** Servlet that converts a youtube username to a channelID. */
-@WebServlet("/youtube_username_servlet")
-public class YoutubeUsernameServlet extends HttpServlet {
-  private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
+/** Servlet that fetches trending results of a certain category. */
+@WebServlet("/trending_servlet")
+public class YoutubeTrendingServlet extends HttpServlet {
+  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
   private static final String KEY = "API_KEY";
+  private static final String NUM_RESULTS = "2";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String userName = request.getParameter("channelId");
-    String ecodedUserName = URLEncoder.encode(userName, "UTF-8");
-    String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
+    String videoCategoryId = request.getParameter("videoCategoryId");
+    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
     String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  

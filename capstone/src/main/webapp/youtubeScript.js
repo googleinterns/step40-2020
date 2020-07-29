@@ -21,39 +21,61 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
+/** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
+const YOUTUBE_CATEGORIES = {
+  'Autos&Vehicles': 2,
+  'Comedy': 23,
+  'Entertainment': 24,
+  'Film&Animation': 1,
+  'Gaming': 20,
+  'How-to&Style' : 26,
+  'Music': 10,
+  'Pets&Animals': 15,
+  'Science&Technology': 28,
+  'Sports' : 17,
+};
+
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
+  document.getElementById('search-type').innerHTML = "";
   const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
     return;
   }
+  // Checks if input is a category, if so directs input to be handled by get trending
+  if (YOUTUBE_CATEGORIES[channelId] != undefined) {
+    document.getElementById('search-type').innerHTML = "Category Search";
+    getTrending(YOUTUBE_CATEGORIES[channelId]);
+    return;
+  }
+  // Checks if input follows channel ID format, if not attempts to convert it to channel ID
   let response;
-  /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
+  let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId);
-    response = await response.json();
-    if (response.hasOwnProperty('error')) {
-      alert("Invalid Channel ID");
+    responseJson = await response.json();
+    if (responseJson.hasOwnProperty('error')) {
       inputCommentsToPerspective([]);
       return;
     }
+    document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
     const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
-      alert("Username Not found, Please Input Channel ID");
       inputCommentsToPerspective([]);
       return;
     }
+    document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
     response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
-    response = await response.json();
+    responseJson = await response.json();
   }
-  inputCommentsToPerspective(response);
+  inputCommentsToPerspective([responseJson]);
 }
 
-/** Calls perspective to analyze comments */
-async function inputCommentsToPerspective(comments) {
+/** Calls perspective to analyze an array of comment JSON's */
+async function inputCommentsToPerspective(commentsList) {
   const langElement = document.getElementById('languageForAnalysis');
   if (!langElement) {
     return;
@@ -65,32 +87,43 @@ async function inputCommentsToPerspective(comments) {
       return;
   }
   const attributeScoresPromises = [];
-  for (const item in comments.items) {
-    const perspectiveScore = callPerspective(comments.items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
-    attributeScoresPromises.push(perspectiveScore);
+  for (const comments in commentsList) {
+    for (const item in commentsList[comments].items) {
+      let commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+      const perspectiveScore = await callPerspective(commentText, langElement.value, requestedAttributes);
+      attributeScoresPromises.push(perspectiveScore);
+    }
   }
+  let totalNumberOfComments = commentsList[0].items.length * commentsList.length;
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
-    const attributeAverages = getAttributeAverages(resolvedAttributeScores, comments.items.length);
+    const attributeTotals = getAttributeTotals(resolvedAttributeScores);
+    const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
     loadChartsApi(attributeAverages);
   });
 }
 
-/** Returns a map containing atrributes and their averages from an array of JSON's and the amount of comments */
-function getAttributeAverages(attributeScores, amountOfComments) {
+/** returns a map of attribute score sums from an array of JSON's */
+function getAttributeTotals(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
-  const attributeTotals = new Map();
+  const attributeTotals = new Map();   
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (attributeTotals.has(requestedAttributes[i])) {
-        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
       } else {
-        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeScoreValue);
       }
     }
   }
+  return attributeTotals;
+}
+
+/** returns a map of attribute score averages from a map and an array */
+function getAttributeAverages(attributeTotals, totalNumberOfComments) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute, attributeScoresTotal / amountOfComments);
+    attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
   }
   return attributeAverages;
 }
@@ -128,7 +161,7 @@ function drawBarChart(toxicityData) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
   for (const [attribute, attributeScoresAvg] of toxicityData) {
-    var color = '#6B8E23'; // Green
+    let color = '#6B8E23'; // Green
     const score = attributeScoresAvg;
     if (score >= 0.8) {
       color = '#DC143C'; // Red
@@ -171,11 +204,83 @@ function showAvailableAttributes() {
     label.appendChild(document.createTextNode(attribute));
     avaiableAttributesElement.appendChild(checkbox);
     avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild (document.createTextNode (" "));
+    avaiableAttributesElement.appendChild(document.createTextNode (" "));
   });
 }
 
 /** Checks if a character is a letter */
 function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
+}
+
+/** Fetches top videos based categoty Id */
+async function getTrending(categoryId) {
+  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
+  const trendingResponseJson = await trendingResponse.json();
+  const trendingVideoIds = [];
+  for (const item in trendingResponseJson.items) {
+    const videoId = trendingResponseJson.items[item].id;
+    trendingVideoIds.push(videoId);
+  }
+  const commentsList = []
+  for (const id in trendingVideoIds) {
+    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
+    const videoCommentListJson = await videoCommentList.json();
+    commentsList.push(videoCommentListJson);
+  }
+  inputCommentsToPerspective(commentsList);
+}
+
+/** Enables and disables input into the text field */
+function textInputToggle(button, toEnable) {
+  if (button.checked) {
+    if (toEnable) {
+      document.getElementById('channelIdForAnalysis').value = button.id;
+      document.getElementById('channelIdForAnalysis').disabled = true;
+    } else {
+      document.getElementById('channelIdForAnalysis').value = "";
+      document.getElementById('channelIdForAnalysis').disabled = false;
+    }
+  }
+}
+
+/** Creates radio buttons to allow the user to select between various categories*/
+function showCategories() {
+  // Creates button to enable manual input
+  const radiobox = document.createElement('input');
+  radiobox.type = 'radio';
+  radiobox.id = 'manualInput';
+  radiobox.value = 'manualInput';
+  radiobox.name = 'same';
+  radiobox.checked  = true;
+  const label = document.createElement('label');
+  label.htmlFor = 'manualInput';
+  const description = document.createTextNode('ID/Username');
+  label.appendChild(description);
+  radiobox.onclick = function() {
+    textInputToggle(this, false);   
+  }
+  const categoryContainer = document.getElementById('category-container');
+  categoryContainer.appendChild(radiobox);
+  categoryContainer.appendChild(label);
+  categoryContainer.appendChild(document.createTextNode(" "));
+  categoryContainer.appendChild(document.createElement("br"));
+  for (const category in YOUTUBE_CATEGORIES ) {
+    const radiobox = document.createElement('input');
+    radiobox.type = 'radio';
+    radiobox.id = category;
+    radiobox.value = category;
+    radiobox.name = 'same';
+    const label = document.createElement('label')
+    label.htmlFor = category;
+    const description = document.createTextNode(category);
+    label.appendChild(description);
+    radiobox.onclick = function() {
+      textInputToggle(this, true);   
+    }
+    const categoryContainer = document.getElementById('category-container');
+    categoryContainer.appendChild(radiobox);
+    categoryContainer.appendChild(label);
+    categoryContainer.appendChild(document.createTextNode(" "));
+  }
 }
