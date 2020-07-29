@@ -40,10 +40,10 @@
           </nav>
         </div>
       </header>
-      <main role="main" class="inner" style="align-items:center">
+      <main role="main" class="inner">
         <h1 class="cover-heading" style="margin-top: 80px">Welcome to Perspective Hub</h1>
-        <p class="lead" style="margin-bottom: 80px">An All In One Utillity For Testing Perspective API</p>
-        <div class="jumbotron text-center hoverable p-4" style="background-color:#5801D1; color: white; width: 80%; margin: auto">
+        <p class="lead" style="margin-bottom: 80px">An All-In-One Utility For Exploring Perspective API</p>
+        <div class="jumbotron text-center hoverable p-4 perspective-box">
           <div class="row">
             <div class="col-md-4 offset-md-1 mx-3 my-3">
               <div class="view overlay">
@@ -59,12 +59,60 @@
                 Perspective is an API that makes it easier to host better conversations. 
                 The API uses machine learning models to score the perceived impact a comment might have on a conversation. 
                 Developers and publishers can use this score to give realtime feedback to commenters or help moderators 
-                do their job, or allow readers to more easily find relevant information. Our first model identifies whether 
-                a comment could be perceived as “toxic” to a discussion. 
+                do their job, or allow readers to more easily find relevant information. The first model identifies whether 
+                a comment could be perceived as "toxic" to a discussion. On a scale from 0 to 1, it gives a probability that
+                the given comment is "toxic."
               </p>
             </div>
           </div>
         </div>
+        <h2 style="margin-top:50px">Our Mission</h2>
+        <p class='paragraph'>
+          We want to make Perspective API accessible and easy-to-use for all. Using Perspective requires technical knowledge,
+          and this project removes that barrier. We offer detailed Perspective analysis on a variety of inputs: plain text, 
+          Google Docs, and Google Sheets. We also offer Perspective analysis of YouTube comments.  
+        </p>  
+        <div class="card-deck" style="width:83%; margin:auto">
+          <div class="card mb-4">
+            <div class="view overlay">
+              <img class="card-img-top" src="assets/text-analyzer-logo.png" alt="Text analyzer logo" >
+              <a href="#!">
+                <div class="mask rgba-white-slight"></div>
+              </a>
+            </div>
+            <div class="card-body">
+              <h4 class="card-title">Text Analyzer</h4>
+              <p class="card-text">Input your text with some preferences to receive detailed Perspective analysis as well as word-replacement analysis.</p>
+              <a class="btn btn-primary btn-md" href="/text_analyzer.html">Explore</a>
+            </div>
+          </div>
+          <div class="card mb-4">
+            <div class="view overlay">
+              <img class="card-img-top" src="assets/document-analyzer-logo.png" alt="Document analyzer logo">
+              <a href="#!">
+                <div class="mask rgba-white-slight"></div>
+              </a>
+            </div>
+          <div class="card-body">
+            <h4 class="card-title">Document Analyzer</h4>
+            <p class="card-text">Input your Google Docs or Sheets document to receive the same analysis the text analyzer offers, and more.</p>
+            <a class="btn btn-primary btn-md" href="/document_analyzer.html">Explore</a>
+          </div>
+        </div>
+        <div class="card mb-4">
+          <div class="view overlay">
+            <img class="card-img-top" src="assets/youtube-analyzer-logo.png" alt="Youtube logo">
+            <a href="#!">
+              <div class="mask rgba-white-slight"></div>
+            </a>
+          </div>
+          <div class="card-body">
+            <h4 class="card-title">YouTube Data Analyzer</h4>
+            <p class="card-text">Fetch comments from YouTube by category, channel, or keyword search and receive detailed Perspective analysis.</p>
+            <a class="btn btn-primary btn-md" href="/youtube_analyzer.html">Explore</a>
+          </div>
+        </div>
+      </div>
       </main>
       <footer class="mastfoot mt-auto">
         <div class="inner">
