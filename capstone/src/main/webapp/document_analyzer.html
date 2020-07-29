@@ -90,8 +90,10 @@
       </footer>
     </div>
     <script src="oAuth.js"></script>
+    <!-- Ensure that initOAuth() is called exclusively once, either when
+    readyState changes or when the api script is asynchronously loaded -->
     <script async defer src="https://apis.google.com/js/api.js"
-      onload="this.onload=function(){};handleClientLoad()"
+      onload="this.onload=function(){}; initOAuth()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
