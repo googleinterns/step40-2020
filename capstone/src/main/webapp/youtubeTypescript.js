@@ -132,7 +132,7 @@ function callYoutube() {
 /** Calls perspective to analyze an array of comment JSON's */
 function inputCommentsToPerspective(commentsList) {
     return __awaiter(this, void 0, void 0, function () {
-        var langElement, commentListElement, requestedAttributes, attributeScoresPromises, _a, _b, _i, comments, _c, _d, _e, item, perspectiveScore;
+        var langElement, commentListElement, requestedAttributes, attributeScoresPromises, _a, _b, _i, comments, _c, _d, _e, item, perspectiveScore, totalNumberOfComments;
         return __generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
@@ -175,12 +175,14 @@ function inputCommentsToPerspective(commentsList) {
                 case 5:
                     _i++;
                     return [3 /*break*/, 1];
-                case 6: return [4 /*yield*/, Promise.all(attributeScoresPromises).then(function (resolvedAttributeScores) {
-                        var attributeTotals = getAttributeTotals(resolvedAttributeScores);
-                        var attributeAverages = getAttributeAverages(attributeTotals, commentsList);
-                        loadChartsApi(attributeAverages);
-                        perspectiveToxicityScale(attributeAverages);
-                    })];
+                case 6:
+                    totalNumberOfComments = commentsList[0].items.length * commentsList.length;
+                    return [4 /*yield*/, Promise.all(attributeScoresPromises).then(function (resolvedAttributeScores) {
+                            var attributeTotals = getAttributeTotals(resolvedAttributeScores);
+                            var attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
+                            loadChartsApi(attributeAverages);
+                            perspectiveToxicityScale(attributeAverages);
+                        })];
                 case 7:
                     _f.sent();
                     return [2 /*return*/];
@@ -195,28 +197,29 @@ function getAttributeTotals(attributeScores) {
     for (var i = 0; i < requestedAttributes.length; i++) {
         for (var j = 0; j < attributeScores.length; j++) {
             // populates attributeData to support CSV output and attributeTotals to support averaging
+            var attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
             if (ATTRIBUTE_DATA[j] == null) {
-                ATTRIBUTE_DATA[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
+                ATTRIBUTE_DATA[j] = [attributeScoreValue.toString()];
             }
             else {
-                ATTRIBUTE_DATA[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+                ATTRIBUTE_DATA[j].push(attributeScoreValue);
             }
             if (attributeTotals.has(requestedAttributes[i])) {
-                attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+                attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
             }
             else {
-                attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+                attributeTotals.set(requestedAttributes[i], attributeScoreValue);
             }
         }
     }
     return attributeTotals;
 }
 /** Returns a map of attribute score averages from a map and an array */
-function getAttributeAverages(attributeTotals, commentsList) {
+function getAttributeAverages(attributeTotals, totalNumberOfComments) {
     var attributeAverages = new Map();
     // forEach(value,key)
     attributeTotals.forEach(function (attributeScoresTotal, attribute) {
-        attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length) * commentsList.length));
+        attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
     });
     return attributeAverages;
 }
@@ -295,8 +298,8 @@ function showAvailableAttributes() {
         return;
     }
     var lang = langElement.value;
-    var avaiableAttributesElement = document.getElementById('available-attributes');
-    avaiableAttributesElement.innerHTML = '';
+    var availableAttributesElement = document.getElementById('available-attributes');
+    availableAttributesElement.innerHTML = '';
     var attributes = ATTRIBUTES_BY_LANGUAGE[lang];
     attributes.forEach(function (attribute) {
         var checkbox = document.createElement('input');
@@ -307,9 +310,9 @@ function showAvailableAttributes() {
         var label = document.createElement('label');
         label.htmlFor = attribute + '-checkbox';
         label.appendChild(document.createTextNode(attribute));
-        avaiableAttributesElement.appendChild(checkbox);
-        avaiableAttributesElement.appendChild(label);
-        avaiableAttributesElement.appendChild(document.createTextNode(" "));
+        availableAttributesElement.appendChild(checkbox);
+        availableAttributesElement.appendChild(label);
+        availableAttributesElement.appendChild(document.createTextNode(" "));
     });
 }
 /** Checks if a character is a letter */
@@ -399,7 +402,7 @@ function showCategories() {
     categoryContainer.appendChild(label);
     categoryContainer.appendChild(document.createTextNode(" "));
     categoryContainer.appendChild(document.createElement("br"));
-    // creates buttons for all youtube categories
+    // Creates buttons for all youtube categories
     for (var category in YOUTUBE_CATEGORIES) {
         var radiobox_1 = document.createElement('input');
         radiobox_1.type = 'radio';
@@ -550,18 +553,18 @@ function formatCommentForSpreadsheet(comment) {
 /** Creates chart of analyzed comments and requested attributes*/
 function drawTableChart() {
     var requestedAttributes = getRequestedAttributes();
-    var data = new google.visualization.DataTable();
+    var tableData = new google.visualization.DataTable();
     // Add columns
-    data.addColumn('string', 'COMMENT');
+    tableData.addColumn('string', 'COMMENT');
     for (var i = 0; i < requestedAttributes.length; i++) {
-        data.addColumn('number', requestedAttributes[i]);
+        tableData.addColumn('number', requestedAttributes[i]);
     }
     // Add rows
-    data.addRows(ANALYZED_COMMENTS.length);
+    tableData.addRows(ANALYZED_COMMENTS.length);
     for (var i = 0; i < ANALYZED_COMMENTS.length; i++) {
-        data.setCell(i, 0, ANALYZED_COMMENTS[i]);
+        tableData.setCell(i, 0, ANALYZED_COMMENTS[i]);
         for (var j = 1; j < ATTRIBUTE_DATA[i].length + 1; j++) {
-            data.setCell(i, j, ATTRIBUTE_DATA[i][j - 1]);
+            tableData.setCell(i, j, ATTRIBUTE_DATA[i][j - 1]);
         }
     }
     var table = new google.visualization.Table(document.getElementById('table-container'));
@@ -570,7 +573,7 @@ function drawTableChart() {
     formatter.addRange(.2, .8, 'white', '#ffd800');
     formatter.addRange(.8, 1, 'white', '#DC143C');
     for (var i = 0; i < requestedAttributes.length + 1; i++) {
-        formatter.format(data, i);
+        formatter.format(tableData, i);
     }
-    table.draw(data, { allowHtml: true, showRowNumber: false, width: '100%', height: '100%' });
+    table.draw(tableData, { allowHtml: true, showRowNumber: false, width: '100%', height: '100%' });
 }

@@ -101,9 +101,10 @@ async function inputCommentsToPerspective(commentsList: any[]) {
       attributeScoresPromises.push(perspectiveScore);
     }
   }
+  let totalNumberOfComments = commentsList[0].items.length * commentsList.length;
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
-    const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
+    const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
     loadChartsApi(attributeAverages);
     perspectiveToxicityScale(attributeAverages);
   });
@@ -116,15 +117,16 @@ function getAttributeTotals(attributeScores: any[]) {
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
       // populates attributeData to support CSV output and attributeTotals to support averaging
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (ATTRIBUTE_DATA[j] == null) {
-        ATTRIBUTE_DATA[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
+        ATTRIBUTE_DATA[j] = [attributeScoreValue.toString()];
       } else {
-        ATTRIBUTE_DATA[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        ATTRIBUTE_DATA[j].push(attributeScoreValue);
       }
       if (attributeTotals.has(requestedAttributes[i])) {
-        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
       } else {
-        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeScoreValue);
       }
     }
   }
@@ -132,11 +134,11 @@ function getAttributeTotals(attributeScores: any[]) {
 }
 
 /** Returns a map of attribute score averages from a map and an array */
-function getAttributeAverages(attributeTotals: Map<string, number>, commentsList: any[]) {
+function getAttributeAverages(attributeTotals: Map<string, number>, totalNumberOfComments: number) {
   const attributeAverages = new Map<string, number>(); 
   // forEach(value,key)
   attributeTotals.forEach((attributeScoresTotal, attribute) => { 
-    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+    attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
   });
   return attributeAverages;
 }
@@ -206,8 +208,8 @@ function showAvailableAttributes() {
     return;
   }
   const lang = langElement.value;
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
     const checkbox = document.createElement('input');
@@ -218,9 +220,9 @@ function showAvailableAttributes() {
     const label = document.createElement('label');
     label.htmlFor = attribute + '-checkbox';
     label.appendChild(document.createTextNode(attribute));
-    avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
+    availableAttributesElement.appendChild(checkbox);
+    availableAttributesElement.appendChild(label);
+    availableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
 
@@ -285,7 +287,7 @@ function showCategories() {
   categoryContainer.appendChild(label);
   categoryContainer.appendChild(document.createTextNode(" "));
   categoryContainer.appendChild(document.createElement("br"));
-  // creates buttons for all youtube categories
+  // Creates buttons for all youtube categories
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
@@ -348,7 +350,7 @@ async function getKeywordSearchResults() {
   const responseJson = await response.json();
   let videoIds = [];
   for (const item in responseJson.items) {
-    if (responseJson.items[item].id.videoId != undefined){
+    if (responseJson.items[item].id.videoId != undefined) {
       videoIds.push(responseJson.items[item].id.videoId);
     }
   }   
@@ -410,20 +412,20 @@ function formatCommentForSpreadsheet(comment: string) {
 }
 
 /** Creates chart of analyzed comments and requested attributes*/
-function drawTableChart(){      
+function drawTableChart() {      
   const requestedAttributes = getRequestedAttributes();
-  let data = new google.visualization.DataTable();
+  let tableData = new google.visualization.DataTable();
   // Add columns
-  data.addColumn('string', 'COMMENT');
+  tableData.addColumn('string', 'COMMENT');
   for (let i = 0; i < requestedAttributes.length; i++) {
-    data.addColumn('number', requestedAttributes[i]);
+    tableData.addColumn('number', requestedAttributes[i]);
   }
   // Add rows
-  data.addRows(ANALYZED_COMMENTS.length);
+  tableData.addRows(ANALYZED_COMMENTS.length);
   for (let i = 0; i < ANALYZED_COMMENTS.length; i++) {
-    data.setCell(i, 0, ANALYZED_COMMENTS[i])
+    tableData.setCell(i, 0, ANALYZED_COMMENTS[i])
     for (let j = 1; j < ATTRIBUTE_DATA[i].length + 1; j++) {
-      data.setCell(i, j, ATTRIBUTE_DATA[i][j-1])
+      tableData.setCell(i, j, ATTRIBUTE_DATA[i][j-1])
     }
   }
   let table = new google.visualization.Table(document.getElementById('table-container'));
@@ -432,7 +434,7 @@ function drawTableChart(){
   formatter.addRange(.2, .8, 'white', '#ffd800');
   formatter.addRange(.8, 1, 'white', '#DC143C');
   for (let i = 0; i < requestedAttributes.length + 1; i++){
-    formatter.format(data, i);
+    formatter.format(tableData, i);
   }
-  table.draw(data, {allowHtml: true, showRowNumber: false, width: '100%', height: '100%'});
+  table.draw(tableData, {allowHtml: true, showRowNumber: false, width: '100%', height: '100%'});
 }
