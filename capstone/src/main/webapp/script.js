@@ -94,7 +94,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   }
 }
 
-/** Prints detailed analysis of text by word or sentence */
+/** Shows detailed analysis of text by word or sentence */
 async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Set up the detailed analysis section
   const analysisContainer = document.getElementById('general-analysis-container');
@@ -183,8 +183,6 @@ async function getReplacements(text, lang, substringForReplacements) {
   // Get the toxicity score of original string 
   const toxicityOfOriginal = await getOriginalToxicity(text, lang, analysisContainer, loadingEl);
   if (!toxicityOfOriginal) {
-    analysisContainer.removeChild(loadingEl)
-    analysisContainer.appendChild(createAnyElement('b', 'Perspective API was not able to score the original sentence'));
     return;
   }
   
@@ -196,11 +194,11 @@ async function getReplacements(text, lang, substringForReplacements) {
     return;
   }
  
-  printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, analysisContainer, loadingEl);
+  renderReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, analysisContainer, loadingEl);
 }
 
-/** Prints the modified strings to the page with their Perspective TOXICITY scorings */
-async function printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
+/** Renders the modified strings to the page with their Perspective TOXICITY scorings */
+async function renderReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
   // Get Perspective scores on new sentences
   const promises = [];
   const newSentences = [];
@@ -229,9 +227,9 @@ async function printReplacements(text, substringForReplacements, replacements, t
  
     container.removeChild(loadingEl);
 
-    // Print the new sentences and their score differences
+    // Render the new sentences and their score differences
     for (let i = 0; i < sentenceData.length; i++) {
-      printSentence(container, sentenceData[i])
+      renderSentence(container, sentenceData[i])
     }
 
     // Draw the chart
@@ -239,8 +237,8 @@ async function printReplacements(text, substringForReplacements, replacements, t
   });
 }
  
-/** Prints a sentence replacement with the correct style and data  */ 
-function printSentence(container, sentenceData) {
+/** Renders a sentence replacement with the correct style and data  */ 
+function renderSentence(container, sentenceData) {
   const isPositive = sentenceData.scoreDiff > 0;
   const className = isPositive ? 'red-background' : 'green-background';
   const sign = isPositive ? '+' : '';
