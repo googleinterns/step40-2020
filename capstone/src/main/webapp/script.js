@@ -77,6 +77,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
+  document.getElementById('perspective-datamuse-extremes').innerHTML = '';
   document.getElementById('about-container').style.display = 'none';
 
   // Draw the separating line for the output
