@@ -44,7 +44,6 @@ public class YoutubeServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String channelId = request.getParameter("channelId");
     String videoId = request.getParameter("videoId");
-    String completeUrl;
     String completeUrl = (channelId != null) ? 
       (BASE_URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
         (BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
