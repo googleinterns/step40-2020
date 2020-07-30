@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu">
+    <meta name="generator" content="Jekyll v3.8.5">
+    <title>Perspective Hub</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="assets/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="assets/favicon-16x16.png" sizes="16x16">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="cover.css" rel="stylesheet">
+  </head>
+  <body class="text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <div class="text-center">
+            <a href="http://perspectiveapi.com/#/home">
+              <img src="assets/perspective_horizontal_color.png" class="rounded">
+            </a>
+          </div>
+          <h3 class="masthead-brand">Perspective Hub</h3>
+          <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link" href="index.html">Home</a>
+            <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
+            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
+            <a class="nav-link active" href="document_analyzer.html">Document Analyzer</a>
+            <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
+            <a class="nav-link" href="about.html">About</a>
+          </nav>
+        </div>
+      </header>
+      <main role="main">
+        <section class="jumbotron text-center">
+          <div class="container">
+            <h1>Doument Analysis</h1>
+            <p class="lead text-muted">Upload a document and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Supported Formats: .CSV, .XLSX</small>
+          </div>
+        </section>
+      </main>
+      <div class="input-group">
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="documentForAnalysis" aria-describedby="inputFileText">
+          <label class="custom-file-label" for="documentForAnalysis">Select Document to be Analyzed</label>
+        </div>
+      </div>
+      <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small><br>
+      <form>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="toxicity">
+          <label class="form-check-label" for="toxicity">Toxicity</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="identity-attack">
+          <label class="form-check-label" for="identity-attack">Identity Attack</label>
+        </div>
+        <div class="form-check">
+           <input type="checkbox" class="form-check-input" id="insult">
+          <label class="form-check-label" for="insult">Insult</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="profanity">
+          <label class="form-check-label" for="profanity">Profanity</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="threat">
+          <label class="form-check-label" for="threat">Threat</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="sexually-explicit">
+          <label class="form-check-label" for="sexually-explicit">Sexually Explicit</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="flirtation">
+          <label class="form-check-label" for="flirtation">Flirtation</label>
+        </div><br>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <div id="perspective-response"></div>
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu</p>
+        </div>
+      </footer>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" 
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+  </body>
+</html>
