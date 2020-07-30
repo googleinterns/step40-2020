@@ -54,10 +54,10 @@ async function gatherSheetsInput() {
   }
 
   // Get the selected analysis type
-  document.getElementById('analysis-container').innerHTML = '';
+  document.getElementById('general-analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   let tokenizer;
-  for (i = 0; i < radios.length; i++) {
+  for (let i = 0; i < radios.length; i++) {
     if (radios[i].checked && radios[i].value != 'NONE') {
       tokenizer = TokenizerEnum[radios[i].value];
       break;
