@@ -20,7 +20,7 @@ const DISCOVERY_DOCS = ['https://sheets.googleapis.com/$discovery/rest?version=v
 
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
-const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
+const API_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
 
 /** Collects the user's input and submits it for analysis */
 async function gatherSheetsInput() {
@@ -111,9 +111,7 @@ async function handleSheetsInput(id, sheetNames, range, langElement, requestedAt
     const newSheetId = await createSheet(title);
 
     // Make the new spreadsheet mirror sheet names of the input
-    if (sheetNames[0] != 'Sheet1') {
-      await preprocessSheet(newSheetId, sheetNames);
-    }
+    await preprocessSheet(newSheetId, sheetNames);
 
     // Add data and color coding to the new Sheet
     for (let i = 0; i < sheetNames.length; i++) {
@@ -206,12 +204,19 @@ async function createSheet(title) {
  */
 async function preprocessSheet(id, sheetNames) {
   let requests = [];
+  let deleteSheet = true;
 
   for (const name of sheetNames) {
-    requests.push({ addSheet: { properties: { title: name }}});
+    if (name != 'Sheet1') {
+      requests.push({ addSheet: { properties: { title: name }}});
+    } else {
+      deleteSheet = false;
+    }
   }
 
-  requests.push({ deleteSheet: { sheetId: 0 }});
+  if (deleteSheet) {
+    requests.push({ deleteSheet: { sheetId: 0 }});
+  }
 
   await gapi.client.sheets.spreadsheets.batchUpdate({
     spreadsheetId: id,
