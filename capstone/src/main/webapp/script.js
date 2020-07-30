@@ -36,6 +36,9 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
+const MAX_TOTAL_DATAMUSE_RESULTS = 100;
+const MAX_DATAMUSE_RESULTS_PER_WORD = 10;
+
 /** Collects the user's input and submits it for analysis */
 async function gatherInput() {
   // Get the submitted text and language
@@ -172,15 +175,21 @@ async function getExtremes(text, lang) {
   loadingEl.className = 'spinner-border';
   container.appendChild(loadingEl);
 
-  // Get the words and all their possible replacements
+  // Get the words & place a limit on the max number of requests
   const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
+  let numResults = MAX_DATAMUSE_RESULTS_PER_WORD;
+  if (numResults * words.length > MAX_TOTAL_DATAMUSE_RESULTS) {
+    numResults = Math.floor(MAX_TOTAL_DATAMUSE_RESULTS / words.length);
+  }
+
+  // Get the possible word replacements
   const replacements = [];
   const wordsCalled = [];
   const datamuseCalls = [];
   for (let word of words) {
     for (let attribute of Object.values(DATAMUSE_ATTRIBUTES)) {
       wordsCalled.push(word);
-      datamuseCalls.push(callDatamuse(word, attribute, 10));
+      datamuseCalls.push(callDatamuse(word, attribute, numResults));
     }
   }
   await Promise.all(datamuseCalls).then(datamuseResponses => {
