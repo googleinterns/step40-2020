@@ -23,6 +23,9 @@ import org.mockito.Mockito;
 import com.google.sps.servlets.SuggestCommentServlet;
 import com.google.sps.data.ApiCaller;
 import com.google.sps.data.MockSuggestCommentCaller;
+import com.google.sps.data.MockSuggestCommentCallerNoTextInput;
+import com.google.sps.data.MockSuggestCommentCallerBadKey;
+import com.google.sps.data.MockSuggestCommentCallerNoAttributesInput;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -46,7 +49,7 @@ public final class SuggestCommentServletTest {
   }
 
   @Test
-  public void PerspectiveCall() throws IOException{
+  public void SuggestCommentCall() throws IOException{
     ApiCaller mock = new MockSuggestCommentCaller();
     SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
 
@@ -56,25 +59,36 @@ public final class SuggestCommentServletTest {
     Assert.assertTrue(stringWriter.toString().contains("detectedLanguages"));
   }
 
- // @Test
- // public void PerspectiveCallWithBadKey() throws IOException{
- //   ApiCaller mock = new MockPerspCallerBadKey();
- //   CallPerspectiveServlet callPerspectiveServlet = new CallPerspectiveServlet(mock);
+  @Test
+  public void SuggestCommentCallWithBadKey() throws IOException{
+    ApiCaller mock = new MockSuggestCommentCallerBadKey();
+    SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
 
-//    Mockito.when(response.getWriter()).thenReturn(writer);
-  //  callPerspectiveServlet.doPost(request, response);
+    Mockito.when(response.getWriter()).thenReturn(writer);
+    suggestCommentServlet.doPost(request, response);
 
-  //  Assert.assertTrue(stringWriter.toString().contains("API key not valid."));
- // }
+    Assert.assertTrue(stringWriter.toString().contains("API key not valid."));
+  }
 
-  //@Test
-  //public void PerspectiveCallWithNullInput() throws IOException{
-  //  ApiCaller mock = new MockPerspCallerNullInput();
-  //  CallPerspectiveServlet callPerspectiveServlet = new CallPerspectiveServlet(mock);
+  @Test
+  public void SuggestCommentCallWithNoTextInput() throws IOException{
+    ApiCaller mock = new MockSuggestCommentCallerNoTextInput();
+    SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
 
-//    Mockito.when(response.getWriter()).thenReturn(writer);
-//    callPerspectiveServlet.doPost(request, response);
+    Mockito.when(response.getWriter()).thenReturn(writer);
+    suggestCommentServlet.doPost(request, response);
 
-   // Assert.assertTrue(stringWriter.toString().contains("Comment must be non-empty."));
-  //}
+    Assert.assertTrue(stringWriter.toString().contains("Comment must not be empty."));
+  }
+
+  @Test
+  public void SuggestCommentCallWithNoAttributesInput() throws IOException{
+    ApiCaller mock = new MockSuggestCommentCallerNoAttributesInput();
+    SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
+
+    Mockito.when(response.getWriter()).thenReturn(writer);
+    suggestCommentServlet.doPost(request, response);
+
+    Assert.assertTrue(stringWriter.toString().contains("Attribute scores must not be empty."));
+  }
 }

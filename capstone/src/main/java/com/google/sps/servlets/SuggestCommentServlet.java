@@ -40,7 +40,7 @@ import java.util.Collection;
 /** Servlet that suggests a difference score for Perspective. */
 @WebServlet("/suggest_perspective")
 public class SuggestCommentServlet extends HttpServlet {
-  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:suggestscore?key=AIzaSyDon2uWEJFzlNDRmrLZewNBPSnu1e7";
+  private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:suggestscore?key=API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   private ApiCaller apiCaller;
 
@@ -102,7 +102,7 @@ public class SuggestCommentServlet extends HttpServlet {
       JSONObject value = new JSONObject();
       value.put("value", feedback.get(suggestion));
       JSONObject summaryScoreValue = new JSONObject();
-      summaryScoreValue.put("summaryScore", value);
+    //  summaryScoreValue.put("summaryScore", value);
       attributesValue.put(suggestion, summaryScoreValue);
     }
 
