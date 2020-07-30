@@ -29,8 +29,6 @@ async function gatherSheetsInput() {
   if (!idElement) {
     return;
   }
-
-  // Search for a URL in the format ".../d/SHEET_ID/..."
   let id = idElement.value;
 
   // Search for a URL in the format ".../d/DOC_ID/..."
