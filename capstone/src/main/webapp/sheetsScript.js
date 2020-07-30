@@ -256,6 +256,8 @@ async function createSheetOutput(id, name, range, lang, requestedAttributes) {
         for (const attribute of Object.entries(resolvedResponses[index].attributeScores).sort()) {
           body[index + 1].push(attribute[1].summaryScore.value);
         }
+      } else {
+        body[index + 1].push('Unable to retrieve a score');
       }
     }
 
