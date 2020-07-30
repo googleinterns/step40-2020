@@ -259,10 +259,12 @@ function drawBarChart(toxicityData) {
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
+  // Highlight <li> element when its input is checked
   $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
     $(this).closest('li').toggleClass('active', this.checked);
   });
 
+  // Keep menu open when an option is selected or deselected
   $(document).on('click', '.allow-focus', function(e) {
     e.stopPropagation();
   });
