@@ -102,7 +102,7 @@ public class SuggestCommentServlet extends HttpServlet {
       JSONObject value = new JSONObject();
       value.put("value", feedback.get(suggestion));
       JSONObject summaryScoreValue = new JSONObject();
-    //  summaryScoreValue.put("summaryScore", value);
+      summaryScoreValue.put("summaryScore", value);
       attributesValue.put(suggestion, summaryScoreValue);
     }
 
