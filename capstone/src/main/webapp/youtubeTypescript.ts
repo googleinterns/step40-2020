@@ -43,10 +43,12 @@ let ANALYZED_COMMENTS: string[];
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
   resetChartAndCsv();
+  showLoadingWheel();
   (<HTMLInputElement> document.getElementById("download")).disabled = false;
   document.getElementById('search-type').innerHTML = "";
   const channelId = (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value.replace(/ /g, '');
   if (!channelId) {
+    hideLoadingWheel();
     return;
   }
   // Checks if input is a category, if so directs input to be handled by get trending
@@ -62,6 +64,7 @@ async function callYoutube() {
     response = await fetch('/youtube_servlet?channelId=' + channelId);
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
+      hideLoadingWheel();
       alert("Invalid Channel ID");
       return;
     }
@@ -70,6 +73,7 @@ async function callYoutube() {
     const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
+      hideLoadingWheel();
       alert("Username Not found, Please Input Channel ID");
       return;
     }
@@ -105,6 +109,7 @@ async function inputCommentsToPerspective(commentsList: any[]) {
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
+    hideLoadingWheel();
     loadChartsApi(attributeAverages);
     perspectiveToxicityScale(attributeAverages);
   });
@@ -344,6 +349,7 @@ function perspectiveToxicityScale(attributeAverages: Map<string, number>) {
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
   resetChartAndCsv();
+  showLoadingWheel();
   (<HTMLInputElement> document.getElementById("download")).disabled = false;
   const searchTerm = (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
@@ -437,4 +443,21 @@ function drawTableChart() {
     formatter.format(tableData, i);
   }
   table.draw(tableData, {allowHtml: true, showRowNumber: false, width: '100%', height: '100%'});
+}
+
+/** Displays a loading wheel that can be used a placeholder until an output is ready to be displayed*/
+function showLoadingWheel() {
+  const loadingContainerElement = document.getElementById('loading-container');
+  // Only one loading wheel will be shown at a time
+  if (loadingContainerElement.innerHTML == '') {
+    const loadingWheel = document.createElement('p');
+    loadingWheel.className = 'spinner-border';
+    loadingContainerElement.appendChild(loadingWheel);
+  }
+}
+
+/** Removes the placeholding loading wheel*/
+function hideLoadingWheel() {
+  const loadingContainerElement = document.getElementById('loading-container');
+  loadingContainerElement.innerHTML = '';
 }

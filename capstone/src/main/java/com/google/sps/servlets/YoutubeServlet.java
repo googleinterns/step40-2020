@@ -36,7 +36,8 @@ import java.util.Arrays;
 public class YoutubeServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "5";
+  private static final String NUM_RESULTS_PER_CHANNEL = "10";
+  private static final String NUM_RESULTS_PER_VIDEO = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
@@ -45,8 +46,8 @@ public class YoutubeServlet extends HttpServlet {
     String channelId = request.getParameter("channelId");
     String videoId = request.getParameter("videoId");
     String completeUrl = (channelId != null) ? 
-      (BASE_URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
-        (BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
+      (BASE_URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS_PER_CHANNEL + "&key=" + KEY) : 
+        (BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS_PER_VIDEO + "&key=" + KEY);
     String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  

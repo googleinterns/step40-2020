@@ -78,10 +78,12 @@ function callYoutube() {
             switch (_a.label) {
                 case 0:
                     resetChartAndCsv();
+                    showLoadingWheel();
                     document.getElementById("download").disabled = false;
                     document.getElementById('search-type').innerHTML = "";
                     channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
                     if (!channelId) {
+                        hideLoadingWheel();
                         return [2 /*return*/];
                     }
                     // Checks if input is a category, if so directs input to be handled by get trending
@@ -98,6 +100,7 @@ function callYoutube() {
                 case 2:
                     responseJson = _a.sent();
                     if (responseJson.hasOwnProperty('error')) {
+                        hideLoadingWheel();
                         alert("Invalid Channel ID");
                         return [2 /*return*/];
                     }
@@ -110,6 +113,7 @@ function callYoutube() {
                 case 5:
                     usernameConverterResponseJson = _a.sent();
                     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
+                        hideLoadingWheel();
                         alert("Username Not found, Please Input Channel ID");
                         return [2 /*return*/];
                     }
@@ -180,6 +184,7 @@ function inputCommentsToPerspective(commentsList) {
                     return [4 /*yield*/, Promise.all(attributeScoresPromises).then(function (resolvedAttributeScores) {
                             var attributeTotals = getAttributeTotals(resolvedAttributeScores);
                             var attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
+                            hideLoadingWheel();
                             loadChartsApi(attributeAverages);
                             perspectiveToxicityScale(attributeAverages);
                         })];
@@ -463,6 +468,7 @@ function getKeywordSearchResults() {
             switch (_c.label) {
                 case 0:
                     resetChartAndCsv();
+                    showLoadingWheel();
                     document.getElementById("download").disabled = false;
                     searchTerm = document.getElementById('channelIdForAnalysis').value;
                     return [4 /*yield*/, fetch('/keyword_search_servlet?searchTerm=' + searchTerm)];
@@ -576,4 +582,19 @@ function drawTableChart() {
         formatter.format(tableData, i);
     }
     table.draw(tableData, { allowHtml: true, showRowNumber: false, width: '100%', height: '100%' });
+}
+/** Displays a loading wheel that can be used a placeholder until an output is ready to be displayed*/
+function showLoadingWheel() {
+    var loadingContainerElement = document.getElementById('loading-container');
+    // Only one loading wheel will be shown at a time
+    if (loadingContainerElement.innerHTML == '') {
+        var loadingWheel = document.createElement('p');
+        loadingWheel.className = 'spinner-border';
+        loadingContainerElement.appendChild(loadingWheel);
+    }
+}
+/** Removes the placeholding loading wheel*/
+function hideLoadingWheel() {
+    var loadingContainerElement = document.getElementById('loading-container');
+    loadingContainerElement.innerHTML = '';
 }
