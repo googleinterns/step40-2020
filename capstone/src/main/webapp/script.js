@@ -294,24 +294,25 @@ function showAvailableAttributes() {
  * Highlight the currently selected choice(s) in dropdown menus
  */
 function loadDropdowns() {
-  // Language selection
+  // Highlight an <li> element in a radio selection when its input is checked for
+  // 1. Language selection
+  // 2. Available attributes
+  // 3. Analysis type
   $('#available-languages').on('change', "input[type='radio']", function() {
     $("input[name='languageRadios']").closest('li').toggleClass('active', false);
     $(this).closest('li').toggleClass('active', this.checked);
   });
-
-  // Available attributes
+  
   $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
     $(this).closest('li').toggleClass('active', this.checked);
   });
 
-  // Analysis type
   $('#available-analysis').on('change', "input[type='radio']", function() {
     $("input[name='analysisRadios']").closest('li').toggleClass('active', false);
     $(this).closest('li').toggleClass('active', this.checked);
   });
 
-  // Keep the menu open when a choice is selected
+  // Keep a menu open when a choice is selected
   $(document).on('click', '.allow-focus', function(e) {
     e.stopPropagation();
   });
