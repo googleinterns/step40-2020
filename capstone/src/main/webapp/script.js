@@ -419,13 +419,8 @@ function drawDatamuseChart(responses, substringForReplacements, toxicityOfOrigin
   const data = google.visualization.arrayToDataTable([[{label: 'replacement'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   for (let i = 0; i < replacements.length; i++) {
-    let color = '#6B8E23'; // Green
     const score = responses[i].attributeScores['TOXICITY'].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
+    const color = getColor(score);
     data.addRow([replacements[i].word, score, color]);
   }
   data.addRow(['ORIGINAL', toxicityOfOriginal, 'Black']);
@@ -460,13 +455,8 @@ function drawGeneralChart(toxicityData) {
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
-    let color = '#6B8E23'; // Green
     const score = toxicityData.attributeScores[attribute].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
+    const color = getColor(score);
     data.addRow([attribute, score, color]);
   });
 
@@ -484,6 +474,21 @@ function drawGeneralChart(toxicityData) {
   const chart = new google.visualization.BarChart(chartContainer);
   chartContainer.removeChild(loadingEl);
   chart.draw(data, options);
+}
+
+/** Gives the appropriate color for a bar in a barchart given its score */
+function getColor(score) {
+  if (score >= 0.8) {
+    return '#6200EA'; // Darkest purple
+  } else if (score >= 0.6) {
+    return '#8133EE'; // Dark purple
+  } else if (score >= 0.4) {
+    return '#A166F2'; // Mild purple
+  } else if (score >= 0.2) {
+    return '#E0CCFB'; // Light purple
+  } else {
+    return '#F6F2FC'; // Lighest purple
+  }
 }
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
