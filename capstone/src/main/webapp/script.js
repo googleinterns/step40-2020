@@ -83,7 +83,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
   document.getElementById('perspective-datamuse-extremes').innerHTML = '';
-  document.getElementById('about-container').style.display = 'none';
+  document.getElementById('perspective-datamuse-header').style.display = 'none';
 	
   // Make Perspective call for the entire submission and load graph data
   const toxicityData = await callPerspective(text, lang, requestedAttributes);
@@ -197,7 +197,7 @@ function setUpReplacements(text, lang, substringForReplacements) {
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
 
-  document.getElementById('about-container').style.display = 'block';
+  document.getElementById('perspective-datamuse-header').style.display = 'block';
 
   getReplacements(text, lang, substringForReplacements);
   showDataMuseWordReplacementOptions(text, lang, substringForReplacements);
