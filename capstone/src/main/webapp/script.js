@@ -487,7 +487,7 @@ function getColor(score) {
   } else if (score >= 0.2) {
     return '#E0CCFB'; // Light purple
   } else {
-    return '#F6F2FC'; // Lighest purple
+    return '#F6F2FC'; // Lightest purple
   }
 }
 
