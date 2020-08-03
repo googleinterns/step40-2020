@@ -36,9 +36,6 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-const MAX_TOTAL_DATAMUSE_RESULTS = 100;
-const MAX_DATAMUSE_RESULTS_PER_WORD = 10;
-
 /** Collects the user's input and submits it for analysis */
 async function gatherInput() {
   // Get the submitted text and language
@@ -80,7 +77,6 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
-  document.getElementById('perspective-datamuse-extremes').innerHTML = '';
   document.getElementById('about-container').style.display = 'none';
 
   // Draw the separating line for the output
@@ -166,92 +162,6 @@ function setUpReplacements(text, lang, substringForReplacements) {
   showDataMuseWordReplacementOptions(text, lang, substringForReplacements);
 }
 
-/** Gets the most extreme word replacements on a string */
-async function getExtremes(text, lang) {
-  // Remove any previous output & set up loading spinner
-  const container = document.getElementById('perspective-datamuse-extremes');
-  container.innerHTML = '';
-  const loadingEl = document.createElement('p');
-  loadingEl.className = 'spinner-border';
-  container.appendChild(loadingEl);
-
-  // Get the words & place a limit on the max number of requests
-  const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
-  let numResults = getNumResults(words.length);
-
-  // Get the new sentences and their scores
-  const replacements = await getAllReplacements(words, numResults);
-  const newSentences = [];
-  const styledSentences = [];
-  const promises = [];
-  for (let i = 0; i < replacements.length; i++) {
-    const newSentence = text.replace(replacements[i][0], replacements[i][1]);
-    const styledSentence = text.replace(replacements[i][0], '<b>' + replacements[i][1] + '</b>');
-    newSentences.push(newSentence);
-    styledSentences.push(styledSentence);
-    promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
-  }
-
-  const mostToxic = { string: '', score: Number.MIN_VALUE };
-  const leastToxic = { string: '', score: Number.MAX_VALUE };
-  await storeExtremes(promises, mostToxic, leastToxic, styledSentences);
-  renderExtremes(container, loadingEl, leastToxic, mostToxic);
-}
-
-/** Finds the possible replacements of the words given. */
-async function getAllReplacements(words, numResults) {
-  const replacements = [];
-  const wordsCalled = [];
-  const datamuseCalls = [];
-  for (let word of words) {
-    for (let attribute of Object.values(DATAMUSE_ATTRIBUTES)) {
-      wordsCalled.push(word);
-      datamuseCalls.push(callDatamuse(word, attribute, numResults));
-    }
-  }
-  await Promise.all(datamuseCalls).then(datamuseResponses => {
-    for (let i = 0; i < datamuseResponses.length; i++) {
-      for (let j = 0; j < datamuseResponses[i].length; j++) {
-        replacements.push([wordsCalled[i], datamuseResponses[i][j].word]);
-      }
-    }
-  });
-  return replacements;
-}
-
-/** From an array of Perspective promises, stores the most extreme sentence variations in "mostToxic" & "leastToxic" */
-async function storeExtremes(promises, mostToxic, leastToxic, styledSentences) {
-  await Promise.all(promises).then(resolvedResponses => {
-    for (let i = 0; i < resolvedResponses.length; i++) {
-      const toxicityScore = resolvedResponses[i].attributeScores.TOXICITY.summaryScore.value;
-      // Update the current extreme values if necessary
-      if (toxicityScore > mostToxic.score) {
-        mostToxic.score = toxicityScore;
-        mostToxic.string = styledSentences[i];
-      } else if (toxicityScore < leastToxic.score) {
-        leastToxic.score = toxicityScore;
-        leastToxic.string = styledSentences[i];
-      }
-    }
-  });
-}
-
-/** Calculates the appropriate number of Datamuse results per word to get */
-function getNumResults(numWords) {
-  let numResults = MAX_DATAMUSE_RESULTS_PER_WORD;
-  if (numResults * numWords > MAX_TOTAL_DATAMUSE_RESULTS) {
-    numResults = Math.floor(MAX_TOTAL_DATAMUSE_RESULTS / numWords);
-  }
-  return numResults;
-}
-
-/** Renders the extreme variations of a sentence after they have been calculated */
-function renderExtremes(container, loadingEl, leastToxic, mostToxic) {
-  container.removeChild(loadingEl);
-  container.appendChild(createAnyElement('p', 'Least toxic variation: ' + leastToxic.string + ' -> ' + decimalToPercentage(leastToxic.score)));
-  container.appendChild(createAnyElement('p', 'Most toxic variation: ' + mostToxic.string + ' -> ' + decimalToPercentage(mostToxic.score)));
-}
-
 /** Gets the replacements & their score changes for a subtring based on the Datamuse API */
 async function getReplacements(text, lang, substringForReplacements) {
   // Clear previous results
@@ -277,7 +187,7 @@ async function getReplacements(text, lang, substringForReplacements) {
   }
   
   // Get Datamuse API replacements of substring
-  const replacements = await callDatamuse(substringForReplacements, wordType, 5);
+  const replacements = await callDatamuse(substringForReplacements, wordType);
   if (replacements.length === 0) {
     analysisContainer.removeChild(loadingEl)
     analysisContainer.appendChild(createAnyElement('b', 'Datamuse API did not find any words or phrases matching your query'));
@@ -344,35 +254,13 @@ function showDataMuseWordReplacementOptions(text, lang, substringForReplacements
   container.innerHTML = '';
   container.appendChild(document.createElement('hr'));
 
-  const optionsRow = document.createElement('div');
-  optionsRow.className = 'row';
-
-  setUpWordTypeSelection(container, optionsRow, text, lang, substringForReplacements);
-  
-  // Set up extremes analysis button
-  const extremesSection = document.createElement('div')
-  extremesSection.className = 'col-6'; 
-  const extremesButton = document.createElement('button');
-  extremesButton.innerHTML = 'Get Extremes';
-  extremesButton.className = 'btn btn-primary';
-  extremesButton.onclick = function() { getExtremes(text, lang); };
-  extremesSection.appendChild(extremesButton)
-  optionsRow.appendChild(extremesSection);
-}
-
-function setUpWordTypeSelection(container, optionsRow, text, lang, substringForReplacements) {
-  const wordTypeSection = document.createElement('div');
-  wordTypeSection.className = 'col-6';
-	
   // Set up radios for word type selection
   const radiosEl = document.createElement('div');
   radiosEl.appendChild(createAnyElement('p', 'Different type of word replacement?'));
   for (let attribute of Object.keys(DATAMUSE_ATTRIBUTES)) {
     radiosEl.appendChild(createIndividualRadio(attribute + '-radio', 'radio', DATAMUSE_ATTRIBUTES[attribute], 'form-check', attribute, 'datamuse-radios'));
   }
-  wordTypeSection.appendChild(radiosEl);
-  optionsRow.appendChild(wordTypeSection);
-  container.appendChild(optionsRow);
+  container.appendChild(radiosEl);
   document.getElementsByName('datamuse-radios')[0].checked = true;
 
   // Set up submit button for word type selection
@@ -380,14 +268,14 @@ function setUpWordTypeSelection(container, optionsRow, text, lang, substringForR
   submitButton.innerHTML = 'Submit';
   submitButton.className = 'btn btn-primary';
   submitButton.onclick = function() { getReplacements(text, lang, substringForReplacements); };
-  wordTypeSection.appendChild(submitButton);
+  container.appendChild(submitButton);
 }
 
 /** Gets the original toxicity score of the substring the user selected for replacements */
 async function getOriginalToxicity(text, lang, container, loadingEl) {
   const response = await callPerspective(text, lang, ['TOXICITY']);
   if (typeof(response.attributeScores) === 'undefined') {
-    container.removeChild(loadingEl);
+    container.removeChild(loadingEl)
     container.appendChild(createAnyElement('p', 'Perspective API was not able to get scores replacements'));
     return;
   }
@@ -428,9 +316,9 @@ function getReplacementsWordType() {
 }
  
 /** Gets a max of 5 word replacement replacement from Datamuse API */
-async function callDatamuse(text, wordType, numResults) {
+async function callDatamuse(text, wordType) {
   words = text.replace(' ', '+');
-  let response = await fetch('https://api.datamuse.com/words?' + wordType + '=' + words + '&max=' + numResults);
+  let response = await fetch('https://api.datamuse.com/words?' + wordType + '=' + words + '&max=5');
   return await response.json();
 }
 
