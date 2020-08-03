@@ -293,8 +293,9 @@ function showCategories() {
   }
 }
 
-/** Converts perspective results to knoop scale then to mohs*/
-function perspectiveToxicityScale(attributeAverages) {
+/** Converts perspective results to knoop scale then to mohs */
+function getScoreInMohs(attributeAverages) {
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
   let totalToxicityScore = 0;
   for (const [attribute, attributeAverage] of attributeAverages) {
@@ -305,7 +306,7 @@ function perspectiveToxicityScale(attributeAverages) {
   const knoopScore = averageToxicityScore * 7000;
   let knoopLow;
   let knoopHigh;
-  let mohs;
+  let mohsScore;
   for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
       if (knoopScore < 1) {
@@ -321,7 +322,13 @@ function perspectiveToxicityScale(attributeAverages) {
   const knoopRange = knoopHigh - knoopLow;
   const amountMoreThanKnoop = knoopScore - knoopLow;
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
-  const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
+  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
+  return completeMohsScore;
+}
+
+/** Displays the perspective toxicity scale score */
+function showPerspectiveToxicityScale(attributeAverages) {
+  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
   document.getElementById('search-type').appendChild(document.createElement("br"));  
   document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
