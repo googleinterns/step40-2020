@@ -1,4 +1,3 @@
- 
 // Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +27,8 @@ import okhttp3.Response;
 import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.sps.data.ApiCaller;
+import com.google.sps.data.PerspectiveCaller;
 import com.google.sps.data.PerspectiveInput;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
@@ -36,15 +37,38 @@ import java.util.Arrays;
 /** Servlet that returns Perspective scoring. */
 @WebServlet("/call_perspective")
 public class CallPerspectiveServlet extends HttpServlet {
+
   private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+
+  private ApiCaller apiCaller;
+
+  public CallPerspectiveServlet() {
+    super();
+    this.apiCaller = new PerspectiveCaller();
+  }
+
+  public CallPerspectiveServlet(ApiCaller apiCaller) {
+    super();
+    this.apiCaller = apiCaller;
+  }
+
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Get the input
-    String data = request.getReader().readLine();
-    Gson gson = new Gson();		
-    PerspectiveInput info = gson.fromJson(data, PerspectiveInput.class);  
+    PerspectiveInput info = new PerspectiveInput("", "", new String[0]);
+
+    if (request.getReader() != null) {
+      String data = request.getReader().readLine();
+      Gson gson = new Gson();
+      info = gson.fromJson(data, PerspectiveInput.class);
+    }
+
+    if (info == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
     
     String text = info.getText();
     String lang = info.getLang();
@@ -53,21 +77,11 @@ public class CallPerspectiveServlet extends HttpServlet {
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
     String json = makePerspectiveJson(text, lang, requestedAttributes);
-    String output = post(URL, json, client);
+    String output = apiCaller.post(URL, json, client);
   
     // Return Perspective's results
     response.setContentType("application/json");
     response.getWriter().println(output);
-  }
-
-  /** Makes a POST request. */
-  private String post(String url, String json, OkHttpClient client) throws IOException {
-    RequestBody body = RequestBody.create(json, JSON);
-    Request request = new Request.Builder().url(url).post(body).build();
-
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
   }
 
   /** Builds the JSON for the body of the call to Perspective API. */
