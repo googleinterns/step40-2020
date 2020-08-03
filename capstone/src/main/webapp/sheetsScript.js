@@ -64,14 +64,14 @@ async function gatherSheetsInput() {
 
   // Get the name and range of sheets to be analyzed
   const response = await getSheetNamesAndRange(id);
-  const sheetNames = await response.sheetNames;
-  const range = await response.range;
+  const sheetNames = response.sheetNames;
+  const range = response.range;
 
   // Show general output
   let totalText = '';
   for (const name of sheetNames) {
     const sheet = await getSpreadsheet(id, name, range);
-    const text = await getTextFromSheet(sheet);
+    const text = getTextFromSheet(sheet);
     totalText += text + '\n';
   }
 
@@ -130,7 +130,7 @@ async function getSheetNamesAndRange(id) {
   }
 
   // Otherwise, get all sheets
-  let sheetNames = await getSheetNames(id);
+  const sheetNames = await getSheetNames(id);
   return { 'sheetNames': sheetNames, 'range': '!A1:YY' };
 }
 
