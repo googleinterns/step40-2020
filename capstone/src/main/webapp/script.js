@@ -177,12 +177,29 @@ async function getExtremes(text, lang) {
 
   // Get the words & place a limit on the max number of requests
   const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
-  let numResults = MAX_DATAMUSE_RESULTS_PER_WORD;
-  if (numResults * words.length > MAX_TOTAL_DATAMUSE_RESULTS) {
-    numResults = Math.floor(MAX_TOTAL_DATAMUSE_RESULTS / words.length);
-  }
+  let numResults = getNumResults(words.length);
 
   // Get the possible word replacements
+  const replacements = await getAllReplacements(words, numResults);
+  const newSentences = [];
+  const styledSentences = [];
+  const promises = [];
+  for (let i = 0; i < replacements.length; i++) {
+    // Get the Perspective scores on the new sentences
+    const newSentence = text.replace(replacements[i][0], replacements[i][1]);
+    const styledSentence = text.replace(replacements[i][0], '<b>' + replacements[i][1] + '</b>');
+    newSentences.push(newSentence);
+    styledSentences.push(styledSentence);
+    promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
+  }
+  const mostToxic = { string: '', score: Number.MIN_VALUE };
+  const leastToxic = { string: '', score: Number.MAX_VALUE };
+  await storeExtremes(promises, mostToxic, leastToxic, styledSentences);
+  renderExtremes(container, loadingEl, leastToxic, mostToxic);
+}
+
+/** Finds the possible replacements of the words given. */
+async function getAllReplacements(words, numResults) {
   const replacements = [];
   const wordsCalled = [];
   const datamuseCalls = [];
@@ -199,23 +216,15 @@ async function getExtremes(text, lang) {
       }
     }
   });
-  const newSentences = [];
-  const styledSentences = [];
-  const promises = [];
-  for (let i = 0; i < replacements.length; i++) {
-    // Get the Perspective scores on the new sentences
-    const newSentence = text.replace(replacements[i][0], replacements[i][1]);
-    const styledSentence = text.replace(replacements[i][0], '<b>' + replacements[i][1] + '</b>');
-    newSentences.push(newSentence);
-    styledSentences.push(styledSentence);
-    promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
-  }
-  const mostToxic = { string: '', score: Number.MIN_VALUE };
-  const leastToxic = { string: '', score: Number.MAX_VALUE };
+  return replacements;
+}
+
+/** From an array of Perspective promises, stores the most extreme sentence variations in "mostToxic" & "leastToxic" */
+async function storeExtremes(promises, mostToxic, leastToxic, styledSentences) {
   await Promise.all(promises).then(resolvedResponses => {
     for (let i = 0; i < resolvedResponses.length; i++) {
-      // Update the current extreme values if necessary
       const toxicityScore = resolvedResponses[i].attributeScores.TOXICITY.summaryScore.value;
+      // Update the current extreme values if necessary
       if (toxicityScore > mostToxic.score) {
         mostToxic.score = toxicityScore;
         mostToxic.string = styledSentences[i];
@@ -225,7 +234,19 @@ async function getExtremes(text, lang) {
       }
     }
   });
-  // Print the results
+}
+
+/** Calculates the appropriate number of Datamuse results per word to get */
+function getNumResults(numWords) {
+  let numResults = MAX_DATAMUSE_RESULTS_PER_WORD;
+  if (numResults * numWords > MAX_TOTAL_DATAMUSE_RESULTS) {
+    numResults = Math.floor(MAX_TOTAL_DATAMUSE_RESULTS / numWords);
+  }
+  return numResults;
+}
+
+/** Renders the extreme variations of a sentence after they have been calculated */
+function renderExtremes(container, loadingEl, leastToxic, mostToxic) {
   container.removeChild(loadingEl);
   container.appendChild(createAnyElement('p', 'Least toxic variation: ' + leastToxic.string + ' -> ' + decimalToPercentage(leastToxic.score)));
   container.appendChild(createAnyElement('p', 'Most toxic variation: ' + mostToxic.string + ' -> ' + decimalToPercentage(mostToxic.score)));
