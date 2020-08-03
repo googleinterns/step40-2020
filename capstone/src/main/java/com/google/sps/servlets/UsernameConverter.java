@@ -31,25 +31,18 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/** Servlet that returns youtube api data. */
-@WebServlet("/youtube_servlet")
-public class YoutubeServlet extends HttpServlet {
-  private static final String URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
+/** Servlet that converts a youtube username to a channelID. */
+@WebServlet("/username_servlet")
+public class UsernameConverter extends HttpServlet {
+  private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String ChannelId = request.getParameter("channelId");
-    String videoID = request.getParameter("videoID");
-    String url;
-    if (ChannelId!=null) {
-      url = URL + "&allThreadsRelatedToChannelId=" + ChannelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
-    } else {
-      url = URL + "&videoId=" + videoID + "&maxResults=" + NUM_RESULTS + "&key=" + KEY;
-    }
+    String userName = request.getParameter("channelId");
+    String url = URL + KEY + "&forUsername=" + userName + "&part=id";
     String output = get(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
