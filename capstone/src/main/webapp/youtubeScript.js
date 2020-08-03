@@ -55,7 +55,7 @@ async function callYoutube() {
     response = await fetch('/youtube_servlet?channelId=' + channelId);
     responseJson = await response.json();
     if (responseJson.hasOwnProperty('error')) {
-      inputCommentsToPerspective([]);
+      alert("Invalid Channel ID");
       return;
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
@@ -63,7 +63,7 @@ async function callYoutube() {
     const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
     const usernameConverterResponseJson = await usernameConverterResponse.json();
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
-      inputCommentsToPerspective([]);
+      alert("Username Not found, Please Input Channel ID");
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
@@ -99,27 +99,27 @@ async function inputCommentsToPerspective(commentsList) {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
     loadChartsApi(attributeAverages);
+    showPerspectiveToxicityScale(attributeAverages);
   });
 }
 
-/** returns a map of attribute score sums from an array of JSON's */
+/** Returns a map of attribute score sums from an array of JSON's */
 function getAttributeTotals(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
-  const attributeTotals = new Map();   
+  const attributeTotals = new Map();    
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
-      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (attributeTotals.has(requestedAttributes[i])) {
-        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       } else {
-        attributeTotals.set(requestedAttributes[i], attributeScoreValue);
+        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
       }
     }
   }
   return attributeTotals;
 }
 
-/** returns a map of attribute score averages from a map and an array */
+/** Returns a map of attribute score averages from a map and an array */
 function getAttributeAverages(attributeTotals, totalNumberOfComments) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
@@ -190,8 +190,8 @@ function showAvailableAttributes() {
     return;
   }
   const lang = langElement.value;
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
     const checkbox = document.createElement('input');
@@ -202,9 +202,9 @@ function showAvailableAttributes() {
     const label = document.createElement('label');
     label.htmlFor = attribute + '-checkbox';
     label.appendChild(document.createTextNode(attribute));
-    avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode (" "));
+    availableAttributesElement.appendChild(checkbox);
+    availableAttributesElement.appendChild(label);
+    availableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
 
@@ -222,7 +222,7 @@ async function getTrending(categoryId) {
     const videoId = trendingResponseJson.items[item].id;
     trendingVideoIds.push(videoId);
   }
-  const commentsList = []
+  const commentsList = [];
   for (const id in trendingVideoIds) {
     const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
     const videoCommentListJson = await videoCommentList.json();
@@ -244,7 +244,7 @@ function textInputToggle(button, toEnable) {
   }
 }
 
-/** Creates radio buttons to allow the user to select between various categories*/
+/** Creates radio buttons to allow teh user to select between various categories */
 function showCategories() {
   // Creates button to enable manual input
   const radiobox = document.createElement('input');
@@ -283,4 +283,44 @@ function showCategories() {
     categoryContainer.appendChild(label);
     categoryContainer.appendChild(document.createTextNode(" "));
   }
+}
+
+/** Converts perspective results to knoop scale then to mohs */
+function getScoreInMohs(attributeAverages) {
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
+  const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
+  let totalToxicityScore = 0;
+  for (const [attribute, attributeAverage] of attributeAverages) {
+    totalToxicityScore += attributeAverage;
+  }
+  const inputLength = attributeAverages.size;
+  const averageToxicityScore = totalToxicityScore / inputLength;
+  const knoopScore = averageToxicityScore * 7000;
+  let knoopLow;
+  let knoopHigh;
+  let mohsScore;
+  for (let i = 0; i < knoopScale.length; i++) {
+    if (knoopScore < knoopScale[i]) {
+      if (knoopScore < 1) {
+        knoopLow = 0;
+      } else {
+        knoopLow = knoopScale[i-1];
+      }
+      knoopHigh = knoopScale[i];
+      mohsScore = i;  
+      break;
+    }
+  }
+  const knoopRange = knoopHigh - knoopLow;
+  const amountMoreThanKnoop = knoopScore - knoopLow;
+  const mohsDecimal = amountMoreThanKnoop / knoopRange;
+  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
+  return completeMohsScore;
+}
+
+/** Displays the perspective toxicity scale score */
+function showPerspectiveToxicityScale(attributeAverages) {
+  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }

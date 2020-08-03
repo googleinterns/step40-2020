@@ -46,8 +46,8 @@ public class YoutubeUsernameServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String userName = request.getParameter("channelId");
-    String ecodedUserName = URLEncoder.encode(userName, "UTF-8");
-    String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
+    String encodedUserName = URLEncoder.encode(userName, "UTF-8");
+    String completeUrl = BASE_URL + KEY + "&forUsername=" + encodedUserName + "&part=id";
     String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
