@@ -61,7 +61,7 @@ async function gatherInput() {
   }
 
   // Get the selected analysis type
-  document.getElementById('general-analysis-container').innerHTML = '';
+  document.getElementById('colored-analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   let tokenizer;
   for (i = 0; i < radios.length; i++) {
@@ -70,30 +70,27 @@ async function gatherInput() {
       break;
     }
   }
-
   handleInput(textElement.value, langElement.value, requestedAttributes, tokenizer);
 }
 
 /** Submits the input to Perspective and loads the appropriate output */
 async function handleInput(text, lang, requestedAttributes, tokenizer) {
-  // Remove any previous output
+	// Remove any previous output
+  document.getElementById('colored-analysis-container').innerHTML = '';
+  document.getElementById('segment-data').innerHTML = '';
+  document.getElementById('detailed-analysis-header').innerHTML = '';
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
   document.getElementById('perspective-datamuse-extremes').innerHTML = '';
-  document.getElementById('about-container').style.display = 'none';
-
-  // Draw the separating line for the output
-  const separator = document.getElementById('separator-container');
-  separator.innerHTML = '';
-  separator.appendChild(document.createElement('hr')); 
+  document.getElementById('perspective-datamuse-header').style.display = 'none';
 	
   // Make Perspective call for the entire submission and load graph data
   const toxicityData = await callPerspective(text, lang, requestedAttributes);
   loadChartsApi(toxicityData);
 
   // Get detailed analysis if requested
-  if (tokenizer != 'undefined') {
+  if (tokenizer) {
     getAnalysis(text, lang, requestedAttributes, tokenizer); 
   }
 }
@@ -101,8 +98,10 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
 /** Shows detailed analysis of text by word or sentence */
 async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Set up the detailed analysis section
-  const analysisContainer = document.getElementById('general-analysis-container');
-  analysisContainer.appendChild(createAnyElement('b', 'Detailed Anaylsis'));
+  const headerContainer = document.getElementById('detailed-analysis-header');
+  headerContainer.innerHTML = '';
+  headerContainer.appendChild(createAnyElement('h3', 'Detailed Anaylsis'));
+  const analysisContainer = document.getElementById('colored-analysis-container');
   const loadingEl = document.createElement('p');
   loadingEl.className = 'spinner-border';
   analysisContainer.appendChild(loadingEl);
@@ -121,7 +120,11 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
     }
   });
 
+  // Print analysis and set up sidebar data element
   analysisContainer.removeChild(loadingEl);
+  const segmentDataEl = document.getElementById('segment-data');
+  segmentDataEl.innerHTML = '';
+  segmentDataEl.appendChild(createAnyElement('h5', 'Click on any segment for details'));	
   analysisContainer.appendChild(result);
 }
 
@@ -136,31 +139,65 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   const toxicityScore = response.attributeScores.TOXICITY.summaryScore.value;
   const attributes = sortAttributes(response);
 
-  // Set up replacements function call and color the substring appropriately	
+  // Break up and color the segment appropriately	
   const substringEl = document.createElement('span');
+  const wordElts = [];
   const words = getSubstrings(substring, TokenizerEnum['WORD']);
-  for (let i = 0; i < words.length; i++) {
-    const wordEl = createAnyElement('span', words[i]);
-    const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
-    wordEl.onclick = function() { setUpReplacements(substring, lang, bareWord); }
-    wordEl.classList.add('output-word'); 
-    substringEl.appendChild(wordEl);
+  if (words) {
+    for (let i = 0; i < words.length; i++) {
+      const wordEl = createAnyElement('span', words[i]);
+      const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
+      wordElts.push([wordEl, bareWord]);
+      substringEl.appendChild(wordEl);
+    }
+  } else {
+    substringEl.appendChild(createAnyElement('span', substring));
   }
   colorSubstring(substringEl, toxicityScore);
-     
-  // Attach a tooltip (info-box for the substring)
-  const tooltipEl = createTooltip(attributes);
-  substringEl.appendChild(tooltipEl);
+
+  // Set up analysis replacement function call after user clicks on segment
+  substringEl.onclick = function() { handleSegmentClick(attributes, substringEl, wordElts, substring, lang); }
   result.appendChild(substringEl);
 }
- 
+
+/** Appropriately sets the onclick attribute of a detailed analyis segment */ 
+function handleSegmentClick(attributes, substringEl, wordElts, substring, lang) {
+  showAttributes(attributes);
+  // Remove properties from previously clicked-on segments
+  const segments = document.getElementsByClassName('segment');
+  for (let i = 0; i < segments.length; i++) {
+    segments[i].classList.remove('purple-underline');
+    for (let j = 0; j < segments[i].childNodes.length; j++) {
+      segments[i].childNodes[j].className = '';
+      segments[i].childNodes[j].onclick = null;
+    }
+  }
+  // Allow replacements call for clicked-on segment
+  substringEl.classList.add('purple-underline');
+  for (let word of wordElts) {
+    word[0].onclick = function() { setUpReplacements(substring, lang, word[1]);};
+    word[0].classList.add('output-word');
+  }
+}
+
+/** Displays the attributes for a clicked-on segment */
+function showAttributes(attributes) {
+  const container = document.getElementById('segment-data');
+  container.innerHTML = '';
+  container.appendChild(createAnyElement('b', 'Top attributes'));
+  for (let i = 0; i < attributes.length && i < 3; i++) {
+    container.appendChild(createAnyElement('p', attributes[i][0] + ': ' + decimalToPercentage(attributes[i][1])));
+  }
+  container.appendChild(createAnyElement('b', 'Click on any word in selected segment for replacements'))
+}
+
 /** Sets up the replacements section */
 function setUpReplacements(text, lang, substringForReplacements) {
   // Clear previous results
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
 
-  document.getElementById('about-container').style.display = 'block';
+  document.getElementById('perspective-datamuse-header').style.display = 'block';
 
   getReplacements(text, lang, substringForReplacements);
   showDataMuseWordReplacementOptions(text, lang, substringForReplacements);
@@ -461,39 +498,6 @@ function colorSubstring(substringEl, toxicityScore) {
   }
 }
 
-/** Creates a tooltip for a substring in the detailed analysis */
-function createTooltip(attributes) {
-  const tooltipEl = document.createElement('div');
-  const headerEl = document.createElement('div');
-  const titleInfoEl = document.createElement('div');
-  const imageEl = document.createElement('img');
-  const bodyEl = document.createElement('div');
-  const titleEl = createAnyElement('h3', 'Perspective Feedback');
-  const subtitleEl = createAnyElement('p', 'click to get replacements for this word');
-
-  tooltipEl.className = 'tooltip';      
-  headerEl.className = 'header';
-  titleInfoEl.className = 'title-info';
-  titleEl.className = 'tooltip-title';
-  subtitleEl.className = 'tooltip-subtitle';
-  bodyEl.className = 'tooltip-body';
-
-  imageEl.setAttribute('src', 'assets/apple-touch-icon.png');
-  imageEl.setAttribute('alt', 'Perspective Logo');
-
-  titleInfoEl.appendChild(titleEl);
-  titleInfoEl.appendChild(subtitleEl);
-  headerEl.appendChild(imageEl);
-  headerEl.appendChild(titleInfoEl);
-  tooltipEl.appendChild(headerEl);
-  tooltipEl.appendChild(bodyEl);
-
-  for (const attribute of attributes) {
-    bodyEl.appendChild(createAnyElement('p', attribute[0] + ': ' + decimalToPercentage(attribute[1])));
-  }
-  return tooltipEl;
-}
-
 /** Converts decimals to percentages */
 function decimalToPercentage(decimal) {
   return (decimal * 100).toFixed(2) + '%';
@@ -625,4 +629,23 @@ function showAvailableAttributes() {
     avaiableAttributesElement.appendChild(label);
     avaiableAttributesElement.appendChild(document.createTextNode(" "));
   });
+}
+
+/** Shows or hides the advanced options for text analysis */
+function toggleAdvancedOptions() {
+  const toggleButton = document.getElementById('toggle-advanced-options-button');
+  if (!toggleButton) {
+    return;
+  }
+  const advancedOptionsEl = document.getElementById('advanced-options');
+  if (!advancedOptionsEl) {
+    return;
+  }
+  if (toggleButton.innerHTML === 'Advanced options') {
+    advancedOptionsEl.style.display = 'block';
+    toggleButton.innerHTML = 'Hide advanced options';
+  } else {
+    advancedOptionsEl.style.display = 'none';
+    toggleButton.innerHTML = 'Advanced options';
+  }
 }
