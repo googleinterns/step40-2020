@@ -145,10 +145,10 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   const words = getSubstrings(substring, TokenizerEnum['WORD']);
   if (words) {
     for (let i = 0; i < words.length; i++) {
-    const wordEl = createAnyElement('span', words[i]);
-    const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
-    wordElts.push([wordEl, bareWord]);
-    substringEl.appendChild(wordEl);
+      const wordEl = createAnyElement('span', words[i]);
+      const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
+      wordElts.push([wordEl, bareWord]);
+      substringEl.appendChild(wordEl);
     }
   } else {
     substringEl.appendChild(createAnyElement('span', substring));
