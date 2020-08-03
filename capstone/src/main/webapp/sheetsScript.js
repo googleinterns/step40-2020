@@ -306,9 +306,9 @@ async function addFormatting(spreadsheetId, sheetId, numRows, numCols) {
         rule: {
           ranges: [ myRange ],
           gradientRule: {
-            minpoint: { color: { red: 0.345, green: 0.733, blue: 0.541, alpha: 1 }, type: 'NUMBER', value: '0' },
-            midpoint: { color: { red: 1, green: 0.839, blue: 0.4, alpha: 1 }, type: 'PERCENTILE', value: '50' },
-            maxpoint: { color: { red: 0.902, green: 0.486, blue: 0.451, alpha: 1}, type: 'NUMBER', value: '1' }
+            minpoint: { color: { red: 0.965, green: 0.949, blue: 0.988, alpha: 1 }, type: 'NUMBER', value: '0' },
+            midpoint: { color: { red: 0.878, green: 0.8, blue: 0.984, alpha: 1 }, type: 'PERCENTILE', value: '50' },
+            maxpoint: { color: { red: 0.506, green: 0.2, blue: 0.933, alpha: 1 }, type: 'NUMBER', value: '1' }
           }
         },
         index: 0
