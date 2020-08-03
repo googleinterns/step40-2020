@@ -135,7 +135,7 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   // Set up replacements function call and color the substring appropriately	
   const substringEl = document.createElement('span');
   const words = getSubstrings(substring, TokenizerEnum['WORD']);
-  for (let i = 0; i < words.length; i++) {
+  for (let i = 0; words && i < words.length; i++) {
     const wordEl = createAnyElement('span', words[i]);
     const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
     wordEl.onclick = function() { setUpReplacements(substring, lang, bareWord); }
