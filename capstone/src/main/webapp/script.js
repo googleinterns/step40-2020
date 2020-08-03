@@ -179,19 +179,19 @@ async function getExtremes(text, lang) {
   const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
   let numResults = getNumResults(words.length);
 
-  // Get the possible word replacements
+  // Get the new sentences and their scores
   const replacements = await getAllReplacements(words, numResults);
   const newSentences = [];
   const styledSentences = [];
   const promises = [];
   for (let i = 0; i < replacements.length; i++) {
-    // Get the Perspective scores on the new sentences
     const newSentence = text.replace(replacements[i][0], replacements[i][1]);
     const styledSentence = text.replace(replacements[i][0], '<b>' + replacements[i][1] + '</b>');
     newSentences.push(newSentence);
     styledSentences.push(styledSentence);
     promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
   }
+
   const mostToxic = { string: '', score: Number.MIN_VALUE };
   const leastToxic = { string: '', score: Number.MAX_VALUE };
   await storeExtremes(promises, mostToxic, leastToxic, styledSentences);
