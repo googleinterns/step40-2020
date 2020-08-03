@@ -48,7 +48,7 @@ async function callYoutube() {
     return;
   }
   /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
-  var response;
+  let response;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
     response = await fetch('/youtube_servlet?channelId=' + channelId,)
     response = await response.json();
@@ -93,8 +93,8 @@ async function inputCommentsToPerspective(commentsList) {
       const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
       attributeScores.push(perspectiveScore);
     }
-    for (var i = 0; i < requestedAttributes.length; i++) {
-      for (var j = 0; j < attributeScores.length; j++) {
+    for (let i = 0; i < requestedAttributes.length; i++) {
+      for (let j = 0; j < attributeScores.length; j++) {
         if (attributeTotals.has(requestedAttributes[i])) {
           attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
         } else {
@@ -144,7 +144,7 @@ function drawBarChart(toxicityData) {
   document.getElementById('chart-container').innerHTML = '';
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
   for (const [attribute, attributeScoresAvg] of toxicityData) {
-    var color = '#6B8E23'; // Green
+    let color = '#6B8E23'; // Green
     const score = attributeScoresAvg;
     if (score >= 0.8) {
       color = '#DC143C'; // Red
@@ -275,17 +275,17 @@ function showCategories() {
 /** Converts perspective results to knoop scale then to mohs*/
 function perspectiveToxicityScale(attributeAverages) {
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
-  var totalToxicityScore = 0;
+  let totalToxicityScore = 0;
   for (const [attribute, attributeAverage] of attributeAverages) {
     totalToxicityScore += attributeAverage;
   }
   const inputLength = attributeAverages.size;
   const averageToxicityScore = totalToxicityScore / inputLength;
   const knoopScore = averageToxicityScore * 7000;
-  var knoopLow;
-  var knoopHigh;
-  var mohs;
-  for (var i = 0; i < knoopScale.length; i++) {
+  let knoopLow;
+  let knoopHigh;
+  let mohs;
+  for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
       if(knoopScore < 1) {
         knoopLow = 0;
