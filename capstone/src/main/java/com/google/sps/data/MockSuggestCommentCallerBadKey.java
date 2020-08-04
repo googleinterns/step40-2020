@@ -15,21 +15,28 @@
 package com.google.sps.data;
 
 import java.io.IOException;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
-/** A class that calls the Perspective API, or any other API */
-public class PerspectiveCaller implements ApiCaller {
+/** Mock Perspective caller that returns dummy output */
+public class MockSuggestCommentCallerBadKey implements ApiCaller {
   public String post(String url, String json, OkHttpClient client) throws IOException {
-    MediaType jsonMediaType = MediaType.get("application/json; charset=utf-8");
-    RequestBody body = RequestBody.create(json, jsonMediaType);
-    Request request = new Request.Builder().url(url).post(body).build();
-
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
+    return "{"
+      +  "error\": {"
+      +    "code\": 400,"
+      +    "message\": \"API key not valid. Please pass a valid API key.\","
+      +    "status\": \"INVALID_ARGUMENT\","
+      +    "details\": ["
+      +      "{"
+      +        "@type\": \"type.googleapis.com/google.rpc.Help\","
+      +          "links\": ["
+      +            "{"
+      +              "description\": \"Google developers console\","
+      +              "url\": \"https://console.developers.google.com"
+      +            "}"
+      +          "]"
+      +        "}"
+      +      "]"
+      +    "}"
+      +  "}";
   }
 }
