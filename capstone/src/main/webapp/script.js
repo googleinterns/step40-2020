@@ -420,8 +420,8 @@ function drawDatamuseChart(responses, substringForReplacements, toxicityOfOrigin
 
   for (let i = 0; i < replacements.length; i++) {
     const score = responses[i].attributeScores['TOXICITY'].summaryScore.value;
-    const color = getColor(score);
-    data.addRow([replacements[i].word, score, 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color]);
+    const style = getStyle(score);
+    data.addRow([replacements[i].word, score, style]);
   }
   data.addRow(['ORIGINAL', toxicityOfOriginal, 'Black']);
 
@@ -456,8 +456,8 @@ function drawGeneralChart(toxicityData) {
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
     const score = toxicityData.attributeScores[attribute].summaryScore.value;
-    const color = getColor(score);
-    data.addRow([attribute, score, 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color]);
+    const style = getStyle(score);
+    data.addRow([attribute, score, style]);
   });
 
   data.sort({column: 1, desc: false});
@@ -476,19 +476,21 @@ function drawGeneralChart(toxicityData) {
   chart.draw(data, options);
 }
 
-/** Gives the appropriate color for a bar in a barchart given its score */
-function getColor(score) {
+/** Gives the appropriate style for a bar in a barchart given its score */
+function getStyle(score) {
+  let color;
   if (score >= 0.8) {
-    return '#6200EA'; // Darkest purple
+    color = '#6200EA'; // Darkest purple
   } else if (score >= 0.6) {
-    return '#8133EE'; // Dark purple
+    color = '#8133EE'; // Dark purple
   } else if (score >= 0.4) {
-    return '#A166F2'; // Mild purple
+    color = '#A166F2'; // Mild purple
   } else if (score >= 0.2) {
-    return '#E0CCFB'; // Light purple
+    color = '#E0CCFB'; // Light purple
   } else {
-    return '#F6F2FC'; // Lightest purple
+    color = '#F6F2FC'; // Lightest purple
   }
+  return 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color;
 }
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
