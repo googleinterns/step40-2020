@@ -643,6 +643,14 @@ function showAvailableAttributes() {
   });
 }
 
+function loadAnalysisDropdown() {
+  // Highlight an <li> element in analysis radio selection when its input is checked
+  $('.checkbox-menu').on('change', "input[type='radio']", function() {
+    $("input[name='analysisRadios']").closest('li').toggleClass('active', false);
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+}
+
 /** Shows or hides the advanced options for text analysis */
 function toggleAdvancedOptions() {
   const toggleButton = document.getElementById('toggle-advanced-options-button');

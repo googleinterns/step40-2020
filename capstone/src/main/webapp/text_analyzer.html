@@ -22,7 +22,7 @@
     <script src="script.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
-  <body class="text-center" onload="showAvailableAttributes()">
+  <body class="text-center" onload="showAvailableAttributes(); loadAnalysisDropdown()">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
@@ -59,7 +59,7 @@
           </div>
           <a onclick=toggleAdvancedOptions() id="toggle-advanced-options-button" >Advanced options</a>
           <div id="advanced-options" style="display:none">
-            <select id="languageForAnalysis" class="form-control" onchange="showAvailableAttributes()">
+              <select id="languageForAnalysis" class="form-control" onchange="showAvailableAttributes()">
               <option value="en">English</option>
               <option value="es">Spanish</option>
               <option value="fr">French</option>
@@ -71,20 +71,28 @@
               <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
               <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
             </div>
-            <div id="analysis-type">
-              <b>Select analysis type</b>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
-                <label class="form-check-label" for="bySentence">By sentence</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
-                <label class="form-check-label" for="byWord">By word</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
-                <label class="form-check-label" for="noAnalysis">No analysis</label>
-              </div>
+            <div class="dropdown" id="analysis-dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Analysis Type</button>
+              <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes">
+                <li class="active">
+                  <label class="form-check-label" for="bySentence">
+                    <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
+                    By sentence
+                  </label>
+                </li>
+                <li>
+                  <label class="form-check-label" for="byWord">
+                    <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
+                    By word
+                  </label>
+                </li>
+                <li>
+                  <label class="form-check-label" for="noAnalysis">
+                    <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
+                    No analysis
+                  </label>
+                </li>
+              </ul>
             </div>
           </div>
           <button type="submit" class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto">Submit</button>
