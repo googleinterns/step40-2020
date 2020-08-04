@@ -10,8 +10,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" href="assets/favicon-32x32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="assets/favicon-16x16.png" sizes="16x16">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
     <link href="cover.css" rel="stylesheet">
     <script src="script.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
@@ -29,6 +35,7 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link active" href="text_analyzer.html">Text Analyzer</a>
+            <a class="nav-link" href="sheet_analyzer.html">Sheets Analyzer</a>
             <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
             <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
@@ -39,86 +46,114 @@
         <section class="jumbotron text-center">
           <div class="container">
             <h1>Text Analysis</h1>
-            <p class="lead text-muted">Input text and select the Perspective API attribute(s) you would like to be shown</p>
-            <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
+            <p class="lead text-muted">Get started by writing below</p>
           </div>
         </section>
       </main>
       <div class="text-analysis-module">
         <!--Returns false so the page does not reload-->
         <form onsubmit="gatherInput(); return false;">
-          <div class="form-group">
-            <textarea type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here" rows="3"></textarea>
-            <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
+          <div class="md-form">
+            <textarea type="text" class="form-control md-textarea" id="textForAnalysis" aria-describedby="inputText" rows="3"></textarea>
+            <label for="textForAnalysis">Text</label>
           </div>
-          <div class="row">
-            <div class="col-12 justify-content-center form-inline">
-              <div class="dropdown" id="language-dropdown" onchange="showAvailableAttributes()">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" id="language-button">Language: EN</button>
-                <ul class="dropdown-menu checkbox-menu allow-focus" id="available-languages">
-                  <li class="active">
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="en" checked> English
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="es"> Spanish
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="fr"> French
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="de"> German
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="it"> Italian
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label">
-                      <input class="form-check-input" type="radio" name="languageRadios" value="pt"> Portuguese
-                    </label>
-                  </li>
-                </ul>
-              </div>
-              <div class="dropdown" id="attribute-dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
-                <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
-              </div>
-              <div class="dropdown" id="analysis-dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Analysis Type</button>
-                <ul class="dropdown-menu checkbox-menu allow-focus" id="available-analysis">
-                  <li class="active">
-                    <label class="form-check-label" for="bySentence">
-                      <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked> By sentence
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label" for="byWord">
-                      <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD"> By word
-                    </label>
-                  </li>
-                  <li>
-                    <label class="form-check-label" for="noAnalysis">
-                      <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE"> No analysis
-                    </label>
-                  </li>
-                </ul>
+          <a onclick=toggleAdvancedOptions() id="toggle-advanced-options-button" >Advanced options</a>
+          <div id="advanced-options" style="display:none">
+            <div class="row">
+              <div class="col-12 justify-content-center form-inline">
+                <div class="dropdown" id="language-dropdown" onchange="showAvailableAttributes()">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" id="language-button">Language: EN</button>
+                  <ul class="dropdown-menu checkbox-menu allow-focus" id="available-languages">
+                    <li class="active">
+                      <label class="form-check-label">
+                        <input class="form-check-input" type="radio" name="languageRadios" value="en" checked> English
+                      </label>
+                    </li>
+                    <li>
+                      <label class="form-check-label">
+                        <input class="form-check-input" type="radio" name="languageRadios" value="es"> Spanish
+                      </label>
+                    </li>
+                    <li>
+                      <label class="form-check-label">
+                        <input class="form-check-input" type="radio" name="languageRadios" value="fr"> French
+                      </label>
+                    </li>
+                    <li>
+                      <label class="form-check-label">
+                        <input class="form-check-input" type="radio" name="languageRadios" value="de"> German
+                      </label>
+                    </li>
+                    <li>
+                      <label class="form-check-label">
+                        <input class="form-check-input" type="radio" name="languageRadios" value="it"> Italian
+                      </label>
+                    </li>
+                    <li>
+                      <label class="form-check-label">
+                        <input class="form-check-input" type="radio" name="languageRadios" value="pt"> Portuguese
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+                <div class="dropdown" id="attribute-dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
+                  <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
+                </div>
+                <div class="dropdown" id="analysis-dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Analysis Type</button>
+                  <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes">
+                    <li class="active">
+                      <label class="form-check-label" for="bySentence">
+                        <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
+                        By sentence
+                      </label>
+                    </li>
+                    <li>
+                      <label class="form-check-label" for="byWord">
+                        <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
+                        By word
+                      </label>
+                    </li>
+                    <li>
+                      <label class="form-check-label" for="noAnalysis">
+                        <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
+                        No analysis
+                      </label>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-        <div id="separator-container"></div>
-        <div id="chart-container"></div>
-        <div id="analysis-container" class="d-flex flex-column"></div>
+          <button type="submit" class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto">Submit</button>
+        </form>     
+        <div id="general-chart-container"></div>
+        <div class="container" id="detailed-analysis">
+         <div id ="detailed-analysis-header"></div>
+          <div class="row">
+            <div id="colored-analysis-container" class="d-flex flex-column col-8"></div>
+            <div class="col-4">
+              <div id="segment-data" class="side-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div id="perspective-datamuse-header" style="background-color:#FAEBD7; display:none">
+          <h3>Perspective Testing Tool</h3>
+          <p style="text-align:left">
+            This tool is only meant to test Perspective API's scores
+            and to see how they can change. The replacement words or phrases are 
+            not meant to be taken as suggestions. Do not use them as a means to 
+            mask any toxicity. When a score lowers, it is not an indication that 
+            the text is necessarily less toxic. The replacements are obtained 
+            through a word-finding API, Datamuse. The models Perspective uses do 
+            have unintentional bias, and uncommon words might have inaccurate scores.            
+          </p>
+        </div>
+        <div id="perspective-datamuse-analysis"></div>
+        <div id="perspective-datamuse-chart"></div>
+        <div id="perspective-datamuse-extremes"></div>
+        <div id="perspective-datamuse-extras"></div>
       </div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
@@ -126,14 +161,13 @@
         </div>
       </footer>
     </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
-      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
-    </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" 
-      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
-    </script>
+    <!-- JQuery -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/js/mdb.min.js"></script>
   </body>
 </html>
