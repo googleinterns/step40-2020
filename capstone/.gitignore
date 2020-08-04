@@ -6,4 +6,4 @@
 yarn-error.log
 .vscode/
 .idea/
-/capstone/src/webapp/youtubeTypescript.js
+youtubeTypescript.js
