@@ -362,8 +362,8 @@ function prepareDownload(sheetHeader, sheetData, sheetName) {
   }
   const outputCsv = new Blob([csv], { type: 'text/csv' });  
   const downloadUrl = URL.createObjectURL(outputCsv);
-  const downloadElement= document.getElementById('download');
-  downloadElement.href=downloadUrl;
+  const downloadElement = document.getElementById('download');
+  downloadElement.href = downloadUrl;
   downloadElement.download = sheetName + '.csv';
 }
 
