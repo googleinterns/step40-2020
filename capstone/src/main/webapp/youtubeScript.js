@@ -21,7 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Category names are mapped to youtube category numbers */
+/** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -98,7 +98,7 @@ async function inputCommentsToPerspective(commentsList) {
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
     loadChartsApi(attributeAverages);
-    perspectiveToxicityScale(attributeAverages);
+    showPerspectiveToxicityScale(attributeAverages);
   });
 }
 
@@ -213,7 +213,7 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
-/** Category names are mapped to youtube category numbers */
+/** Fetches top videos based category Id */
 async function getTrending(categoryId) {
   const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
@@ -233,27 +233,22 @@ async function getTrending(categoryId) {
   });
 }
 
-/** Enables user from entering text into the text field */
-function enableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = button.id;
-    document.getElementById('channelIdForAnalysis').disabled = true;
-    document.getElementById("keywordSearch").disabled = true;
+/** Enables and disables input into the text field */
+function textInputToggle(button, toEnable) {
+  if (button.checked) {
+    if (toEnable) {
+      document.getElementById('channelIdForAnalysis').value = button.id;
+      document.getElementById('channelIdForAnalysis').disabled = true;
+    } else {
+      document.getElementById('channelIdForAnalysis').value = "";
+      document.getElementById('channelIdForAnalysis').disabled = false;
+    }
   }
 }
 
-/** Disables user from entering text into the text field */
-function disableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = "";
-    document.getElementById('channelIdForAnalysis').disabled = false;
-    document.getElementById("keywordSearch").disabled = false;   
-  }
-}
-
-/** Creates radio buttons to allow the user to select between various categories*/
+/** Creates radio buttons to allow teh user to select between various categories */
 function showCategories() {
-  // Creates button to enable manual text input
+  // Creates button to enable manual input
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
@@ -265,14 +260,14 @@ function showCategories() {
   const description = document.createTextNode('ID/Username');
   label.appendChild(description);
   radiobox.onclick = function() {
-    disableTextInput(this);   
+    textInputToggle(this, false);   
   }
   const categoryContainer = document.getElementById('category-container');
   categoryContainer.appendChild(radiobox);
   categoryContainer.appendChild(label);
   categoryContainer.appendChild(document.createTextNode(" "));
   categoryContainer.appendChild(document.createElement("br"));
-  // creates buttons for all youtube categories
+  // Creates buttons for all youtube categories
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
@@ -284,13 +279,53 @@ function showCategories() {
     const description = document.createTextNode(category);
     label.appendChild(description);
     radiobox.onclick = function() {
-      enableTextInput(this);   
+      textInputToggle(this, true);   
     }
     const categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
     categoryContainer.appendChild(label);
     categoryContainer.appendChild(document.createTextNode(" "));
   }
+}
+
+/** Converts perspective results to knoop scale then to mohs */
+function getScoreInMohs(attributeAverages) {
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
+  const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
+  let totalToxicityScore = 0;
+  for (const [attribute, attributeAverage] of attributeAverages) {
+    totalToxicityScore += attributeAverage;
+  }
+  const inputLength = attributeAverages.size;
+  const averageToxicityScore = totalToxicityScore / inputLength;
+  const knoopScore = averageToxicityScore * 7000;
+  let knoopLow;
+  let knoopHigh;
+  let mohsScore;
+  for (let i = 0; i < knoopScale.length; i++) {
+    if (knoopScore < knoopScale[i]) {
+      if (knoopScore < 1) {
+        knoopLow = 0;
+      } else {
+        knoopLow = knoopScale[i-1];
+      }
+      knoopHigh = knoopScale[i];
+      mohsScore = i;  
+      break;
+    }
+  }
+  const knoopRange = knoopHigh - knoopLow;
+  const amountMoreThanKnoop = knoopScore - knoopLow;
+  const mohsDecimal = amountMoreThanKnoop / knoopRange;
+  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
+  return completeMohsScore;
+}
+
+/** Displays the perspective toxicity scale score */
+function showPerspectiveToxicityScale(attributeAverages) {
+  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
 
 /** Converts perspective results to knoop scale then to mohs */
