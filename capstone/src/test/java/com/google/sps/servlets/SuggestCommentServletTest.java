@@ -49,7 +49,7 @@ public final class SuggestCommentServletTest {
   }
 
   @Test
-  public void SuggestCommentCall() throws IOException{
+  public void suggestCommentCall() throws IOException{
     ApiCaller mock = new MockSuggestCommentCaller();
     SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
 
@@ -60,7 +60,7 @@ public final class SuggestCommentServletTest {
   }
 
   @Test
-  public void SuggestCommentCallWithBadKey() throws IOException{
+  public void suggestCommentCallWithBadKey() throws IOException{
     ApiCaller mock = new MockSuggestCommentCallerBadKey();
     SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
 
@@ -71,7 +71,7 @@ public final class SuggestCommentServletTest {
   }
 
   @Test
-  public void SuggestCommentCallWithNoTextInput() throws IOException{
+  public void suggestCommentCallWithNoTextInput() throws IOException{
     ApiCaller mock = new MockSuggestCommentCallerNoTextInput();
     SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
 
@@ -82,7 +82,7 @@ public final class SuggestCommentServletTest {
   }
 
   @Test
-  public void SuggestCommentCallWithNoAttributesInput() throws IOException{
+  public void suggestCommentCallWithNoAttributesInput() throws IOException{
     ApiCaller mock = new MockSuggestCommentCallerNoAttributesInput();
     SuggestCommentServlet suggestCommentServlet = new SuggestCommentServlet(mock);
 

@@ -24,8 +24,8 @@ import okhttp3.Response;
 /** A class that calls the Perspective API, or any other API */
 public class PerspectiveCaller implements ApiCaller {
   public String post(String url, String json, OkHttpClient client) throws IOException {
-    MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    RequestBody body = RequestBody.create(json, JSON);
+    MediaType jsonMediaType = MediaType.get("application/json; charset=utf-8");
+    RequestBody body = RequestBody.create(json, jsonMediaType);
     Request request = new Request.Builder().url(url).post(body).build();
 
     try (Response response = client.newCall(request).execute()) {
