@@ -671,6 +671,7 @@ function loadDropdowns() {
   });
 }
 
+/** Returns the current language selected in the language dropdown */
 function getRequestedLanguage() {
   const langRadios = document.getElementsByName('languageRadios');
   if (!langRadios) {
