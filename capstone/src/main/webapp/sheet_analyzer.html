@@ -59,7 +59,10 @@
             <option value="it">Italian</option>
             <option value="pt">Portuguese</option>
           </select>
-          <div id="available-attributes"></div>
+          <div class="dropdown" id="attribute-dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
+            <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
+          </div>
           <div id="analysis-type">
             <b>Select analysis type</b>
             <div class="form-check form-check-inline">
@@ -74,6 +77,36 @@
               <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
               <label class="form-check-label" for="noAnalysis">No analysis</label>
             </div>
+          </div>
+          <div id="sheets-range-container">
+            <b>Would you like a custom range within the Sheet analyzed? (No = All cells are analyzed)</b>
+            <div class="form-check form-check-inline">
+              <select id="sheets-range-yes-no" class="form-control" onchange="updateRangeElement()">
+                <option value="yes">Yes</option>
+                <option value="no" selected>No</option>
+              </select>
+            </div>
+          </div>
+          <div id="sheets-range-input" style="display: none;">
+            <b>What range in the Sheet do you want analyzed? (Format: "Sheet1!A1:B2")</b>
+            <div class="form-check form-check-inline">
+              <input id="sheets-range"></input>
+            </div>
+          </div>
+          <div id="sheets-output-container">
+            <b>Would you like output written to a Google Sheet?</b>
+            <div class="form-check form-check-inline">
+              <select id="sheets-output-yes-no" class="form-control" onchange="updateTitleElement()">
+                <option value="yes">Yes</option>
+                <option value="no" selected>No</option>
+              </select>
+            </div>
+          </div>
+          <div id="sheets-title-input" style="display: none;">
+            <b>What would you like to title the Sheet?</b>
+            <div class="form-check form-check-inline">
+              <input id="sheets-title" placeholder="Perspective Output"></input>
+            </div><br>
           </div>
           <button class="btn btn-primary" id="submit_button" style="display: none;" type="submit">Submit</button>
           <button class="btn btn-secondary" id="authorize_button" style="display: none;">Authorize</button>

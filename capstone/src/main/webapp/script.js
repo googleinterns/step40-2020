@@ -604,6 +604,16 @@ function drawGeneralChart(toxicityData) {
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
+  // Highlight <li> element when its input is checked
+  $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+
+  // Keep menu open when an option is selected or deselected
+  $(document).on('click', '.allow-focus', function(e) {
+    e.stopPropagation();
+  });
+
   const langElement = document.getElementById('languageForAnalysis');
   if (!langElement) {
     return;
@@ -615,19 +625,21 @@ function showAvailableAttributes() {
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
     const checkbox = document.createElement('input');
-    checkbox.type = "checkbox";
+    checkbox.type = 'checkbox';
     checkbox.value = attribute;
-    checkbox.id = attribute + '-checkbox';
-    checkbox.checked = true;
   
     const label = document.createElement('label');
-    label.htmlFor = attribute + '-checkbox';
-    label.appendChild(document.createTextNode(attribute));
+    label.appendChild(checkbox);
+    label.innerHTML += attribute;
+
+    const list = document.createElement('li');
+    list.className = 'active';
+    list.appendChild(label);
   
-    avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
-    avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
+    avaiableAttributesElement.appendChild(list);
+
+    // Check the attribute's box; Ajax prevents doing this earlier
+    list.children[0].children[0].checked = true;
   });
 }
 

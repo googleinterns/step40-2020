@@ -20,7 +20,7 @@ const DISCOVERY_DOCS = ["https://docs.googleapis.com/$discovery/rest?version=v1"
 
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
-const SCOPES = "https://www.googleapis.com/auth/documents.readonly";
+const API_SCOPE = "https://www.googleapis.com/auth/documents.readonly";
 
 /** Collects the user's input and submits it for analysis */
 async function gatherDocsInput() {
