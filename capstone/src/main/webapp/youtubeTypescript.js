@@ -269,15 +269,9 @@ function drawBarChart(toxicityData) {
     var data = google.visualization.arrayToDataTable([[{ label: 'Attribute' }, { label: 'Score', type: 'number' }, { role: "style" }]]);
     // forEach(value,key)
     toxicityData.forEach(function (attributeScoresAvg, attribute) {
-        var color = '#6B8E23'; // Green
         var score = attributeScoresAvg;
-        if (score >= 0.8) {
-            color = '#DC143C'; // Red
-        }
-        else if (score >= 0.2) {
-            color = '#ffd800'; // Yellow
-        }
-        data.addRow([attribute, score, color]);
+        var color = getColor(attributeScoresAvg);
+        data.addRow([attribute, score, 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color]);
     });
     data.sort({ column: 1, desc: false });
     var options = {
@@ -569,11 +563,31 @@ function drawTableChart() {
     }
     var table = new google.visualization.Table(document.getElementById('table-container'));
     var formatter = new google.visualization.ColorFormat();
-    formatter.addRange(0, .2, 'white', '#6B8E23');
-    formatter.addRange(.2, .8, 'white', '#ffd800');
-    formatter.addRange(.8, 1, 'white', '#DC143C');
+    formatter.addRange(0, .2, 'black', '#F6F2FC');
+    formatter.addRange(.2, .4, 'black', '#E0CCFB');
+    formatter.addRange(.4, .6, 'black', '#A166F2');
+    formatter.addRange(.6, .8, 'white', '#8133EE');
+    formatter.addRange(.8, 1, 'white', '#6200EA');
     for (var i = 0; i < requestedAttributes.length + 1; i++) {
         formatter.format(tableData, i);
     }
     table.draw(tableData, { allowHtml: true, showRowNumber: false, width: '100%', height: '100%' });
+}
+/** Gives the appropriate color for a bar in a barchart given its score */
+function getColor(score) {
+    if (score >= 0.8) {
+        return '#6200EA'; // Darkest purple
+    }
+    else if (score >= 0.6) {
+        return '#8133EE'; // Dark purple
+    }
+    else if (score >= 0.4) {
+        return '#A166F2'; // Mild purple
+    }
+    else if (score >= 0.2) {
+        return '#E0CCFB'; // Light purple
+    }
+    else {
+        return '#F6F2FC'; // Lighest purple
+    }
 }
