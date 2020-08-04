@@ -14,7 +14,7 @@
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
     <script src="script.js"></script>
-    <script src="docsScript.js"></script>
+    <script src="sheetsScript.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body class="text-center" onload="showAvailableAttributes()">
@@ -28,8 +28,8 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="sheet_analyzer.html">Sheets Analyzer</a>
-            <a class="nav-link active" href="document_analyzer.html">Document Analyzer</a>
+            <a class="nav-link active" href="sheet_analyzer.html">Sheets Analyzer</a>
+            <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
             <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
           </nav>
@@ -38,17 +38,17 @@
       <main role="main">
         <section class="jumbotron text-center">
           <div class="container">
-            <h1>Document Analysis</h1>
-            <p class="lead text-muted">Attach a document and select the Perspective API attribute(s) you would like to be shown</p>
-            <small id="disclaimer" class="form-text text-muted">Format 1: https://docs.google.com/document/d/1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24/edit?pli=1</small>
+            <h1>Google Sheets Analysis</h1>
+            <p class="lead text-muted">Attach a Google Sheet and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Format 1: https://docs.google.com/spreadsheets/d/1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24/edit#gid=0</small>
             <small id="disclaimer" class="form-text text-muted">Format 2: 1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24</small>
           </div>
         </section>
       </main>
       <div class="text-analysis-module">
-        <form onsubmit="gatherDocsInput(); return false;">
+        <form onsubmit="gatherSheetsInput(); return false;">
           <div class="form-group">
-            <textarea type="text" class="form-control" id="doc-id" aria-describedby="inputText" placeholder="Input ID of Google Doc To Be Analyzed Here" rows="3"></textarea>
+            <textarea type="text" class="form-control" id="sheet-id" aria-describedby="inputText" placeholder="Input ID of Google Sheet To Be Analyzed Here" rows="3"></textarea>
             <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
           </div>
           <select id="languageForAnalysis" class="form-control" onchange="showAvailableAttributes()">
@@ -77,6 +77,36 @@
               <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
               <label class="form-check-label" for="noAnalysis">No analysis</label>
             </div>
+          </div>
+          <div id="sheets-range-container">
+            <b>Would you like a custom range within the Sheet analyzed? (No = All cells are analyzed)</b>
+            <div class="form-check form-check-inline">
+              <select id="sheets-range-yes-no" class="form-control" onchange="updateRangeElement()">
+                <option value="yes">Yes</option>
+                <option value="no" selected>No</option>
+              </select>
+            </div>
+          </div>
+          <div id="sheets-range-input" style="display: none;">
+            <b>What range in the Sheet do you want analyzed? (Format: "Sheet1!A1:B2")</b>
+            <div class="form-check form-check-inline">
+              <input id="sheets-range"></input>
+            </div>
+          </div>
+          <div id="sheets-output-container">
+            <b>Would you like output written to a Google Sheet?</b>
+            <div class="form-check form-check-inline">
+              <select id="sheets-output-yes-no" class="form-control" onchange="updateTitleElement()">
+                <option value="yes">Yes</option>
+                <option value="no" selected>No</option>
+              </select>
+            </div>
+          </div>
+          <div id="sheets-title-input" style="display: none;">
+            <b>What would you like to title the Sheet?</b>
+            <div class="form-check form-check-inline">
+              <input id="sheets-title" placeholder="Perspective Output"></input>
+            </div><br>
           </div>
           <button class="btn btn-primary" id="submit_button" style="display: none;" type="submit">Submit</button>
           <button class="btn btn-secondary" id="authorize_button" style="display: none;">Authorize</button>
@@ -107,8 +137,6 @@
       </footer>
     </div>
     <script src="oAuth.js"></script>
-    <!-- Ensure that initOAuth() is called exclusively once, either when
-    readyState changes or when the api script is asynchronously loaded -->
     <script async defer src="https://apis.google.com/js/api.js"
       onload="this.onload=function(){}; initOAuth()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
