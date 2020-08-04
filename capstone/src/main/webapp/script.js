@@ -643,9 +643,7 @@ function showAvailableAttributes() {
   });
 }
 
-/**
- * Highlight the currently selected choice(s) in dropdown menus
- */
+/** Highlight the currently selected choice(s) in dropdown menus */
 function loadDropdowns() {
   // Highlight an <li> element in a radio selection when its input is checked for
   // 1. Language selection
