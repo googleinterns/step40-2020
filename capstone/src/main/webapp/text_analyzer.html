@@ -22,7 +22,7 @@
     <script src="script.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
-  <body class="text-center" onload="showAvailableAttributes()">
+  <body class="text-center" onload="showAvailableAttributes(); loadAnalysisDropdown()">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
@@ -35,9 +35,9 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link active" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
+            <a class="nav-link" href="sheet_analyzer.html">Sheets Analyzer</a>
             <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
-            <a class="nav-link" href="https://support.perspectiveapi.com/s/" target="_blank">Support</a>
+            <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
           </nav>
         </div>
@@ -49,7 +49,7 @@
             <p class="lead text-muted">Get started by writing below</p>
           </div>
         </section>
-      </main>      
+      </main>
       <div class="text-analysis-module">
         <!--Returns false so the page does not reload-->
         <form onsubmit="gatherInput(); return false;">
@@ -67,21 +67,32 @@
               <option value="it">Italian</option>
               <option value="pt">Portuguese</option>
             </select>
-            <div id="available-attributes"></div>
-            <div id="analysis-type">
-              <b>Select analysis type</b>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
-                <label class="form-check-label" for="bySentence">By sentence</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
-                <label class="form-check-label" for="byWord">By word</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
-                <label class="form-check-label" for="noAnalysis">No analysis</label>
-              </div>
+            <div class="dropdown" id="attribute-dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
+              <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
+            </div>
+            <div class="dropdown" id="analysis-dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Analysis Type</button>
+              <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes">
+                <li class="active">
+                  <label class="form-check-label" for="bySentence">
+                    <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
+                    By sentence
+                  </label>
+                </li>
+                <li>
+                  <label class="form-check-label" for="byWord">
+                    <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
+                    By word
+                  </label>
+                </li>
+                <li>
+                  <label class="form-check-label" for="noAnalysis">
+                    <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
+                    No analysis
+                  </label>
+                </li>
+              </ul>
             </div>
           </div>
           <button type="submit" class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto">Submit</button>
@@ -96,7 +107,18 @@
             </div>
           </div>
         </div>
-        <div id="perspective-datamuse-header"></div>
+        <div id="perspective-datamuse-header" style="background-color:#FAEBD7; display:none">
+          <h3>Perspective Testing Tool</h3>
+          <p style="text-align:left">
+            This tool is only meant to test Perspective API's scores
+            and to see how they can change. The replacement words or phrases are 
+            not meant to be taken as suggestions. Do not use them as a means to 
+            mask any toxicity. When a score lowers, it is not an indication that 
+            the text is necessarily less toxic. The replacements are obtained 
+            through a word-finding API, Datamuse. The models Perspective uses do 
+            have unintentional bias, and uncommon words might have inaccurate scores.            
+          </p>
+        </div>
         <div id="perspective-datamuse-analysis"></div>
         <div id="perspective-datamuse-chart"></div>
         <div id="perspective-datamuse-extremes"></div>
