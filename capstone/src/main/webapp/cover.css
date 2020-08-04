@@ -1,6 +1,7 @@
 /* Base structure */
 html, body {
   height: 100%;
+  background-color: #F9F9F9;
 }
 
 body {
@@ -81,6 +82,20 @@ a, a:focus, a:hover {
     float: right;
   }
 }
+
+.perspective-box {
+  background-color: #5801D1; 
+  color: white; 
+  width: 80%; 
+  margin: auto
+}
+
+.paragraph {
+  width: 80%;
+  margin: auto; 
+  text-align: left; 
+  margin-bottom: 80px;
+}  
 
 /** Jumbotron */
 .jumbotron {
