@@ -16,7 +16,7 @@
     <script src="youtubeScript.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
-  <body class="text-center" onload="showAvailableAttributes()">
+  <body class="text-center" onload="showAvailableAttributes();showCategories()">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
@@ -40,15 +40,17 @@
         <section class="jumbotron text-center">
           <div class="container">
             <h1>Youtube Analysis</h1>
-            <p class="lead text-muted">Input a Channel ID or Username and Select The Perspective API attribute(s) You Would Like to Be Shown. Recent Comments From The Channel Will Be Analyzed.</p>
+            <p class="lead text-muted"> Either Input a Channel ID or Username or Choose A Category, Then Select The Perspective API attribute(s) You Would Like to Be Shown. Recent Comments From The Source Of Your Choosing Will Be Analyzed.</p>
             <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
           </div>
         </section>
       </main>
+      <div id="category-container"></div>
       <form onsubmit="return false;">
         <div class="form-group">
           <input list ="channels" type="text" class="form-control" id="channelIdForAnalysis" aria-describedby="inputText" placeholder="Input Channel ID or Username To Be Analyzed Here">
           <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small>
+          <div id="search-type"></div>
           <datalist id="channels">
             <option value="UC_x5XG1OV2P6uZZ5FSM9Ttw">Google Developers</option>
             <option value="UC-lHJZR3Gqxm24_Vd_AJ5Yw">PewDiePie</option>
