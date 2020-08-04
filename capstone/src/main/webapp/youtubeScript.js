@@ -28,7 +28,6 @@ const YOUTUBE_CATEGORIES = {
   'Entertainment': 24,
   'Film&Animation': 1,
   'Gaming': 20,
-  'How-to&Style' : 26,
   'Music': 10,
   'Pets&Animals': 15,
   'Science&Technology': 28,
@@ -109,10 +108,11 @@ function getAttributeTotals(attributeScores) {
   const attributeTotals = new Map();    
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (attributeTotals.has(requestedAttributes[i])) {
-        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
       } else {
-        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeScoreValue);
       }
     }
   }
@@ -213,7 +213,7 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
-/** Fetches top videos based categoty Id */
+/** Fetches top videos based category Id */
 async function getTrending(categoryId) {
   const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
@@ -222,13 +222,15 @@ async function getTrending(categoryId) {
     const videoId = trendingResponseJson.items[item].id;
     trendingVideoIds.push(videoId);
   }
-  const commentsList = [];
+  const commentsListPromises = [];
   for (const id in trendingVideoIds) {
     const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
     const videoCommentListJson = await videoCommentList.json();
-    commentsList.push(videoCommentListJson);
+    commentsListPromises.push(videoCommentListJson);
   }
-  inputCommentsToPerspective(commentsList);
+  await Promise.all(commentsListPromises).then(resolvedCommentsList => {
+    inputCommentsToPerspective(resolvedCommentsList);
+  });
 }
 
 /** Enables and disables input into the text field */
@@ -265,6 +267,7 @@ function showCategories() {
   categoryContainer.appendChild(label);
   categoryContainer.appendChild(document.createTextNode(" "));
   categoryContainer.appendChild(document.createElement("br"));
+  // Creates buttons for all youtube categories
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
@@ -323,4 +326,68 @@ function showPerspectiveToxicityScale(attributeAverages) {
   const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
   document.getElementById('search-type').appendChild(document.createElement("br"));  
   document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+}
+
+/** Converts perspective results to knoop scale then to mohs */
+function getScoreInMohs(attributeAverages) {
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
+  const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
+  let totalToxicityScore = 0;
+  for (const [attribute, attributeAverage] of attributeAverages) {
+    totalToxicityScore += attributeAverage;
+  }
+  const inputLength = attributeAverages.size;
+  const averageToxicityScore = totalToxicityScore / inputLength;
+  const knoopScore = averageToxicityScore * 7000;
+  let knoopLow;
+  let knoopHigh;
+  let mohsScore;
+  for (let i = 0; i < knoopScale.length; i++) {
+    if (knoopScore < knoopScale[i]) {
+      if (knoopScore < 1) {
+        knoopLow = 0;
+      } else {
+        knoopLow = knoopScale[i-1];
+      }
+      knoopHigh = knoopScale[i];
+      mohsScore = i;  
+      break;
+    }
+  }
+  const knoopRange = knoopHigh - knoopLow;
+  const amountMoreThanKnoop = knoopScore - knoopLow;
+  const mohsDecimal = amountMoreThanKnoop / knoopRange;
+  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
+  return completeMohsScore;
+}
+
+/** Displays the perspective toxicity scale score */
+function showPerspectiveToxicityScale(attributeAverages) {
+  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+}
+
+/** Returns top Youtube results by keyword to have their comments analyzed*/
+async function getKeywordSearchResults() {
+  const searchTerm = document.getElementById('channelIdForAnalysis').value;
+  const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
+  const responseJson = await response.json();
+  let videoIdList = [];
+  for (const item in responseJson.items) {
+    if (responseJson.items[item].id.videoId != undefined) {
+      let videoId = responseJson.items[item].id.videoId;
+      videoIdList.push(videoId);
+    }
+  }   
+  const commentsListPromises = [];
+  for (const id in videoIdList) {
+    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIdList[id]);
+    videoCommentListJson = await videoCommentList.json();
+    commentsListPromises.push(videoCommentListJson);
+  }
+  await Promise.all(commentsListPromises).then(resolvedCommentsList => {
+    inputCommentsToPerspective(resolvedCommentsList);
+  });
+  document.getElementById('search-type').innerHTML = "Keyword Search";
 }
