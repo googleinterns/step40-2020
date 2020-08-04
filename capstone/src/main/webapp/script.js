@@ -17,7 +17,7 @@
  * @enum {regexp}
  */
 const TokenizerEnum = {
-  WORD: /(\S+\s*)/g, 
+  WORD: /(\S+\s*)|(\s*\S+)/g, 
   SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
@@ -36,13 +36,8 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-const ABOUT_PARAGRAPH = 'This tool is only meant to test Perspective API\'s scores'
-  + ' and to see how they can change. The replacement words or phrases are' 
-  + ' not meant to be taken as suggestions. Do not use them as a means to '
-  + 'mask any toxicity. When a score lowers, it is not an indication that '
-  + 'the text is necessarily less toxic. The replacements are obtained '
-  + 'through a word-finding API, Datamuse. The models Perspective uses do '
-  + 'have unintentional bias, and uncommon words might have inaccurate scores. ';
+const MAX_TOTAL_DATAMUSE_RESULTS = 100;
+const MAX_DATAMUSE_RESULTS_PER_WORD = 10;
 
 /** Collects the user's input and submits it for analysis */
 async function gatherInput() {
@@ -86,9 +81,9 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   document.getElementById('detailed-analysis-header').innerHTML = '';
   document.getElementById('perspective-datamuse-analysis').innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
-  document.getElementById('perspective-datamuse-extremes').innerHTML = '';
-  document.getElementById('perspective-datamuse-header').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
+  document.getElementById('perspective-datamuse-extremes').innerHTML = '';
+  document.getElementById('perspective-datamuse-header').style.display = 'none';
 	
   // Make Perspective call for the entire submission and load graph data
   const toxicityData = await callPerspective(text, lang, requestedAttributes);
@@ -100,7 +95,7 @@ async function handleInput(text, lang, requestedAttributes, tokenizer) {
   }
 }
 
-/** Prints detailed analysis of text by word or sentence */
+/** Shows detailed analysis of text by word or sentence */
 async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Set up the detailed analysis section
   const headerContainer = document.getElementById('detailed-analysis-header');
@@ -116,7 +111,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   // Generate the results for every substring of the input text
   const substrings = getSubstrings(text, tokenizer);
   const promises = [];
-  for (i = 0; i < substrings.length; i++) {
+  for (let i = 0; i < substrings.length; i++) {
     promises.push(callPerspective(substrings[i], lang, requestedAttributes));
   }
   await Promise.all(promises).then(resolvedResponses => {
@@ -147,7 +142,7 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   // Break up and color the segment appropriately	
   const substringEl = document.createElement('span');
   const wordElts = [];
-  const words = getSubstrings(substring, /(\S+\s*)/g);
+  const words = getSubstrings(substring, /(\S*\s*)/g);
   if (words) {
     for (let i = 0; i < words.length; i++) {
     const wordEl = createAnyElement('span', words[i]);
@@ -214,7 +209,10 @@ function setUpFeedback(text, lang, container, feedbackButton, requestedAttribute
     const input = document.createElement('input');
     input.className = 'form-control';
     input.setAttribute('id', attribute);
-    input.setAttribute('type', 'text')
+    input.setAttribute('type', 'number');
+    input.setAttribute('step', '.01');
+    input.setAttribute('min', '0');
+    input.setAttribute('max', '1');
     const inputLabel = document.createElement('label');
     inputLabel.innerHTML = attribute + ' score';
     inputLabel.setAttribute('for', attribute);
@@ -266,21 +264,13 @@ function submitFeedback(text, lang, submitButton, container, inputDiv) {
 /** Sets up the replacements section */
 function setUpReplacements(text, lang, substringForReplacements) {
   // Clear previous results
-  const headerContainer = document.getElementById('perspective-datamuse-header');
-  headerContainer.innerHTML = '';
   document.getElementById('perspective-datamuse-chart').innerHTML = '';
-  document.getElementById('perspective-datamuse-extremes').innerHTML = '';
   document.getElementById('perspective-datamuse-extras').innerHTML = '';
 
-  // Set up about container 
-  const aboutContainer = document.createElement('div');
-  aboutContainer.setAttribute('style', 'background-color:#FAEBD7');
-  aboutContainer.appendChild(createAnyElement('h3', 'Perspective Testing Tool'));
-  aboutContainer.appendChild(createAnyElement('p', ABOUT_PARAGRAPH));
-  headerContainer.appendChild(aboutContainer);
+  document.getElementById('perspective-datamuse-header').style.display = 'block';
 
   getReplacements(text, lang, substringForReplacements);
-  setUpExtras(text, lang, substringForReplacements);
+  showDataMuseWordReplacementOptions(text, lang, substringForReplacements);
 }
 
 /** Gets the most extreme word replacements on a string */
@@ -292,67 +282,81 @@ async function getExtremes(text, lang) {
   loadingEl.className = 'spinner-border';
   container.appendChild(loadingEl);
 
-  // Get the words and all their possible replacements
+  // Get the words & place a limit on the max number of requests
   const words = text.split(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g); // Remove any punctuation or whitespace
+  let numResults = getNumResults(words.length);
+
+  // Get the new sentences and their scores
+  const replacements = await getAllReplacements(words, numResults);
+  const newSentences = [];
+  const styledSentences = [];
+  const promises = [];
+  for (let i = 0; i < replacements.length; i++) {
+    const newSentence = text.replace(replacements[i][0], replacements[i][1]);
+    const styledSentence = text.replace(replacements[i][0], '<b>' + replacements[i][1] + '</b>');
+    newSentences.push(newSentence);
+    styledSentences.push(styledSentence);
+    promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
+  }
+
   const mostToxic = { string: '', score: Number.MIN_VALUE };
   const leastToxic = { string: '', score: Number.MAX_VALUE };
+  await storeExtremes(promises, mostToxic, leastToxic, styledSentences);
+  renderExtremes(container, loadingEl, leastToxic, mostToxic);
+}
+
+/** Finds the possible replacements of the words given. */
+async function getAllReplacements(words, numResults) {
+  const replacements = [];
+  const wordsCalled = [];
+  const datamuseCalls = [];
   for (let word of words) {
-    const replacements = [];
     for (let attribute of Object.values(DATAMUSE_ATTRIBUTES)) {
-      const datamuseResponse = await callDatamuse(word, attribute, 10);
-      for (let i = 0; i < datamuseResponse.length; i++) {
-        replacements.push(datamuseResponse[i].word);
-      }
+      wordsCalled.push(word);
+      datamuseCalls.push(callDatamuse(word, attribute, numResults));
     }
-    const newSentences = [];
-    const styledSentences = [];
-    const promises = [];
-    for (let i = 0; i < replacements.length; i++) {
-      // Get the Perspective scores on the new sentences
-      const newSentence = text.replace(word, replacements[i]);
-      const styledSentence = text.replace(word, '<b>' + replacements[i] + '</b>');
-      newSentences.push(newSentence);
-      styledSentences.push(styledSentence);
-      promises.push(callPerspective(newSentence, lang, ['TOXICITY']));
-    }
-    await Promise.all(promises).then(resolvedResponses => {
-      for (let i = 0; i < resolvedResponses.length; i++) {
-        // Update the current extreme values if necessary
-        const toxicityScore = resolvedResponses[i].attributeScores.TOXICITY.summaryScore.value;
-        if (toxicityScore > mostToxic.score) {
-          mostToxic.score = toxicityScore;
-          mostToxic.string = styledSentences[i];
-        } else if (toxicityScore < leastToxic.score) {
-          leastToxic.score = toxicityScore;
-          leastToxic.string = styledSentences[i];
-        }
-      }
-    });
   }
-  // Print the results
+  await Promise.all(datamuseCalls).then(datamuseResponses => {
+    for (let i = 0; i < datamuseResponses.length; i++) {
+      for (let j = 0; j < datamuseResponses[i].length; j++) {
+        replacements.push([wordsCalled[i], datamuseResponses[i][j].word]);
+      }
+    }
+  });
+  return replacements;
+}
+
+/** From an array of Perspective promises, stores the most extreme sentence variations in "mostToxic" & "leastToxic" */
+async function storeExtremes(promises, mostToxic, leastToxic, styledSentences) {
+  await Promise.all(promises).then(resolvedResponses => {
+    for (let i = 0; i < resolvedResponses.length; i++) {
+      const toxicityScore = resolvedResponses[i].attributeScores.TOXICITY.summaryScore.value;
+      // Update the current extreme values if necessary
+      if (toxicityScore > mostToxic.score) {
+        mostToxic.score = toxicityScore;
+        mostToxic.string = styledSentences[i];
+      } else if (toxicityScore < leastToxic.score) {
+        leastToxic.score = toxicityScore;
+        leastToxic.string = styledSentences[i];
+      }
+    }
+  });
+}
+
+/** Calculates the appropriate number of Datamuse results per word to get */
+function getNumResults(numWords) {
+  let numResults = MAX_DATAMUSE_RESULTS_PER_WORD;
+  if (numResults * numWords > MAX_TOTAL_DATAMUSE_RESULTS) {
+    numResults = Math.floor(MAX_TOTAL_DATAMUSE_RESULTS / numWords);
+  }
+  return numResults;
+}
+
+/** Renders the extreme variations of a sentence after they have been calculated */
+function renderExtremes(container, loadingEl, leastToxic, mostToxic) {
   container.removeChild(loadingEl);
   container.appendChild(createAnyElement('p', 'Least toxic variation: ' + leastToxic.string + ' -> ' + decimalToPercentage(leastToxic.score)));
   container.appendChild(createAnyElement('p', 'Most toxic variation: ' + mostToxic.string + ' -> ' + decimalToPercentage(mostToxic.score)));
-}
-
-/** Creates an individual radio */
-function createIndividualRadio(id, type, value, radioClass, text, name) {
-  const inputEl = document.createElement('input');
-  inputEl.setAttribute('id', id);
-  inputEl.setAttribute('type', type);
-  inputEl.setAttribute('value', value);
-  inputEl.setAttribute('name', name);
-  inputEl.className = radioClass + '-input';
- 
-  const labelEl = createAnyElement('label', text);
-  labelEl.setAttribute('for', id);
-  labelEl.className = radioClass + '-label';
- 
-  const radioEl = document.createElement('div');
-  radioEl.className = 'form-check form-check-inline';
-  radioEl.appendChild(inputEl);
-  radioEl.appendChild(labelEl);
-  return radioEl;
 }
 
 /** Gets the replacements & their score changes for a subtring based on the Datamuse API */
@@ -387,14 +391,14 @@ async function getReplacements(text, lang, substringForReplacements) {
     return;
   }
  
-  printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, analysisContainer, loadingEl);
+  renderReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, analysisContainer, loadingEl);
 }
 
-/** Prints the modified strings to the page with their Perspective TOXICITY scorings */
-async function printReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
+/** Renders the modified strings to the page with their Perspective TOXICITY scorings */
+async function renderReplacements(text, substringForReplacements, replacements, toxicityOfOriginal, lang, container, loadingEl) {
   // Get Perspective scores on new sentences
   const promises = [];
-  const newSentences = []
+  const newSentences = [];
   for (let i = 0; i < replacements.length; i++) {
     const replacement = replacements[i].word;
     const newSentence = text.replace(substringForReplacements, replacement);
@@ -420,9 +424,9 @@ async function printReplacements(text, substringForReplacements, replacements, t
  
     container.removeChild(loadingEl);
 
-    // Print the new sentences and their score differences
+    // Render the new sentences and their score differences
     for (let i = 0; i < sentenceData.length; i++) {
-      printSentence(container, sentenceData[i])
+      renderSentence(container, sentenceData[i])
     }
 
     // Draw the chart
@@ -430,8 +434,8 @@ async function printReplacements(text, substringForReplacements, replacements, t
   });
 }
  
-/** Prints a sentence replacement with the correct style and data  */ 
-function printSentence(container, sentenceData) {
+/** Renders a sentence replacement with the correct style and data  */ 
+function renderSentence(container, sentenceData) {
   const isPositive = sentenceData.scoreDiff > 0;
   const className = isPositive ? 'red-background' : 'green-background';
   const sign = isPositive ? '+' : '';
@@ -441,7 +445,7 @@ function printSentence(container, sentenceData) {
 }
 
 /** Gives the user extra options after they get the replacement data */
-function setUpExtras(text, lang, substringForReplacements) {
+function showDataMuseWordReplacementOptions(text, lang, substringForReplacements) {
   // Clear any previous options & print separating line
   container = document.getElementById('perspective-datamuse-extras');
   container.innerHTML = '';
@@ -490,9 +494,8 @@ function setUpWordTypeSelection(container, optionsRow, text, lang, substringForR
 async function getOriginalToxicity(text, lang, container, loadingEl) {
   const response = await callPerspective(text, lang, ['TOXICITY']);
   if (typeof(response.attributeScores) === 'undefined') {
-    container.removeChild(loadingEl)
-    container.appendChild(
-      AnyElement('p', 'Perspective API was not able to get scores replacements'));
+    container.removeChild(loadingEl);
+    container.appendChild(createAnyElement('p', 'Perspective API was not able to get scores replacements'));
     return;
   }
   return response.attributeScores.TOXICITY.summaryScore.value;
@@ -602,14 +605,9 @@ function drawDatamuseChart(responses, substringForReplacements, toxicityOfOrigin
   const data = google.visualization.arrayToDataTable([[{label: 'replacement'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   for (let i = 0; i < replacements.length; i++) {
-    let color = '#6B8E23'; // Green
     const score = responses[i].attributeScores['TOXICITY'].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
-    data.addRow([replacements[i].word, score, color]);
+    const style = getStyle(score);
+    data.addRow([replacements[i].word, score, style]);
   }
   data.addRow(['ORIGINAL', toxicityOfOriginal, 'Black']);
 
@@ -643,14 +641,9 @@ function drawGeneralChart(toxicityData) {
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
-    let color = '#6B8E23'; // Green
     const score = toxicityData.attributeScores[attribute].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
-    data.addRow([attribute, score, color]);
+    const style = getStyle(score);
+    data.addRow([attribute, score, style]);
   });
 
   data.sort({column: 1, desc: false});
@@ -669,8 +662,35 @@ function drawGeneralChart(toxicityData) {
   chart.draw(data, options);
 }
 
+/** Gives the appropriate style for a bar in a barchart given its score */
+function getStyle(score) {
+  let color;
+  if (score >= 0.8) {
+    color = '#6200EA'; // Darkest purple
+  } else if (score >= 0.6) {
+    color = '#8133EE'; // Dark purple
+  } else if (score >= 0.4) {
+    color = '#A166F2'; // Mild purple
+  } else if (score >= 0.2) {
+    color = '#E0CCFB'; // Light purple
+  } else {
+    color = '#F6F2FC'; // Lightest purple
+  }
+  return 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color;
+}
+
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
+  // Highlight <li> element when its input is checked
+  $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+
+  // Keep menu open when an option is selected or deselected
+  $(document).on('click', '.allow-focus', function(e) {
+    e.stopPropagation();
+  });
+
   const langElement = document.getElementById('languageForAnalysis');
   if (!langElement) {
     return;
@@ -682,19 +702,29 @@ function showAvailableAttributes() {
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
     const checkbox = document.createElement('input');
-    checkbox.type = "checkbox";
+    checkbox.type = 'checkbox';
     checkbox.value = attribute;
-    checkbox.id = attribute + '-checkbox';
-    checkbox.checked = true;
   
     const label = document.createElement('label');
-    label.htmlFor = attribute + '-checkbox';
-    label.appendChild(document.createTextNode(attribute));
+    label.appendChild(checkbox);
+    label.innerHTML += attribute;
+
+    const list = document.createElement('li');
+    list.className = 'active';
+    list.appendChild(label);
   
-    avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
-    avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
+    avaiableAttributesElement.appendChild(list);
+
+    // Check the attribute's box; Ajax prevents doing this earlier
+    list.children[0].children[0].checked = true;
+  });
+}
+
+function loadAnalysisDropdown() {
+  // Highlight an <li> element in analysis radio selection when its input is checked
+  $('.checkbox-menu').on('change', "input[type='radio']", function() {
+    $("input[name='analysisRadios']").closest('li').toggleClass('active', false);
+    $(this).closest('li').toggleClass('active', this.checked);
   });
 }
 
