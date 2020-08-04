@@ -10,8 +10,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="icon" type="image/png" href="assets/favicon-32x32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="assets/favicon-16x16.png" sizes="16x16">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
     <link href="cover.css" rel="stylesheet">
     <script src="script.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
@@ -40,52 +46,62 @@
         <section class="jumbotron text-center">
           <div class="container">
             <h1>Text Analysis</h1>
-            <p class="lead text-muted">Input text and select the Perspective API attribute(s) you would like to be shown</p>
-            <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
+            <p class="lead text-muted">Get started by writing below</p>
           </div>
         </section>
       </main>
       <div class="text-analysis-module">
         <!--Returns false so the page does not reload-->
         <form onsubmit="gatherInput(); return false;">
-          <div class="form-group">
-            <textarea type="text" class="form-control" id="textForAnalysis" aria-describedby="inputText" placeholder="Input Text To Be Analyzed Here" rows="3"></textarea>
-            <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes.</small>
+          <div class="md-form">
+            <textarea type="text" class="form-control md-textarea" id="textForAnalysis" aria-describedby="inputText" rows="3"></textarea>
+            <label for="textForAnalysis">Text</label>
           </div>
-          <select id="languageForAnalysis" class="form-control" onchange="showAvailableAttributes()">
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-            <option value="it">Italian</option>
-            <option value="pt">Portuguese</option>
-          </select>
-          <div class="dropdown" id="attribute-dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
-            <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
+          <a onclick=toggleAdvancedOptions() id="toggle-advanced-options-button" >Advanced options</a>
+          <div id="advanced-options" style="display:none">
+            <select id="languageForAnalysis" class="form-control" onchange="showAvailableAttributes()">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="it">Italian</option>
+              <option value="pt">Portuguese</option>
+            </select>
+            <div class="dropdown" id="attribute-dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
+              <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
+            </div>
+            <div id="analysis-type">
+              <b>Select analysis type</b>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
+                <label class="form-check-label" for="bySentence">By sentence</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
+                <label class="form-check-label" for="byWord">By word</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
+                <label class="form-check-label" for="noAnalysis">No analysis</label>
+              </div>
+            </div>
           </div>
-          <div id="analysis-type">
-            <b>Select analysis type</b>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="analysisRadios" id="bySentence" value="SENTENCE" checked>
-              <label class="form-check-label" for="bySentence">By sentence</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="analysisRadios" id="byWord" value="WORD">
-              <label class="form-check-label" for="byWord">By word</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="analysisRadios" id="noAnalysis" value="NONE">
-              <label class="form-check-label" for="noAnalysis">No analysis</label>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-        <div id="separator-container"></div>
+          <button type="submit" class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto">Submit</button>
+        </form>     
         <div id="general-chart-container"></div>
-        <div id="general-analysis-container" class="d-flex flex-column"></div>
-        <div id="perspective-datamuse-header" style="background-color:#FAEBD7">
-          <p id="about-container" style="display:none">
+        <div class="container" id="detailed-analysis">
+         <div id ="detailed-analysis-header"></div>
+          <div class="row">
+            <div id="colored-analysis-container" class="d-flex flex-column col-8"></div>
+            <div class="col-4">
+              <div id="segment-data" class="side-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div id="perspective-datamuse-header" style="background-color:#FAEBD7; display:none">
+          <h3>Perspective Testing Tool</h3>
+          <p style="text-align:left">
             This tool is only meant to test Perspective API's scores
             and to see how they can change. The replacement words or phrases are 
             not meant to be taken as suggestions. Do not use them as a means to 
@@ -97,6 +113,7 @@
         </div>
         <div id="perspective-datamuse-analysis"></div>
         <div id="perspective-datamuse-chart"></div>
+        <div id="perspective-datamuse-extremes"></div>
         <div id="perspective-datamuse-extras"></div>
       </div>
       <footer class="mastfoot mt-auto">
@@ -105,14 +122,13 @@
         </div>
       </footer>
     </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
-      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
-    </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" 
-      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
-    </script>
+    <!-- JQuery -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/js/mdb.min.js"></script>
   </body>
 </html>
