@@ -28,6 +28,8 @@ import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.sps.data.FeedbackInput;
+import com.google.sps.data.ApiCaller;
+import com.google.sps.data.PerspectiveCaller;
 import org.json.simple.JSONObject;    
 import org.json.simple.JSONArray;  
 import java.util.ArrayList;
@@ -39,7 +41,18 @@ import java.util.Collection;
 @WebServlet("/suggest_perspective")
 public class SuggestCommentServlet extends HttpServlet {
   private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:suggestscore?key=API_KEY";
- 
+  private ApiCaller apiCaller;
+
+  public SuggestCommentServlet() {
+    super();
+    this.apiCaller = new PerspectiveCaller();
+  }
+
+  public SuggestCommentServlet(ApiCaller apiCaller) {
+    super();
+    this.apiCaller = apiCaller;
+  } 
+
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Get the input
@@ -61,7 +74,7 @@ public class SuggestCommentServlet extends HttpServlet {
     // Make the request to Perspective API
     OkHttpClient client = new OkHttpClient();
     String json = makePerspectiveJson(text, lang, feedback);
-    String output = post(URL, json, client);
+    String output = apiCaller.post(URL, json, client);
   
     // Return Perspective's results
     response.setContentType("application/json");
@@ -96,15 +109,5 @@ public class SuggestCommentServlet extends HttpServlet {
     json.put("languages", lang);    
     json.put("attributeScores", attributesValue);    
     return json.toString();
-  }
- 
-  private String post(String url, String json, OkHttpClient client) throws IOException {
-    MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    RequestBody body = RequestBody.create(json, JSON);
-    Request request = new Request.Builder().url(url).post(body).build();
- 
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
   }
 }
