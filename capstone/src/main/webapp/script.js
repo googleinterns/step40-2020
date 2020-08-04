@@ -17,7 +17,7 @@
  * @enum {regexp}
  */
 const TokenizerEnum = {
-  WORD: /(\S+\s*)/g, 
+  WORD: /(\S+\s*)|(\s*\S+)/g, 
   SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
@@ -147,7 +147,7 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   // Break up and color the segment appropriately	
   const substringEl = document.createElement('span');
   const wordElts = [];
-  const words = getSubstrings(substring, /(\S+\s*)/g);
+  const words = getSubstrings(substring, /(\S*\s*)/g);
   if (words) {
     for (let i = 0; i < words.length; i++) {
     const wordEl = createAnyElement('span', words[i]);
@@ -214,7 +214,10 @@ function setUpFeedback(text, lang, container, feedbackButton, requestedAttribute
     const input = document.createElement('input');
     input.className = 'form-control';
     input.setAttribute('id', attribute);
-    input.setAttribute('type', 'text')
+    input.setAttribute('type', 'number');
+    input.setAttribute('step', '.01');
+    input.setAttribute('min', '0');
+    input.setAttribute('max', '1');
     const inputLabel = document.createElement('label');
     inputLabel.innerHTML = attribute + ' score';
     inputLabel.setAttribute('for', attribute);

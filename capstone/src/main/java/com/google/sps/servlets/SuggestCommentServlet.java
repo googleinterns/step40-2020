@@ -39,7 +39,6 @@ import java.util.Collection;
 @WebServlet("/suggest_perspective")
 public class SuggestCommentServlet extends HttpServlet {
   private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:suggestscore?key=API_KEY";
-  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
  
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
