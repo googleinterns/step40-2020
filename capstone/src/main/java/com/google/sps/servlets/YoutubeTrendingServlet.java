@@ -1,5 +1,3 @@
-// Copyright 2019 Google LLC
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -30,7 +28,6 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.sps.data.YoutubeCaller;
 
 /** Servlet that fetches trending results of a certain category. */
 @WebServlet("/trending_servlet")
@@ -45,8 +42,18 @@ public class YoutubeTrendingServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String videoCategoryId = request.getParameter("videoCategoryId");
     String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
-    String output = YoutubeCaller.get(completeUrl, client);
+    String output = get(completeUrl);
     response.setContentType("application/json");
     response.getWriter().println(output);  
+  }
+  
+  /** Makes a GET request. */
+  private String get(String url) throws IOException {
+    Request request = new Request.Builder()
+      .url(url)
+      .build();
+    try (Response response = client.newCall(request).execute()) {
+      return response.body().string();
+    }
   }
 }
