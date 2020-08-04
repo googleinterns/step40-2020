@@ -7,3 +7,4 @@ yarn-error.log
 .vscode/
 .idea/
 youtubeTypescript.js
+**/node_modules
