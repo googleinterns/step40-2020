@@ -21,6 +21,15 @@ const TokenizerEnum = {
   SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
+const LANGUAGES = {
+  'en': 'English',
+  'es': 'Spanish',
+  'fr': 'French',
+  'de': 'German',
+  'it': 'Italian',
+  'pt': 'Portuguese'
+}
+
 const DATAMUSE_ATTRIBUTES = {
   'Means like': 'ml', 
   'Synonym': 'rel_syn',
@@ -683,14 +692,14 @@ function getStyle(score) {
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-  const lang = getRequestedLanguage();
+  let lang = getRequestedLanguage();
   if (lang == null) {
-    return;
+    lang = 'en';
   }
-  document.getElementById('language-button').innerHTML = 'Language: ' + lang.toUpperCase();
+  document.getElementById('language-button').innerHTML = 'Language: ' + LANGUAGES[lang];
 
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
 	
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
@@ -706,7 +715,7 @@ function showAvailableAttributes() {
     list.className = 'active';
     list.appendChild(label);
   
-    avaiableAttributesElement.appendChild(list);
+    availableAttributesElement.appendChild(list);
 
     // Check the attribute's box; Ajax prevents doing this earlier
     list.children[0].children[0].checked = true;
@@ -715,6 +724,32 @@ function showAvailableAttributes() {
 
 /** Highlight the currently selected choice(s) in dropdown menus */
 function loadDropdowns() {
+  // Create language options
+  const availableLanguagesElement = document.getElementById('available-languages');
+  if (availableLanguagesElement == null) {
+    return;
+  }
+  availableLanguagesElement.innerHTML = '';
+	
+  for (const lang of Object.keys(LANGUAGES)) {
+    const radio = document.createElement('input');
+    radio.name = 'languageRadios';
+    radio.type = 'radio';
+    radio.value = lang;
+  
+    const label = document.createElement('label');
+    label.appendChild(radio);
+    label.innerHTML += LANGUAGES[lang];
+
+    const list = document.createElement('li');
+    list.appendChild(label);
+  
+    availableLanguagesElement.appendChild(list);
+  }
+  // Select the first option
+  availableLanguagesElement.children[0].className = 'active';
+  availableLanguagesElement.children[0].children[0].children[0].checked = true;
+
   // Highlight an <li> element in a radio selection when its input is checked for
   // 1. Language selection
   // 2. Available attributes
