@@ -421,7 +421,7 @@ function drawDatamuseChart(responses, substringForReplacements, toxicityOfOrigin
   for (let i = 0; i < replacements.length; i++) {
     const score = responses[i].attributeScores['TOXICITY'].summaryScore.value;
     const color = getColor(score);
-    data.addRow([replacements[i].word, score, color]);
+    data.addRow([replacements[i].word, score, 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color]);
   }
   data.addRow(['ORIGINAL', toxicityOfOriginal, 'Black']);
 
@@ -457,7 +457,7 @@ function drawGeneralChart(toxicityData) {
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
     const score = toxicityData.attributeScores[attribute].summaryScore.value;
     const color = getColor(score);
-    data.addRow([attribute, score, color]);
+    data.addRow([attribute, score, 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color]);
   });
 
   data.sort({column: 1, desc: false});
