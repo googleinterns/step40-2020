@@ -535,14 +535,9 @@ function drawDatamuseChart(responses, substringForReplacements, toxicityOfOrigin
   const data = google.visualization.arrayToDataTable([[{label: 'replacement'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   for (let i = 0; i < replacements.length; i++) {
-    let color = '#6B8E23'; // Green
     const score = responses[i].attributeScores['TOXICITY'].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
-    data.addRow([replacements[i].word, score, color]);
+    const style = getStyle(score);
+    data.addRow([replacements[i].word, score, style]);
   }
   data.addRow(['ORIGINAL', toxicityOfOriginal, 'Black']);
 
@@ -576,14 +571,9 @@ function drawGeneralChart(toxicityData) {
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
-    let color = '#6B8E23'; // Green
     const score = toxicityData.attributeScores[attribute].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
-    data.addRow([attribute, score, color]);
+    const style = getStyle(score);
+    data.addRow([attribute, score, style]);
   });
 
   data.sort({column: 1, desc: false});
@@ -600,6 +590,23 @@ function drawGeneralChart(toxicityData) {
   const chart = new google.visualization.BarChart(chartContainer);
   chartContainer.removeChild(loadingEl);
   chart.draw(data, options);
+}
+
+/** Gives the appropriate style for a bar in a barchart given its score */
+function getStyle(score) {
+  let color;
+  if (score >= 0.8) {
+    color = '#6200EA'; // Darkest purple
+  } else if (score >= 0.6) {
+    color = '#8133EE'; // Dark purple
+  } else if (score >= 0.4) {
+    color = '#A166F2'; // Mild purple
+  } else if (score >= 0.2) {
+    color = '#E0CCFB'; // Light purple
+  } else {
+    color = '#F6F2FC'; // Lightest purple
+  }
+  return 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color;
 }
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
