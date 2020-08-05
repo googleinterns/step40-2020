@@ -21,6 +21,15 @@ const TokenizerEnum = {
   SENTENCE: /([^\.!\?\n\r]+[\.!\?\n\r]+)|([^\.!\?\n\r]+$)/g,
 };
 
+const LANGUAGES = {
+  'en': 'English',
+  'es': 'Spanish',
+  'fr': 'French',
+  'de': 'German',
+  'it': 'Italian',
+  'pt': 'Portuguese'
+}
+
 const DATAMUSE_ATTRIBUTES = {
   'Means like': 'ml', 
   'Synonym': 'rel_syn',
@@ -46,8 +55,9 @@ async function gatherInput() {
   if (!textElement) {
     return;
   }
-  const langElement = document.getElementById('languageForAnalysis');
-  if (!langElement) {
+
+  const lang = getRequestedLanguage();
+  if (lang == null) {
     return;
   }
 
@@ -70,7 +80,8 @@ async function gatherInput() {
       break;
     }
   }
-  handleInput(textElement.value, langElement.value, requestedAttributes, tokenizer);
+
+  handleInput(textElement.value, lang, requestedAttributes, tokenizer);
 }
 
 /** Submits the input to Perspective and loads the appropriate output */
@@ -116,7 +127,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
   }
   await Promise.all(promises).then(resolvedResponses => {
     for (i = 0; i < substrings.length; i++) {
-      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i], lang)
+      addSubstring(substrings[i], analysisContainer, result, loadingEl, resolvedResponses[i], lang, requestedAttributes)
     }
   });
 
@@ -129,7 +140,7 @@ async function getAnalysis(text, lang, requestedAttributes, tokenizer) {
 }
 
 /** Updates the HTML elements for a substring that will be added to the detailed analysis output */
-function addSubstring(substring, analysisContainer, result, loadingEl, response, lang) {
+function addSubstring(substring, analysisContainer, result, loadingEl, response, lang, requestedAttributes) {
   // Check for errors and sort the attributes
   if (typeof(response.attributeScores) === 'undefined') {
     analysisContainer.removeChild(loadingEl);
@@ -142,13 +153,13 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   // Break up and color the segment appropriately	
   const substringEl = document.createElement('span');
   const wordElts = [];
-  const words = getSubstrings(substring, TokenizerEnum['WORD']);
+  const words = getSubstrings(substring, /(\S*\s*)/g);
   if (words) {
     for (let i = 0; i < words.length; i++) {
-      const wordEl = createAnyElement('span', words[i]);
-      const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
-      wordElts.push([wordEl, bareWord]);
-      substringEl.appendChild(wordEl);
+    const wordEl = createAnyElement('span', words[i]);
+    const bareWord = words[i].replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove any punctuation & whitespace
+    wordElts.push([wordEl, bareWord]);
+    substringEl.appendChild(wordEl);
     }
   } else {
     substringEl.appendChild(createAnyElement('span', substring));
@@ -156,13 +167,13 @@ function addSubstring(substring, analysisContainer, result, loadingEl, response,
   colorSubstring(substringEl, toxicityScore);
 
   // Set up analysis replacement function call after user clicks on segment
-  substringEl.onclick = function() { handleSegmentClick(attributes, substringEl, wordElts, substring, lang); }
+  substringEl.onclick = function() { handleSegmentClick(attributes, substringEl, wordElts, substring, lang, requestedAttributes);  }
   result.appendChild(substringEl);
 }
 
 /** Appropriately sets the onclick attribute of a detailed analyis segment */ 
-function handleSegmentClick(attributes, substringEl, wordElts, substring, lang) {
-  showAttributes(attributes);
+function handleSegmentClick(attributes, substringEl, wordElts, substring, lang, requestedAttributes) {
+  setUpSidebar(attributes, substring, lang, requestedAttributes);
   // Remove properties from previously clicked-on segments
   const segments = document.getElementsByClassName('segment');
   for (let i = 0; i < segments.length; i++) {
@@ -180,15 +191,85 @@ function handleSegmentClick(attributes, substringEl, wordElts, substring, lang) 
   }
 }
 
-/** Displays the attributes for a clicked-on segment */
-function showAttributes(attributes) {
+/** Displays the attributes for a clicked-on segment and an option to submit feedback */
+function setUpSidebar(attributes, text, lang, requestedAttributes) {
+  // Populate the side bar with the Perspective data
   const container = document.getElementById('segment-data');
   container.innerHTML = '';
   container.appendChild(createAnyElement('b', 'Top attributes'));
   for (let i = 0; i < attributes.length && i < 3; i++) {
     container.appendChild(createAnyElement('p', attributes[i][0] + ': ' + decimalToPercentage(attributes[i][1])));
   }
-  container.appendChild(createAnyElement('b', 'Click on any word in selected segment for replacements'))
+  container.appendChild(createAnyElement('b', 'Click on any word in selected segment for replacements'));
+  
+  // Attach button for feedback
+  const feedbackButton = document.createElement('button');
+  feedbackButton.innerHTML = 'Are these scores inaccurate?';
+  feedbackButton.className = 'btn btn-outline-elegant waves-effect';
+  feedbackButton.onclick = function() { setUpFeedback(text, lang, container, feedbackButton, requestedAttributes); };
+  container.appendChild(feedbackButton);
+}
+
+/** Sets up the feedback section in tooltips */
+function setUpFeedback(text, lang, container, feedbackButton, requestedAttributes) {
+  container.removeChild(feedbackButton)
+
+  // Create inputs for feedback on each requested attribute
+  const inputDiv = document.createElement('div');
+  for (let attribute of requestedAttributes) {
+    const input = document.createElement('input');
+    input.className = 'form-control';
+    input.setAttribute('id', attribute);
+    input.setAttribute('type', 'number');
+    input.setAttribute('step', '.01');
+    input.setAttribute('min', '0');
+    input.setAttribute('max', '1');
+    const inputLabel = document.createElement('label');
+    inputLabel.innerHTML = attribute + ' score';
+    inputLabel.setAttribute('for', attribute);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'md-form';
+    wrapper.appendChild(input);
+    wrapper.appendChild(inputLabel);
+    inputDiv.appendChild(wrapper);
+  }
+  container.appendChild(inputDiv);
+
+  // Create the submit button
+  const submitButton = document.createElement('button');
+  submitButton.innerHTML = 'Submit';
+  submitButton.className = 'btn btn-outline-elegant waves-effect';
+  submitButton.onclick = function() { submitFeedback(text, lang, submitButton, container, inputDiv); };
+  container.appendChild(submitButton);
+}
+
+/** Submits feedback to Perspective API */
+function submitFeedback(text, lang, submitButton, container, inputDiv) {
+  const requestedAttributes = [];
+  const attributeScores = [];
+
+  // Get the user's input and sent it to Perspective
+  const attributes = inputDiv.childNodes;
+  for (let i = 0; i < attributes.length; i++) {
+    const suggestedScore = attributes[i].getElementsByTagName('input')[0].value;
+    if (isNaN(suggestedScore) || suggestedScore < 0 || suggestedScore > 1) {
+      alert('All values must be numbers between 0 and 1');
+      return;
+    } else if (suggestedScore != '') {
+      requestedAttributes.push(attributes[i].id);
+      attributeScores.push(suggestedScore);
+    } 
+  }
+  fetch('/suggest_perspective', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: text, lang: lang, requestedAttributes: requestedAttributes, attributeScores: attributeScores})
+  });
+
+  // Remove the form and thank the user
+  container.removeChild(inputDiv);
+  container.removeChild(submitButton);
+  container.appendChild(createAnyElement('p', 'Thanks for the feedback!'));
 }
 
 /** Sets up the replacements section */
@@ -535,14 +616,9 @@ function drawDatamuseChart(responses, substringForReplacements, toxicityOfOrigin
   const data = google.visualization.arrayToDataTable([[{label: 'replacement'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   for (let i = 0; i < replacements.length; i++) {
-    let color = '#6B8E23'; // Green
     const score = responses[i].attributeScores['TOXICITY'].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
-    data.addRow([replacements[i].word, score, color]);
+    const style = getStyle(score);
+    data.addRow([replacements[i].word, score, style]);
   }
   data.addRow(['ORIGINAL', toxicityOfOriginal, 'Black']);
 
@@ -576,14 +652,9 @@ function drawGeneralChart(toxicityData) {
   const data = google.visualization.arrayToDataTable([[{label: 'Attribute'}, {label: 'Score', type: 'number'}, {role: "style"}]]);
 
   Object.keys(toxicityData.attributeScores).forEach((attribute) => {
-    let color = '#6B8E23'; // Green
     const score = toxicityData.attributeScores[attribute].summaryScore.value;
-    if (score >= 0.8) {
-      color = '#DC143C'; // Red
-    } else if (score >= 0.2) {
-      color = '#ffd800'; // Yellow
-    }
-    data.addRow([attribute, score, color]);
+    const style = getStyle(score);
+    data.addRow([attribute, score, style]);
   });
 
   data.sort({column: 1, desc: false});
@@ -602,25 +673,33 @@ function drawGeneralChart(toxicityData) {
   chart.draw(data, options);
 }
 
+/** Gives the appropriate style for a bar in a barchart given its score */
+function getStyle(score) {
+  let color;
+  if (score >= 0.8) {
+    color = '#6200EA'; // Darkest purple
+  } else if (score >= 0.6) {
+    color = '#8133EE'; // Dark purple
+  } else if (score >= 0.4) {
+    color = '#A166F2'; // Mild purple
+  } else if (score >= 0.2) {
+    color = '#E0CCFB'; // Light purple
+  } else {
+    color = '#F6F2FC'; // Lightest purple
+  }
+  return 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color;
+}
+
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-  // Highlight <li> element when its input is checked
-  $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
-    $(this).closest('li').toggleClass('active', this.checked);
-  });
-
-  // Keep menu open when an option is selected or deselected
-  $(document).on('click', '.allow-focus', function(e) {
-    e.stopPropagation();
-  });
-
-  const langElement = document.getElementById('languageForAnalysis');
-  if (!langElement) {
-    return;
+  let lang = getRequestedLanguage();
+  if (lang == null) {
+    lang = 'en';
   }
-  const lang = langElement.value;
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  document.getElementById('language-button').innerHTML = 'Language: ' + LANGUAGES[lang];
+
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
 	
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
@@ -636,11 +715,77 @@ function showAvailableAttributes() {
     list.className = 'active';
     list.appendChild(label);
   
-    avaiableAttributesElement.appendChild(list);
+    availableAttributesElement.appendChild(list);
 
     // Check the attribute's box; Ajax prevents doing this earlier
     list.children[0].children[0].checked = true;
   });
+}
+
+/** Highlight the currently selected choice(s) in dropdown menus */
+function loadDropdowns() {
+  // Create language options
+  const availableLanguagesElement = document.getElementById('available-languages');
+  if (availableLanguagesElement == null) {
+    return;
+  }
+  availableLanguagesElement.innerHTML = '';
+	
+  for (const lang of Object.keys(LANGUAGES)) {
+    const radio = document.createElement('input');
+    radio.name = 'languageRadios';
+    radio.type = 'radio';
+    radio.value = lang;
+  
+    const label = document.createElement('label');
+    label.appendChild(radio);
+    label.innerHTML += LANGUAGES[lang];
+
+    const list = document.createElement('li');
+    list.appendChild(label);
+  
+    availableLanguagesElement.appendChild(list);
+  }
+  // Select the first option
+  availableLanguagesElement.children[0].className = 'active';
+  availableLanguagesElement.children[0].children[0].children[0].checked = true;
+
+  // Highlight an <li> element in a radio selection when its input is checked for
+  // 1. Language selection
+  // 2. Available attributes
+  // 3. Analysis type
+  $('#available-languages').on('change', "input[type='radio']", function() {
+    $("input[name='languageRadios']").closest('li').toggleClass('active', false);
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+  
+  $('.checkbox-menu').on('change', "input[type='checkbox']", function() {
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+
+  $('#available-analysis').on('change', "input[type='radio']", function() {
+    $("input[name='analysisRadios']").closest('li').toggleClass('active', false);
+    $(this).closest('li').toggleClass('active', this.checked);
+  });
+
+  // Keep a menu open when a choice is selected
+  $(document).on('click', '.allow-focus', function(e) {
+    e.stopPropagation();
+  });
+}
+
+/** Returns the current language selected in the language dropdown */
+function getRequestedLanguage() {
+  const langRadios = document.getElementsByName('languageRadios');
+  if (!langRadios) {
+    return null;
+  }
+  for (let i = 0; i < langRadios.length; i++) {
+    if (langRadios[i].checked) {
+      return langRadios[i].value;
+    }
+  }
+  return null;
 }
 
 /** Shows or hides the advanced options for text analysis */
