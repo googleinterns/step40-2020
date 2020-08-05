@@ -51,6 +51,7 @@
           <input list ="channels" type="text" class="form-control" id="channelIdForAnalysis" aria-describedby="inputText" placeholder="Input Channel ID or Username To Be Analyzed Here">
           <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small>
           <div id="search-type"></div>
+          <div id="perspective-toxicity-score"></div>
           <datalist id="channels">
             <option value="UC_x5XG1OV2P6uZZ5FSM9Ttw">Google Developers</option>
             <option value="UC-lHJZR3Gqxm24_Vd_AJ5Yw">PewDiePie</option>
@@ -68,6 +69,7 @@
         <div id="available-attributes"></div>
         <button onclick="callYoutube()" class="btn btn-primary">Submit</button>
         <button onclick="getKeywordSearchResults()" class="btn btn-primary" id="keywordSearch">Keyword Search</button>
+        <a id="download" class="btn btn-primary" role="button">Download Output</a>
       </form><br>
       <div id="comment-list"></div>
        <div id="chart-container"></div>
