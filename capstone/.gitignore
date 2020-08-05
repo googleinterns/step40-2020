@@ -8,3 +8,5 @@ yarn-error.log
 .idea/
 youtubeTypescript.js
 **/node_modules
+node_modules
+/node_modules
