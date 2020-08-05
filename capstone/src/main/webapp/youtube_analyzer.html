@@ -19,10 +19,11 @@
     <!-- Material Design Bootstrap -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
     <link href="cover.css" rel="stylesheet">
+    <script src="script.js"></script>
     <script src="youtubeTypescript.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
-  <body class="text-center" onload="showAvailableAttributes();showCategories()">
+  <body class="text-center" onload="showAvailableAttributes(); showCategories(); loadDropdowns()">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
@@ -35,7 +36,7 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
+            <a class="nav-link" href="sheet_analyzer.html">Sheets Analyzer</a>
             <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
             <a class="nav-link active" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
@@ -64,17 +65,23 @@
             <option value="UCupvZG-5ko_eiXAupbDfxWw">CNN</option>
           </datalist>
         </div>
-        <select id="languageForAnalysis" onchange="showAvailableAttributes()">
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="it">Italian</option>
-          <option value="pt">Portuguese</option>
-        </select>
-        <div id="available-attributes"></div>
-        <button onclick="callYoutube()" class="btn btn-primary">Submit</button>
-        <button onclick="getKeywordSearchResults()" class="btn btn-primary" id="keywordSearch">Keyword Search</button>
+        <a onclick=toggleAdvancedOptions() id="toggle-advanced-options-button" >Advanced options</a>
+        <div id="advanced-options" style="display:none">
+          <div class="row">
+            <div class="col-12 justify-content-center form-inline">
+              <div class="dropdown" id="language-dropdown" onchange="showAvailableAttributes()">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" id="language-button">Language</button>
+                <ul class="dropdown-menu checkbox-menu allow-focus" id="available-languages"></ul>
+              </div>
+              <div class="dropdown" id="attribute-dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">Attributes</button>
+                <ul class="dropdown-menu checkbox-menu allow-focus" id="available-attributes"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button onclick="callYoutube()" type="submit" class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto">Submit</button>
+        <button onclick="getKeywordSearchResults()" type="submit" class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" style="width:200px; margin:auto" id="keywordSearch">Keyword Search</button>
       </form><br>
       <div id="loading-container"></div>
       <div id="comment-list"></div>
@@ -87,15 +94,6 @@
         </div>
       </footer>
     </div>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
-      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
-    </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" 
-      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
-    </script>
     <!-- JQuery -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <!-- Bootstrap tooltips -->

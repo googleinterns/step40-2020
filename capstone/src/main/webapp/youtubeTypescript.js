@@ -47,14 +47,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var ATTRIBUTES_BY_LANGUAGE = {
-    'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
-    'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
-    'fr': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
-    'de': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
-    'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
-    'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
-};
 /** Category names are correlated to youtube category numbers */
 var YOUTUBE_CATEGORIES = {
     'Autos&Vehicles': 2,
@@ -136,13 +128,18 @@ function callYoutube() {
 /** Calls perspective to analyze an array of comment JSON's */
 function inputCommentsToPerspective(commentsList) {
     return __awaiter(this, void 0, void 0, function () {
-        var langElement, commentListElement, requestedAttributes, attributeScoresPromises, _a, _b, _i, comments, _c, _d, _e, item, perspectiveScore, totalNumberOfComments;
+        var langRadios, lang, i, commentListElement, requestedAttributes, attributeScoresPromises, _a, _b, _i, comments, _c, _d, _e, item, perspectiveScore, totalNumberOfComments;
         return __generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
-                    langElement = document.getElementById('languageForAnalysis');
-                    if (!langElement) {
-                        return [2 /*return*/];
+                    langRadios = document.getElementsByName('languageRadios');
+                    if (!langRadios) {
+                        lang = 'en';
+                    }
+                    for (i = 0; i < langRadios.length; i++) {
+                        if (langRadios[i].checked) {
+                            lang = langRadios[i].value;
+                        }
                     }
                     commentListElement = document.getElementById('comment-list');
                     commentListElement.innerHTML = '';
@@ -168,7 +165,7 @@ function inputCommentsToPerspective(commentsList) {
                     if (!(_e < _c.length)) return [3 /*break*/, 5];
                     item = _c[_e];
                     ANALYZED_COMMENTS.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
-                    return [4 /*yield*/, callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes)];
+                    return [4 /*yield*/, callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, lang, requestedAttributes)];
                 case 3:
                     perspectiveScore = _f.sent();
                     attributeScoresPromises.push(perspectiveScore);
@@ -289,30 +286,6 @@ function drawBarChart(toxicityData) {
     };
     var chart = new google.visualization.BarChart(document.getElementById('chart-container'));
     chart.draw(data, options);
-}
-/** Shows the avaiable attributes given a language selected on text analyzer page */
-function showAvailableAttributes() {
-    var langElement = document.getElementById('languageForAnalysis');
-    if (!langElement) {
-        return;
-    }
-    var lang = langElement.value;
-    var availableAttributesElement = document.getElementById('available-attributes');
-    availableAttributesElement.innerHTML = '';
-    var attributes = ATTRIBUTES_BY_LANGUAGE[lang];
-    attributes.forEach(function (attribute) {
-        var checkbox = document.createElement('input');
-        checkbox.type = "checkbox";
-        checkbox.value = attribute;
-        checkbox.id = attribute + '-checkbox';
-        checkbox.checked = true;
-        var label = document.createElement('label');
-        label.htmlFor = attribute + '-checkbox';
-        label.appendChild(document.createTextNode(attribute));
-        availableAttributesElement.appendChild(checkbox);
-        availableAttributesElement.appendChild(label);
-        availableAttributesElement.appendChild(document.createTextNode(" "));
-    });
 }
 /** Checks if a character is a letter */
 function isLetter(character) {

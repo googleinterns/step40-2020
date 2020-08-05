@@ -14,15 +14,6 @@
 
 declare let google;
 
-const ATTRIBUTES_BY_LANGUAGE = {
-  'en': ['TOXICITY', 'SEVERE_TOXICITY', 'TOXICITY_FAST', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT', 'SEXUALLY_EXPLICIT', 'FLIRTATION'],
-  'es': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
-  'fr': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK_EXPERIMENTAL', 'INSULT_EXPERIMENTAL', 'PROFANITY_EXPERIMENTAL', 'THREAT_EXPERIMENTAL'],
-  'de': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
-  'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
-  'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
-};
-
 /** Category names are correlated to youtube category numbers */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
@@ -87,10 +78,17 @@ async function callYoutube() {
 
 /** Calls perspective to analyze an array of comment JSON's */
 async function inputCommentsToPerspective(commentsList: any[]) {
-  const langElement = (<HTMLInputElement> document.getElementById('languageForAnalysis'));
-  if (!langElement) {
-    return;
+  const langRadios = (<NodeList> document.getElementsByName('languageRadios'));
+  let lang;
+  if (!langRadios) {
+    lang = 'en';
   }
+  for (let i = 0; i < langRadios.length; i++) {
+    if ((<HTMLInputElement> langRadios[i]).checked) {
+      lang = (<HTMLInputElement> langRadios[i]).value;
+    }
+  }
+  
   const commentListElement = document.getElementById('comment-list');
   commentListElement.innerHTML = '';
   const requestedAttributes = getRequestedAttributes();
@@ -101,7 +99,7 @@ async function inputCommentsToPerspective(commentsList: any[]) {
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
       ANALYZED_COMMENTS.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
-      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, lang, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
   }
@@ -199,31 +197,6 @@ function drawBarChart(toxicityData: Map<string, number>) {
   };
   const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
   chart.draw(data, options);
-}
-
-/** Shows the avaiable attributes given a language selected on text analyzer page */
-function showAvailableAttributes() {
-  const langElement = (<HTMLInputElement> document.getElementById('languageForAnalysis'));
-  if (!langElement) {
-    return;
-  }
-  const lang = langElement.value;
-  const availableAttributesElement = document.getElementById('available-attributes');
-  availableAttributesElement.innerHTML = '';
-  const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
-  attributes.forEach(function(attribute) {
-    const checkbox = document.createElement('input');
-    checkbox.type = "checkbox";
-    checkbox.value = attribute;
-    checkbox.id = attribute + '-checkbox';
-    checkbox.checked = true;
-    const label = document.createElement('label');
-    label.htmlFor = attribute + '-checkbox';
-    label.appendChild(document.createTextNode(attribute));
-    availableAttributesElement.appendChild(checkbox);
-    availableAttributesElement.appendChild(label);
-    availableAttributesElement.appendChild(document.createTextNode(" "));
-  });
 }
 
 /** Checks if a character is a letter */
