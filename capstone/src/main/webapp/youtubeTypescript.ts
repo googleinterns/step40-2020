@@ -431,9 +431,11 @@ function drawTableChart() {
   }
   let table = new google.visualization.Table(document.getElementById('table-container'));
   let formatter = new google.visualization.ColorFormat();
-  formatter.addRange(0, .2, 'white', '#6B8E23');
-  formatter.addRange(.2, .8, 'white', '#ffd800');
-  formatter.addRange(.8, 1, 'white', '#DC143C');
+  formatter.addRange(0, .2, 'black', '#F6F2FC');
+  formatter.addRange(.2, .4, 'black', '#E0CCFB');
+  formatter.addRange(.4, .6, 'black', '#A166F2');
+  formatter.addRange(.6, .8, 'white', '#8133EE');
+  formatter.addRange(.8, 1, 'white', '#6200EA');
   for (let i = 0; i < requestedAttributes.length + 1; i++){
     formatter.format(tableData, i);
   }
