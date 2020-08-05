@@ -10,3 +10,4 @@ youtubeTypescript.js
 **/node_modules
 node_modules
 /node_modules
+/src/main/webapp/youtubeTypescript.js
