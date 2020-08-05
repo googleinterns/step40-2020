@@ -1,17 +1,9 @@
 .DS_Store
 **/bower_components
 /build
-/node_modules/
 /src/server_manager/install_scripts/do_install_script.ts
 yarn-error.log
 .vscode/
 .idea/
-youtubeTypescript.js
 **/node_modules
-node_modules
-/node_modules
-/src/main/webapp/youtubeTypescript.js
-src/main/webapp/youtubeTypescript.js
-/capstone/src/main/webapp/youtubeTypescript.js
-capstone/src/main/webapp/youtubeTypescript.js
 **/youtubeTypescript.js
