@@ -21,7 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Category names are mapped to youtube category numbers */
+/** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -90,8 +90,9 @@ async function inputCommentsToPerspective(commentsList) {
   const analyzedComments = [];
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
-      analyzedComments.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
-      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+      let commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+      analyzedComments.push(commentText);
+      const perspectiveScore = await callPerspective(commentText, langElement.value, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
   }
@@ -112,7 +113,7 @@ function getAttributeTotals(attributeScores) {
   const attributeTotals = new Map();    
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
-      // Populates attributeData to support CSV output and attributeTotals to support averaging
+      // Populates attributeTotals to support averaging
       let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
@@ -218,7 +219,7 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
-/** Category names are mapped to youtube category numbers */
+/** Fetches top videos based category Id */
 async function getTrending(categoryId) {
   const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
@@ -238,27 +239,22 @@ async function getTrending(categoryId) {
   });
 }
 
-/** Enables user from entering text into the text field */
-function enableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = button.id;
-    document.getElementById('channelIdForAnalysis').disabled = true;
-    document.getElementById("keywordSearch").disabled = true;
+/** Enables and disables input into the text field */
+function textInputToggle(button, toEnable) {
+  if (button.checked) {
+    if (toEnable) {
+      document.getElementById('channelIdForAnalysis').value = button.id;
+      document.getElementById('channelIdForAnalysis').disabled = true;
+    } else {
+      document.getElementById('channelIdForAnalysis').value = "";
+      document.getElementById('channelIdForAnalysis').disabled = false;
+    }
   }
 }
 
-/** Disables user from entering text into the text field */
-function disableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = "";
-    document.getElementById('channelIdForAnalysis').disabled = false;
-    document.getElementById("keywordSearch").disabled = false;   
-  }
-}
-
-/** Creates radio buttons to allow the user to select between various categories*/
+/** Creates radio buttons to allow teh user to select between various categories */
 function showCategories() {
-  // Creates button to enable manual text input
+  // Creates button to enable manual input
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
@@ -270,7 +266,7 @@ function showCategories() {
   const description = document.createTextNode('ID/Username');
   label.appendChild(description);
   radiobox.onclick = function() {
-    disableTextInput(this);   
+    textInputToggle(this, false);   
   }
   const categoryContainer = document.getElementById('category-container');
   categoryContainer.appendChild(radiobox);
@@ -289,7 +285,7 @@ function showCategories() {
     const description = document.createTextNode(category);
     label.appendChild(description);
     radiobox.onclick = function() {
-      enableTextInput(this);   
+      textInputToggle(this, true);   
     }
     const categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
@@ -298,8 +294,9 @@ function showCategories() {
   }
 }
 
-/** Converts perspective results to knoop scale then to mohs*/
-function perspectiveToxicityScale(attributeAverages) {
+/** Converts perspective results to knoop scale then to mohs */
+function getScoreInMohs(attributeAverages) {
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
   let totalToxicityScore = 0;
   for (const [attribute, attributeAverage] of attributeAverages) {
@@ -310,7 +307,7 @@ function perspectiveToxicityScale(attributeAverages) {
   const knoopScore = averageToxicityScore * 7000;
   let knoopLow;
   let knoopHigh;
-  let mohs;
+  let mohsScore;
   for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
       if (knoopScore < 1) {
@@ -326,8 +323,55 @@ function perspectiveToxicityScale(attributeAverages) {
   const knoopRange = knoopHigh - knoopLow;
   const amountMoreThanKnoop = knoopScore - knoopLow;
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
-  const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
-  document.getElementById('perspective-toxicity-score').innerHTML = "Perspective Toxicity Score" + " : " + perspectiveToxicityScore;
+  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
+  return completeMohsScore;
+}
+
+/** Displays the perspective toxicity scale score */
+function showPerspectiveToxicityScale(attributeAverages) {
+  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+}
+
+/** Converts perspective results to knoop scale then to mohs */
+function getScoreInMohs(attributeAverages) {
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
+  const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
+  let totalToxicityScore = 0;
+  for (const [attribute, attributeAverage] of attributeAverages) {
+    totalToxicityScore += attributeAverage;
+  }
+  const inputLength = attributeAverages.size;
+  const averageToxicityScore = totalToxicityScore / inputLength;
+  const knoopScore = averageToxicityScore * 7000;
+  let knoopLow;
+  let knoopHigh;
+  let mohsScore;
+  for (let i = 0; i < knoopScale.length; i++) {
+    if (knoopScore < knoopScale[i]) {
+      if (knoopScore < 1) {
+        knoopLow = 0;
+      } else {
+        knoopLow = knoopScale[i-1];
+      }
+      knoopHigh = knoopScale[i];
+      mohsScore = i;  
+      break;
+    }
+  }
+  const knoopRange = knoopHigh - knoopLow;
+  const amountMoreThanKnoop = knoopScore - knoopLow;
+  const mohsDecimal = amountMoreThanKnoop / knoopRange;
+  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
+  return completeMohsScore;
+}
+
+/** Displays the perspective toxicity scale score */
+function showPerspectiveToxicityScale(attributeAverages) {
+  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
 
 /** Returns top Youtube results by keyword to have their comments analyzed*/
@@ -336,15 +380,16 @@ async function getKeywordSearchResults() {
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
-  let videoIds = [];
+  let videoIdList = [];
   for (const item in responseJson.items) {
     if (responseJson.items[item].id.videoId != undefined) {
-      videoIds.push(responseJson.items[item].id.videoId);
+      let videoId = responseJson.items[item].id.videoId;
+      videoIdList.push(videoId);
     }
   }   
   const commentsListPromises = [];
-  for (const id in videoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIds[id]);
+  for (const id in videoIdList) {
+    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIdList[id]);
     videoCommentListJson = await videoCommentList.json();
     commentsListPromises.push(videoCommentListJson);
   }
