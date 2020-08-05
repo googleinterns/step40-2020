@@ -333,7 +333,7 @@ function showPerspectiveToxicityScale(attributeAverages) {
   document.getElementById('search-type').appendChild(document.createElement("br"));  
   document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
-
+    
 /** Converts perspective results to knoop scale then to mohs */
 function getScoreInMohs(attributeAverages) {
   // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
