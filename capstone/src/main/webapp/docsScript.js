@@ -37,8 +37,8 @@ async function gatherDocsInput() {
     id = search[1]; // Shorten full URL to just the ID
   }
 
-  const langElement = document.getElementById('languageForAnalysis');
-  if (!langElement) {
+  const lang = getRequestedLanguage();
+  if (lang == null) {
     return;
   }
 
@@ -52,7 +52,6 @@ async function gatherDocsInput() {
   }
 
   // Get the selected analysis type
-  document.getElementById('general-analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   let tokenizer;
   for (let i = 0; i < radios.length; i++) {
@@ -63,7 +62,7 @@ async function gatherDocsInput() {
   }
 
   const text = await getTextFromDoc(id);
-  handleInput(text, langElement.value, requestedAttributes, tokenizer);
+  handleInput(text, lang, requestedAttributes, tokenizer);
 }
 
 /**

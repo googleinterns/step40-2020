@@ -37,8 +37,8 @@ async function gatherSheetsInput() {
     id = search[1]; // Shorten full URL to just the ID
   }
 
-  const langElement = document.getElementById('languageForAnalysis');
-  if (!langElement) {
+  const lang = getRequestedLanguage();
+  if (lang == null) {
     return;
   }
 
@@ -52,7 +52,6 @@ async function gatherSheetsInput() {
   }
 
   // Get the selected analysis type
-  document.getElementById('general-analysis-container').innerHTML = '';
   const radios = document.getElementsByName('analysisRadios');
   let tokenizer;
   for (let i = 0; i < radios.length; i++) {
@@ -75,14 +74,14 @@ async function gatherSheetsInput() {
     totalText += text + '\n';
   }
 
-  await handleInput(totalText, langElement.value, requestedAttributes, tokenizer);
-  await handleSheetsInput(id, sheetNames, range, langElement, requestedAttributes);
+  await handleInput(totalText, lang, requestedAttributes, tokenizer);
+  await handleSheetsInput(id, sheetNames, range, lang, requestedAttributes);
 }
 
 /**
  * Output the user-requested attributes to a Google Sheet
  */
-async function handleSheetsInput(id, sheetNames, range, langElement, requestedAttributes) {
+async function handleSheetsInput(id, sheetNames, range, lang, requestedAttributes) {
   // Create spreadsheet if requested
   const userDecisionElement = document.getElementById('sheets-output-yes-no');
   if (userDecisionElement != null && userDecisionElement.value === 'yes') {
@@ -99,7 +98,7 @@ async function handleSheetsInput(id, sheetNames, range, langElement, requestedAt
 
     // Add data and color coding to the new Sheet
     for (let i = 0; i < sheetNames.length; i++) {
-      const body = await createSheetOutput(id, sheetNames[i], range, langElement.value, requestedAttributes);
+      const body = await createSheetOutput(id, sheetNames[i], range, lang, requestedAttributes);
       await appendDataToSheet(newSheetId, sheetNames[i], body);
       const numRows = body.length;
       const numCols = body[0].length;
