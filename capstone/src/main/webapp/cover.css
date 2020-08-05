@@ -1,7 +1,7 @@
 /* Base structure */
 html, body {
   height: 100%;
-  background-image: url(/assets/Pattern-Randomized.svg);
+  background-color: #F9F9F9;
 }
 
 body {
