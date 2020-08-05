@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 // Copyright 2019 Google LLC
 //
-=======
->>>>>>> origin/master
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -33,21 +30,21 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.sps.data.YoutubeCaller;
+import com.google.sps.data.YoutubeCaller; 
 
-/** Servlet that fetches trending results of a certain category. */
-@WebServlet("/trending_servlet")
-public class YoutubeTrendingServlet extends HttpServlet {
-  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
+/** Servlet that returns youtube video data based on a keyword. */
+@WebServlet("/keyword_search_servlet")
+public class YoutubeKeywordServlet extends HttpServlet {
+  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "2";
+  private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
-
+  
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String videoCategoryId = request.getParameter("videoCategoryId");
-    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
+    String searchTerm = request.getParameter("searchTerm");
+    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  
