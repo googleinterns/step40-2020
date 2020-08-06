@@ -36,13 +36,9 @@ const YOUTUBE_CATEGORIES = {
   'Sports' : 17,
 };
 
-/** These variables will keep track of the data required for CSV output */
-let ATTRIBUTE_DATA: string[][];
-let ANALYZED_COMMENTS: string[];
-
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
-  resetChartAndCsv();
+  resetChart();
   (<HTMLInputElement> document.getElementById("download")).disabled = false;
   document.getElementById('search-type').innerHTML = "";
   const channelId = (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value.replace(/ /g, '');
@@ -94,19 +90,24 @@ async function inputCommentsToPerspective(commentsList: any[]) {
       return;
   }
   const attributeScoresPromises = [];
+  const analyzedComments = [];
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
-      ANALYZED_COMMENTS.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
-      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+      let commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+      analyzedComments.push(commentText);
+      const perspectiveScore = await callPerspective(commentText, langElement.value, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
   }
   let totalNumberOfComments = commentsList[0].items.length * commentsList.length;
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
+    const attributeData = getAttributeData(resolvedAttributeScores);
+    const attributeDataForChart = getAttributeData(resolvedAttributeScores);
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
-    loadChartsApi(attributeAverages);
+    loadChartsApi(attributeAverages, analyzedComments, attributeData);
     perspectiveToxicityScale(attributeAverages);
+    beginDownload(analyzedComments, attributeDataForChart);
   });
 }
 
@@ -118,11 +119,6 @@ function getAttributeTotals(attributeScores: any[]) {
     for (let j = 0; j < attributeScores.length; j++) {
       // populates attributeData to support CSV output and attributeTotals to support averaging
       let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
-      if (ATTRIBUTE_DATA[j] == null) {
-        ATTRIBUTE_DATA[j] = [attributeScoreValue.toString()];
-      } else {
-        ATTRIBUTE_DATA[j].push(attributeScoreValue);
-      }
       if (attributeTotals.has(requestedAttributes[i])) {
         attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
       } else {
@@ -166,11 +162,11 @@ async function callPerspective(text: string, lang: string, requestedAttributes:s
 }
 
 /** Loads the Google Charts API */
-function loadChartsApi(toxicityData: Map<string, number>) {
+function loadChartsApi(toxicityData: Map<string, number>, analyzedComments: string[], attributeData) {
   google.charts.load('current', {'packages':['corechart']});
   google.charts.load('current', {'packages':['table']});
   google.charts.setOnLoadCallback(function() {drawBarChart(toxicityData);}); 
-  google.charts.setOnLoadCallback(function() {drawTableChart();}); 
+  google.charts.setOnLoadCallback(function() {drawTableChart(analyzedComments, attributeData);}); 
 }
 
 /** Draws a Google BarChart from a map. */
@@ -338,7 +334,7 @@ function perspectiveToxicityScale(attributeAverages: Map<string, number>) {
 
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
-  resetChartAndCsv();
+  resetChart();
   (<HTMLInputElement> document.getElementById("download")).disabled = false;
   const searchTerm = (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
@@ -369,33 +365,30 @@ function prepareDownload(sheetHeader: string[], sheetData, sheetName:string) {
   }
   const outputCsv = new Blob([csv], { type: 'text/csv' });  
   const downloadUrl = URL.createObjectURL(outputCsv);
-  const downloadElement = document.createElement('a');
+  const downloadElement = <HTMLAnchorElement> document.getElementById('download');
   downloadElement.href = downloadUrl;
   downloadElement.download = sheetName + '.csv';
-  downloadElement.click();
 }
 
 /** Formats data and initiates download of CSV file*/
-function beginDownload() {
+function beginDownload(analyzedComments, attributeData) {
   (<HTMLInputElement> document.getElementById("download")).disabled = true; 
   const requestedAttributes = getRequestedAttributes();
   requestedAttributes.unshift('COMMENT');
   const sheetHeader = requestedAttributes;
-  for (let i = 0; i < ATTRIBUTE_DATA.length; i++) {
-    const comment = formatCommentForSpreadsheet(ANALYZED_COMMENTS[i]);
-    ATTRIBUTE_DATA[i].unshift(comment);
+  for (let i = 0; i < attributeData.length; i++) {
+    const comment = formatCommentForSpreadsheet(analyzedComments[i]);
+    attributeData[i].unshift(comment);
   }
   const sheetName = 'Perspective_Output';
-  prepareDownload(sheetHeader, ATTRIBUTE_DATA, sheetName);
+  prepareDownload(sheetHeader, attributeData, sheetName);
 }
 
 /** Clears on screen elements and empties arrays associated with CSV creation*/
-function resetChartAndCsv() {
+function resetChart() {
   document.getElementById('chart-container').innerHTML = "";
   document.getElementById('table-container').innerHTML = "";
   document.getElementById('perspective-toxicity-score').innerHTML = "";
-  ATTRIBUTE_DATA = [];
-  ANALYZED_COMMENTS = [];
 }
 
 /** Removes whitespace, commas and newlines to allow comments to be comaptible with CSV*/
@@ -407,7 +400,7 @@ function formatCommentForSpreadsheet(comment: string) {
 }
 
 /** Creates chart of analyzed comments and requested attributes*/
-function drawTableChart() {      
+function drawTableChart(analyzedComments: string[], attributeData) {      
   const requestedAttributes = getRequestedAttributes();
   let tableData = new google.visualization.DataTable();
   // Add columns
@@ -416,11 +409,11 @@ function drawTableChart() {
     tableData.addColumn('number', requestedAttributes[i]);
   }
   // Add rows
-  tableData.addRows(ANALYZED_COMMENTS.length);
-  for (let i = 0; i < ANALYZED_COMMENTS.length; i++) {
-    tableData.setCell(i, 0, ANALYZED_COMMENTS[i])
-    for (let j = 1; j < ATTRIBUTE_DATA[i].length + 1; j++) {
-      tableData.setCell(i, j, ATTRIBUTE_DATA[i][j-1])
+  tableData.addRows(analyzedComments.length);
+  for (let i = 0; i < analyzedComments.length; i++) {
+    tableData.setCell(i, 0, analyzedComments[i])
+    for (let j = 1; j < attributeData[i].length + 1; j++) {
+      tableData.setCell(i, j, attributeData[i][j-1])
     }
   }
   let table = new google.visualization.Table(document.getElementById('table-container'));
@@ -449,4 +442,22 @@ function getColor(score) {
   } else {
     return '#F6F2FC'; // Lighest purple
   }
+}
+
+/** Returns an array of attribute data to support CSV output*/
+function getAttributeData(attributeScores) {
+  const requestedAttributes = getRequestedAttributes();
+  const attributeData = [];    
+  for (let i = 0; i < requestedAttributes.length; i++) {
+    for (let j = 0; j < attributeScores.length; j++) {
+      // Populates attributeData to support CSV output
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
+      if (attributeData[j] == null) {
+        attributeData[j] = [attributeScoreValue];
+      } else {
+        attributeData[j].push(attributeScoreValue);
+      }
+    }
+  }
+  return attributeData;
 }
