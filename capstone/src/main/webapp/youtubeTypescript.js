@@ -75,9 +75,9 @@ function callYoutube() {
             switch (_a.label) {
                 case 0:
                     resetChart();
-                    document.getElementById("download").disabled = false;
+                    getInputElement('download').disabled = false;
                     document.getElementById('search-type').innerHTML = "";
-                    channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
+                    channelId = getInputElement('channelIdForAnalysis').value.replace(/ /g, '');
                     if (!channelId) {
                         return [2 /*return*/];
                     }
@@ -133,7 +133,7 @@ function inputCommentsToPerspective(commentsList) {
         return __generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
-                    langElement = document.getElementById('languageForAnalysis');
+                    langElement = getInputElement('languageForAnalysis');
                     if (!langElement) {
                         return [2 /*return*/];
                     }
@@ -283,7 +283,7 @@ function drawBarChart(toxicityData) {
 }
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-    var langElement = document.getElementById('languageForAnalysis');
+    var langElement = getInputElement('languageForAnalysis');
     if (!langElement) {
         return;
     }
@@ -358,16 +358,18 @@ function getTrending(categoryId) {
 }
 /** Enables and disables manual input into the text field */
 function textInputToggle(button, toEnable) {
+    var channelIdEl = getInputElement('channelIdForAnalysis');
+    var keywordSearchdEl = getInputElement('channelIdForAnalysis');
     if (button.checked) {
         if (toEnable) {
-            document.getElementById('channelIdForAnalysis').value = button.id;
-            document.getElementById('channelIdForAnalysis').disabled = true;
-            document.getElementById("keywordSearch").disabled = true;
+            channelIdEl.value = button.id;
+            channelIdEl.disabled = true;
+            keywordSearchdEl.disabled = true;
         }
         else {
-            document.getElementById('channelIdForAnalysis').value = "";
-            document.getElementById('channelIdForAnalysis').disabled = false;
-            document.getElementById("keywordSearch").disabled = false;
+            channelIdEl.value = "";
+            channelIdEl.disabled = false;
+            keywordSearchdEl.disabled = false;
         }
     }
 }
@@ -453,8 +455,8 @@ function getKeywordSearchResults() {
             switch (_c.label) {
                 case 0:
                     resetChart();
-                    document.getElementById("download").disabled = false;
-                    searchTerm = document.getElementById('channelIdForAnalysis').value;
+                    getInputElement('download').disabled = false;
+                    searchTerm = getInputElement('channelIdForAnalysis').value;
                     return [4 /*yield*/, fetch('/keyword_search_servlet?searchTerm=' + searchTerm)];
                 case 1:
                     response = _c.sent();
@@ -513,7 +515,7 @@ function prepareDownload(sheetHeader, sheetData, sheetName) {
 }
 /** Formats data and initiates download of CSV file*/
 function beginDownload(analyzedComments, attributeData) {
-    document.getElementById("download").disabled = true;
+    getInputElement('download').disabled = true;
     var requestedAttributes = getRequestedAttributes();
     requestedAttributes.unshift('COMMENT');
     var sheetHeader = requestedAttributes;
@@ -603,4 +605,7 @@ function getAttributeData(attributeScores) {
         }
     }
     return attributeData;
+}
+function getInputElement(id) {
+    return document.getElementById(id);
 }

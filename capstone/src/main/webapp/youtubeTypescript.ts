@@ -39,9 +39,9 @@ const YOUTUBE_CATEGORIES = {
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
   resetChart();
-  (<HTMLInputElement> document.getElementById("download")).disabled = false;
+  getInputElement('download').disabled = false;
   document.getElementById('search-type').innerHTML = "";
-  const channelId = (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value.replace(/ /g, '');
+  const channelId = getInputElement('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
     return;
   }
@@ -79,7 +79,7 @@ async function callYoutube() {
 
 /** Calls perspective to analyze an array of comment JSON's */
 async function inputCommentsToPerspective(commentsList: any[]) {
-  const langElement = (<HTMLInputElement> document.getElementById('languageForAnalysis'));
+  const langElement = getInputElement('languageForAnalysis');
   if (!langElement) {
     return;
   }
@@ -194,7 +194,7 @@ function drawBarChart(toxicityData: Map<string, number>) {
 
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-  const langElement = (<HTMLInputElement> document.getElementById('languageForAnalysis'));
+  const langElement = getInputElement('languageForAnalysis');
   if (!langElement) {
     return;
   }
@@ -244,15 +244,17 @@ async function getTrending(categoryId: number) {
 
 /** Enables and disables manual input into the text field */
 function textInputToggle (button, toEnable: boolean) {
+  let channelIdEl = getInputElement('channelIdForAnalysis');
+  let keywordSearchdEl = getInputElement('channelIdForAnalysis');
   if (button.checked) { 
     if (toEnable) {
-      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value = button.id;
-      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).disabled = true;
-      (<HTMLInputElement> document.getElementById("keywordSearch")).disabled = true;
+      channelIdEl.value = button.id;
+      channelIdEl.disabled = true;
+      keywordSearchdEl.disabled = true;
     } else {
-      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value = "";
-      (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).disabled = false;
-      (<HTMLInputElement> document.getElementById("keywordSearch")).disabled = false;    
+      channelIdEl.value = "";
+      channelIdEl.disabled = false;
+      keywordSearchdEl.disabled = false;    
     }
   }
 }
@@ -335,8 +337,8 @@ function perspectiveToxicityScale(attributeAverages: Map<string, number>) {
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
   resetChart();
-  (<HTMLInputElement> document.getElementById("download")).disabled = false;
-  const searchTerm = (<HTMLInputElement> document.getElementById('channelIdForAnalysis')).value;
+  getInputElement('download').disabled = false;
+  const searchTerm = getInputElement('channelIdForAnalysis').value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
   let videoIds = [];
@@ -372,7 +374,7 @@ function prepareDownload(sheetHeader: string[], sheetData, sheetName:string) {
 
 /** Formats data and initiates download of CSV file*/
 function beginDownload(analyzedComments, attributeData) {
-  (<HTMLInputElement> document.getElementById("download")).disabled = true; 
+  getInputElement('download').disabled = true; 
   const requestedAttributes = getRequestedAttributes();
   requestedAttributes.unshift('COMMENT');
   const sheetHeader = requestedAttributes;
@@ -462,4 +464,8 @@ function getAttributeData(attributeScores) {
     }
   }
   return attributeData;
+}
+
+function getInputElement(id: string) {
+    return <HTMLInputElement> document.getElementById(id);
 }
