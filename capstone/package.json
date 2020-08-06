@@ -1,0 +1,9 @@
+{
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "@types/google.visualization": "0.0.53"
+  }
+}
