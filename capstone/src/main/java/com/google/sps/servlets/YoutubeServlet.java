@@ -30,6 +30,7 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
+import com.google.sps.data.YoutubeCaller;
 
 /** Servlet that returns youtube api data. */
 @WebServlet("/youtube_servlet")
@@ -48,24 +49,14 @@ public class YoutubeServlet extends HttpServlet {
     String completeUrl = (postRequestBodyData.length() == 24) ? 
       (BASE_URL + "&allThreadsRelatedToChannelId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
         (BASE_URL + "&videoId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
-    String output = get(completeUrl);
+    String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    postRequestBodyData = request.getReader().readLine().replaceAll("^\"+|\"+$", "");
+    postRequestBodyData = request.getReader().readLine().trim();
     doGet(request, response);
-  }
-
-  /** Makes a GET request. */
-  private String get(String url) throws IOException {
-    Request request = new Request.Builder()
-      .url(url)
-      .build();
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
   }
 }

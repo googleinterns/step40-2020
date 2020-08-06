@@ -59,7 +59,6 @@ async function callYoutube() {
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
     const usernameConverterResponseJson = await callYoutubeUsernameServlet(channelId);
-    console.log(usernameConverterResponseJson);
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       return;
     }
@@ -281,8 +280,7 @@ async function callYoutubeServlet(channelId) {
     method: 'POST',
     headers: {'Content-Type': 'application/json',},
     body: channelId});
-  const youtubeServletData = await response.json();
-  return youtubeServletData;
+  return await response.json();
 }
 
 async function callYoutubeUsernameServlet(channelId) {
@@ -290,8 +288,7 @@ async function callYoutubeUsernameServlet(channelId) {
     method: 'POST',
     headers: {'Content-Type': 'application/json',},
     body: channelId});
-  const usernameConverterResponseJson = await response.json();
-  return usernameConverterResponseJson;
+  return await response.json();
 }
 
 async function callYoutubeTrendingServlet(categoryId) {
@@ -299,6 +296,5 @@ async function callYoutubeTrendingServlet(categoryId) {
     method: 'POST',
     headers: {'Content-Type': 'application/json',},
     body: categoryId});
-  const trendingResponseJson = await response.json();
-  return trendingResponseJson;
+  return await response.json();
 }

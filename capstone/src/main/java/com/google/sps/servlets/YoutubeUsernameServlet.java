@@ -34,6 +34,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException; 
 import java.net.URL; 
 import java.net.URLEncoder; 
+import com.google.sps.data.YoutubeCaller;
 
 /** Servlet that converts a youtube username to a channelID. */
 @WebServlet("/youtube_username_servlet")
@@ -48,24 +49,14 @@ public class YoutubeUsernameServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
     String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
-    String output = get(completeUrl);
+    String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  
   }
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    postRequestBodyData = request.getReader().readLine().replaceAll("^\"+|\"+$", "");
+    postRequestBodyData = request.getReader().readLine().trim();
     doGet(request, response);
-  }
-  
-  /** Makes a GET request. */
-  private String get(String url) throws IOException {
-    Request request = new Request.Builder()
-      .url(url)
-      .build();
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
   }
 }
