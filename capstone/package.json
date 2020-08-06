@@ -1,0 +1,13 @@
+{
+  "name": "step40-2020",
+  "private": true,
+  "devDependencies": {
+    "@types/bluebird": "^3.5.32",
+    "@types/core-js": "^0.9.36",
+    "@types/es6-promise": "^3.3.0",
+    "es6-promise": "^4.2.8",
+    "google-charts": "^2.0.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {}
+}
