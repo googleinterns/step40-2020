@@ -266,8 +266,8 @@ function drawBarChart(toxicityData) {
     // forEach(value,key)
     toxicityData.forEach(function (attributeScoresAvg, attribute) {
         var score = attributeScoresAvg;
-        var color = getColor(attributeScoresAvg);
-        data.addRow([attribute, score, 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color]);
+        var style = getStyle(attributeScoresAvg);
+        data.addRow([attribute, score, style]);
     });
     data.sort({ column: 1, desc: false });
     var options = {
@@ -566,23 +566,25 @@ function drawTableChart(analyzedComments, attributeData) {
     }
     table.draw(tableData, { allowHtml: true, showRowNumber: false, width: '100%', height: '100%' });
 }
-/** Gives the appropriate color for a bar in a barchart given its score */
-function getColor(score) {
+/** Gives the appropriate style for a bar in a barchart given its score */
+function getStyle(score) {
+    var color;
     if (score >= 0.8) {
-        return '#6200EA'; // Darkest purple
+        color = '#6200EA'; // Darkest purple
     }
     else if (score >= 0.6) {
-        return '#8133EE'; // Dark purple
+        color = '#8133EE'; // Dark purple
     }
     else if (score >= 0.4) {
-        return '#A166F2'; // Mild purple
+        color = '#A166F2'; // Mild purple
     }
     else if (score >= 0.2) {
-        return '#E0CCFB'; // Light purple
+        color = '#E0CCFB'; // Light purple
     }
     else {
-        return '#F6F2FC'; // Lighest purple
+        color = '#F6F2FC'; // Lightest purple
     }
+    return 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color;
 }
 /** Returns an array of attribute data to support CSV output*/
 function getAttributeData(attributeScores) {
