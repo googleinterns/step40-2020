@@ -40,7 +40,7 @@ public class YoutubeServlet extends HttpServlet {
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
- 
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String channelId = request.getParameter("channelId");

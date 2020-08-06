@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.io.UnsupportedEncodingException; 
 import java.net.MalformedURLException; 
 import java.net.URL; 
-import java.net.URLEncoder; 
+import java.net.URLEncoder;
 import com.google.sps.data.YoutubeCaller;
 
 /** Servlet that converts a youtube username to a channelID. */

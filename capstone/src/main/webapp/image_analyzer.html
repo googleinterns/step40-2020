@@ -13,10 +13,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
-    <script src="youtubeScript.js"></script>
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
-  <body class="text-center" onload="showAvailableAttributes();showCategories()">
+  <body class="text-center">
     <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
       <header class="masthead mb-auto">
         <div class="inner">
@@ -29,9 +27,9 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
+            <a class="nav-link active" href="image_analyzer.html">Image Analyzer</a>
             <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
-            <a class="nav-link active" href="youtube_analyzer.html">Youtube Analyzer</a>
+            <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
           </nav>
         </div>
@@ -39,40 +37,51 @@
       <main role="main">
         <section class="jumbotron text-center">
           <div class="container">
-            <h1>Youtube Analysis</h1>
-            <p class="lead text-muted"> Either Input a Channel ID or Username or Choose A Category, Then Select The Perspective API attribute(s) You Would Like to Be Shown. Recent Comments From The Source Of Your Choosing Will Be Analyzed.</p>
-            <small id="disclaimer" class="form-text text-muted">Copy and paste supported</small>
+            <h1>Image Analysis</h1>
+            <p class="lead text-muted">Upload an image and select the Perspective API attribute(s) you would like to be shown</p>
+            <small id="disclaimer" class="form-text text-muted">Supported Formats: .JPEG, .JPG, .PNG</small>
           </div>
         </section>
       </main>
-      <div id="category-container"></div>
-      <form onsubmit="return false;">
-        <div class="form-group">
-          <input list ="channels" type="text" class="form-control" id="channelIdForAnalysis" aria-describedby="inputText" placeholder="Input Channel ID or Username To Be Analyzed Here">
-          <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small>
-          <div id="search-type"></div>
-          <div id="perspective-toxicity-score"></div>
-          <datalist id="channels">
-            <option value="UC_x5XG1OV2P6uZZ5FSM9Ttw">Google Developers</option>
-            <option value="UC-lHJZR3Gqxm24_Vd_AJ5Yw">PewDiePie</option>
-            <option value="UCupvZG-5ko_eiXAupbDfxWw">CNN</option>
-          </datalist>
+      <div class="input-group">
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" id="imageForAnalysis" aria-describedby="inputFileText">
+          <label class="custom-file-label" for="imageForAnalysis">Select Image to be Analyzed</label>
         </div>
-        <select id="languageForAnalysis" onchange="showAvailableAttributes()">
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="it">Italian</option>
-          <option value="pt">Portuguese</option>
-        </select>
-        <div id="available-attributes"></div>
-        <button onclick="callYoutube()" class="btn btn-primary">Submit</button>
-        <button onclick="getKeywordSearchResults()" class="btn btn-primary" id="keywordSearch">Keyword Search</button>
-        <a id="download" class="btn btn-primary" role="button">Download Output</a>
-      </form><br>
-      <div id="comment-list"></div>
-       <div id="chart-container"></div>
+      </div>
+      <small id="disclaimer" class="form-text text-muted">Data may be stored for QA/QC purposes</small><br>
+      <form>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="toxicity">
+          <label class="form-check-label" for="toxicity">Toxicity</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="identity-attack">
+          <label class="form-check-label" for="identity-attack">Identity Attack</label>
+        </div>
+        <div class="form-check">
+           <input type="checkbox" class="form-check-input" id="insult">
+          <label class="form-check-label" for="insult">Insult</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="profanity">
+          <label class="form-check-label" for="profanity">Profanity</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="threat">
+          <label class="form-check-label" for="threat">Threat</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="sexually-explicit">
+          <label class="form-check-label" for="sexually-explicit">Sexually Explicit</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="flirtation">
+          <label class="form-check-label" for="flirtation">Flirtation</label>
+        </div><br>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <div id="perspective-response"></div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu</p>
