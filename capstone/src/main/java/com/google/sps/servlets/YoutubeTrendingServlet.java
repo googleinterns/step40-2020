@@ -38,7 +38,7 @@ import com.google.sps.data.GetRequest;
 @WebServlet("/trending_servlet")
 public class YoutubeTrendingServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
-  private static final String KEY = "AIzaSyCNknbH7wekG_bz1RcP1muXy9plNQhZaAY";
+  private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "2";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8"); 
   private ApiCaller apiCaller; 
