@@ -30,23 +30,23 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.sps.data.YoutubeCaller;
+import com.google.sps.data.YoutubeCaller; 
 
-/** Servlet that fetches trending results of a certain category. */
-@WebServlet("/trending_servlet")
-public class YoutubeTrendingServlet extends HttpServlet {
-  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
+/** Servlet that returns youtube video data based on a keyword. */
+@WebServlet("/keyword_search_servlet")
+public class YoutubeKeywordServlet extends HttpServlet {
+  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "2";
+  private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String postRequestBodyData = request.getReader().readLine().trim();
-    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + postRequestBodyData + "&key=" + KEY;
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String searchTerm = request.getParameter("searchTerm");
+    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
-    response.getWriter().println(output); 
+    response.getWriter().println(output);  
   }
 }

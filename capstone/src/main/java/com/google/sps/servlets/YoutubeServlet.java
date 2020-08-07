@@ -33,7 +33,7 @@ import java.util.Arrays;
 import com.google.sps.data.YoutubeCaller;
 import com.google.sps.data.YoutubeServletInput;  
 
-/** Servlet that returns youtube api data. */
+/** Servlet that returns youtube comment data. */
 @WebServlet("/youtube_servlet")
 public class YoutubeServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
