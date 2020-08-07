@@ -30,8 +30,10 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
+import com.google.sps.data.YoutubeServletInput;  
 import com.google.sps.data.ApiCaller;
 import com.google.sps.data.PostRequest;
+import com.google.sps.data.GetRequest;
 
 /** Servlet that returns youtube api data. */
 @WebServlet("/youtube_servlet")
@@ -40,12 +42,8 @@ public class YoutubeServlet extends HttpServlet {
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  private String postRequestBodyData;
-  private String channelId;
-  private String videoId;
-  private String completeUrl;
-  private ApiCaller apiCaller; 
   OkHttpClient client = new OkHttpClient();
+  private ApiCaller apiCaller; 
 
   public YoutubeServlet() {
     super();
@@ -58,34 +56,22 @@ public class YoutubeServlet extends HttpServlet {
   }
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    completeUrl = (postRequestBodyData.length() == 24) ? 
-      (BASE_URL + "&allThreadsRelatedToChannelId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
-        (BASE_URL + "&videoId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
-    String output = get(completeUrl);
-    response.setContentType("application/json");
-    response.getWriter().println(output);  
-  }
-
-  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     if (request.getReader() != null) {
-      postRequestBodyData = request.getReader().readLine().replaceAll("^\"+|\"+$", "");
-      doGet(request, response);
+      YoutubeServletInput info = new YoutubeServletInput("", "");
+      String postRequestBodyData = request.getReader().readLine().trim();
+      Gson gson = new Gson();
+      info = gson.fromJson(postRequestBodyData, YoutubeServletInput.class);
+      String completeUrl = (info.getIdType().equals("channelId")) ? 
+        (BASE_URL + "&allThreadsRelatedToChannelId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
+          (BASE_URL + "&videoId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
+      String output = GetRequest.get(completeUrl, client);
+      response.setContentType("application/json");
+      response.getWriter().println(output);  
     } else {
-      String output = apiCaller.post(completeUrl, "json", client);
+      String output = apiCaller.post("url", "json", client);
       response.setContentType("application/json");
       response.getWriter().println(output);
-    }
-  }
-
-  /** Makes a GET request. */
-  private String get(String url) throws IOException {
-    Request request = new Request.Builder()
-      .url(url)
-      .build();
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
+    }  
   }
 }

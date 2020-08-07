@@ -31,7 +31,8 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.google.sps.data.ApiCaller;
-import com.google.sps.data.PostRequest;
+import com.google.sps.data.PostRequest; 
+import com.google.sps.data.GetRequest;
 
 
 /** Servlet that returns youtube api data. */
@@ -57,32 +58,17 @@ public class YoutubeKeywordServlet extends HttpServlet {
   }
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + postRequestBodyData + "&key=" + KEY;
-    String output = get(completeUrl);
-    response.setContentType("application/json");
-    response.getWriter().println(output);  
-  }
-
-  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     if (request.getReader() != null) {
-      postRequestBodyData = request.getReader().readLine().replaceAll("^\"+|\"+$", "");
-      doGet(request, response);
+      String postRequestBodyData = request.getReader().readLine().trim();
+      String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + postRequestBodyData + "&key=" + KEY;
+      String output = GetRequest.get(completeUrl, client);
+      response.setContentType("application/json");
+      response.getWriter().println(output); 
     } else {
-      String output = apiCaller.post(completeUrl, "json", client);
+      String output = apiCaller.post("url", "json", client);
       response.setContentType("application/json");
       response.getWriter().println(output);
-    }
-  }
-
-  /** Makes a GET request. */
-  private String get(String url) throws IOException {
-    Request request = new Request.Builder()
-      .url(url)
-      .build();
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
+    } 
   }
 }

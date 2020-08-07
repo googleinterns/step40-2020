@@ -36,6 +36,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import com.google.sps.data.ApiCaller;
 import com.google.sps.data.PostRequest; 
+import com.google.sps.data.GetRequest;
 
 /** Servlet that converts a youtube username to a channelID. */
 @WebServlet("/youtube_username_servlet")
@@ -43,8 +44,6 @@ public class YoutubeUsernameServlet extends HttpServlet {
   private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  private String postRequestBodyData;
-  private String completeUrl;
   private ApiCaller apiCaller; 
   OkHttpClient client = new OkHttpClient();
 
@@ -59,33 +58,18 @@ public class YoutubeUsernameServlet extends HttpServlet {
   }
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
-    completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
-    String output = get(completeUrl);
-    response.setContentType("application/json");
-    response.getWriter().println(output);  
-  }
-
-  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     if (request.getReader() != null) {
-      postRequestBodyData = request.getReader().readLine().replaceAll("^\"+|\"+$", "");
-      doGet(request, response);
-    } else {
-      String output = apiCaller.post(completeUrl, "json", client);
+      String postRequestBodyData = request.getReader().readLine().trim();
+      String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
+      String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
+      String output = GetRequest.get(completeUrl, client);
       response.setContentType("application/json");
       response.getWriter().println(output);
-    }
-  }
-
-  /** Makes a GET request. */
-  private String get(String url) throws IOException {
-    Request request = new Request.Builder()
-      .url(url)
-      .build();
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
+    } else {
+      String output = apiCaller.post("url", "json", client);
+      response.setContentType("application/json");
+      response.getWriter().println(output);
+    }  
   }
 }
