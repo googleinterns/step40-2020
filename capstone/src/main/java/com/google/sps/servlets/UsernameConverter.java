@@ -30,23 +30,31 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.sps.data.YoutubeCaller; 
 
-/** Servlet that returns youtube video data based on a keyword. */
-@WebServlet("/keyword_search_servlet")
-public class YoutubeKeywordServlet extends HttpServlet {
-  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
+/** Servlet that converts a youtube username to a channelID. */
+@WebServlet("/username_servlet")
+public class UsernameConverter extends HttpServlet {
+  private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
-  
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String searchTerm = request.getParameter("searchTerm");
-    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + searchTerm + "&key=" + KEY;
-    String output = YoutubeCaller.get(completeUrl, client);
+    String userName = request.getParameter("channelId");
+    String url = URL + KEY + "&forUsername=" + userName + "&part=id";
+    String output = get(url);
     response.setContentType("application/json");
     response.getWriter().println(output);  
+  }
+  
+  /** Makes a GET request. */
+  private String get(String url) throws IOException {
+    Request request = new Request.Builder()
+      .url(url)
+      .build();
+    try (Response response = client.newCall(request).execute()) {
+      return response.body().string();
+    }
   }
 }
