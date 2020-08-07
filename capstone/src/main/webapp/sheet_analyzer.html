@@ -20,7 +20,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
     <link href="cover.css" rel="stylesheet">
     <script src="script.js"></script>
-    <script src="docsScript.js"></script>
+    <script src="sheetsScript.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body class="text-center" onload="showAvailableAttributes(); loadDropdowns()">
@@ -34,8 +34,8 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="sheet_analyzer.html">Sheets Analyzer</a>
-            <a class="nav-link active" href="document_analyzer.html">Document Analyzer</a>
+            <a class="nav-link active" href="sheet_analyzer.html">Sheets Analyzer</a>
+            <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
             <a class="nav-link" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
           </nav>
@@ -44,18 +44,18 @@
       <main role="main">
         <section class="jumbotron text-center">
           <div class="container">
-            <h1>Document Analysis</h1>
-            <p class="lead text-muted">Attach a Google Doc and select your preferences</p>
-            <small id="disclaimer" class="form-text text-muted">Format 1: https://docs.google.com/document/d/1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24/edit?pli=1</small>
+            <h1>Google Sheets Analysis</h1>
+            <p class="lead text-muted">Attach a Google Sheet and select your preferences</p>
+            <small id="disclaimer" class="form-text text-muted">Format 1: https://docs.google.com/spreadsheets/d/1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24/edit#gid=0</small>
             <small id="disclaimer" class="form-text text-muted">Format 2: 1fhOv2ASk4zXZ-DdzEwfA2D70allxATa1U2Dd3LJ4C24</small>
           </div>
         </section>
       </main>
       <div class="text-analysis-module">
-        <form onsubmit="gatherDocsInput(); return false;">
+        <form onsubmit="gatherSheetsInput(); return false;">
           <div class="md-form">
-            <input type="text" class="form-control" id="doc-id" aria-describedby="inputText"></textarea>
-            <label for="doc-id">ID of Google Doc</label>
+            <input type="text" class="form-control" id="sheet-id" aria-describedby="inputText"></textarea>
+            <label for="sheet-id">ID of Google Sheet</label>
           </div>
           <a onclick=toggleAdvancedOptions() id="toggle-advanced-options-button" >Advanced options</a>
           <div id="advanced-options" style="display:none">
@@ -93,6 +93,36 @@
                   </ul>
                 </div>
               </div>
+            </div>
+            <div id="sheets-range-container">
+              <b>Would you like a custom range within the Sheet analyzed? (No = All cells are analyzed)</b>
+              <div class="form-check form-check-inline">
+                <select id="sheets-range-yes-no" class="form-control" onchange="updateRangeElement()">
+                  <option value="yes">Yes</option>
+                  <option value="no" selected>No</option>
+                </select>
+              </div>
+            </div>
+            <div id="sheets-range-input" style="display: none;">
+              <b>What range in the Sheet do you want analyzed? (Format: "Sheet1!A1:B2")</b>
+              <div class="form-check form-check-inline">
+                <input id="sheets-range"></input>
+              </div>
+            </div>
+            <div id="sheets-output-container">
+              <b>Would you like output written to a Google Sheet?</b>
+              <div class="form-check form-check-inline">
+                <select id="sheets-output-yes-no" class="form-control" onchange="updateTitleElement()">
+                  <option value="yes">Yes</option>
+                  <option value="no" selected>No</option>
+                </select>
+              </div>
+            </div>
+            <div id="sheets-title-input" style="display: none;">
+              <b>What would you like to title the Sheet?</b>
+              <div class="form-check form-check-inline md-form">
+                <input type="text" id="sheets-title" placeholder="Perspective Output"></input>
+              </div><br>
             </div>
           </div>
           <button class="btn btn-outline-elegant btn-block my-4 waves-effect z-depth-0" id="submit_button" style="display: none; margin: auto; width: 200px;" type="submit">Submit</button>
@@ -133,8 +163,6 @@
       </footer>
     </div>
     <script src="oAuth.js"></script>
-    <!-- Ensure that initOAuth() is called exclusively once, either when
-    readyState changes or when the api script is asynchronously loaded -->
     <script async defer src="https://apis.google.com/js/api.js"
       onload="this.onload=function(){}; initOAuth()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">

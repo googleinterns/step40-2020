@@ -30,8 +30,9 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
+import com.google.sps.data.YoutubeCaller;
 
-/** Servlet that returns youtube api data. */
+/** Servlet that returns youtube comment data. */
 @WebServlet("/youtube_servlet")
 public class YoutubeServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet%2Creplies";
@@ -47,18 +48,8 @@ public class YoutubeServlet extends HttpServlet {
     String completeUrl = (channelId != null) ? 
       (BASE_URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
         (BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
-    String output = get(completeUrl);
+    String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  
-  }
-  
-  /** Makes a GET request. */
-  private String get(String url) throws IOException {
-    Request request = new Request.Builder()
-      .url(url)
-      .build();
-    try (Response response = client.newCall(request).execute()) {
-      return response.body().string();
-    }
   }
 }

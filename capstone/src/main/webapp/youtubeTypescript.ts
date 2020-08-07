@@ -331,7 +331,7 @@ function perspectiveToxicityScale(attributeAverages: Map<string, number>) {
   const amountMoreThanKnoop = knoopScore - knoopLow;
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
   const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
-  document.getElementById('perspective-toxicity-score').innerHTML = ("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+  document.getElementById('perspective-toxicity-score').innerHTML = "Perspective Toxicity Score" + " : " + perspectiveToxicityScore;
 }
 
 /** Returns top Youtube results by keyword to have their comments analyzed*/
@@ -360,7 +360,7 @@ async function getKeywordSearchResults() {
 }
 
 /** Prepares CSV download*/
-function prepareDownload(sheetHeader: string[], sheetData, sheetName:string) {
+function prepareDownload(sheetHeader: string[], sheetData: string[][], sheetName: string) {
   let csv = sheetHeader.join(',') + '\n';
   for (const data of sheetData) {
     csv += data.join(',') + '\n';

@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" 
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="cover.css" rel="stylesheet">
-    <script src="youtubeTypescript.js"></script>
+    <script src="youtubeScript.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
   </head>
   <body class="text-center" onload="showAvailableAttributes();showCategories()">
@@ -29,7 +29,7 @@
           <nav class="nav nav-masthead justify-content-center">
             <a class="nav-link" href="index.html">Home</a>
             <a class="nav-link" href="text_analyzer.html">Text Analyzer</a>
-            <a class="nav-link" href="sheet_analyzer.html">Sheets Analyzer</a>
+            <a class="nav-link" href="image_analyzer.html">Image Analyzer</a>
             <a class="nav-link" href="document_analyzer.html">Document Analyzer</a>
             <a class="nav-link active" href="youtube_analyzer.html">Youtube Analyzer</a>
             <a class="nav-link" href="about.html">About</a>
@@ -69,11 +69,10 @@
         <div id="available-attributes"></div>
         <button onclick="callYoutube()" class="btn btn-primary">Submit</button>
         <button onclick="getKeywordSearchResults()" class="btn btn-primary" id="keywordSearch">Keyword Search</button>
+        <a id="download" class="btn btn-primary" role="button">Download Output</a>
       </form><br>
       <div id="comment-list"></div>
-      <div id="chart-container"></div>
-      <div id="table-container"></div>
-      <a id="download" class="btn btn-primary" role="button">Download Output</a>
+       <div id="chart-container"></div>
       <footer class="mastfoot mt-auto">
         <div class="inner">
           <p>Built by Christopher Mohri, Daniel Ortega and Oluwadamilare Alamutu</p>
