@@ -42,11 +42,11 @@ public class YoutubeTrendingServlet extends HttpServlet {
   OkHttpClient client = new OkHttpClient();
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String videoCategoryId = request.getParameter("videoCategoryId");
-    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + videoCategoryId + "&key=" + KEY;
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String postRequestBodyData = request.getReader().readLine().trim();
+    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + postRequestBodyData + "&key=" + KEY;
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
-    response.getWriter().println(output);  
+    response.getWriter().println(output); 
   }
 }

@@ -45,10 +45,10 @@ public class YoutubeUsernameServlet extends HttpServlet {
   OkHttpClient client = new OkHttpClient();
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String userName = request.getParameter("channelId");
-    String encodedUserName = URLEncoder.encode(userName, "UTF-8");
-    String completeUrl = BASE_URL + KEY + "&forUsername=" + encodedUserName + "&part=id";
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String postRequestBodyData = request.getReader().readLine().trim();
+    String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
+    String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  

@@ -31,6 +31,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.google.sps.data.YoutubeCaller;
+import com.google.sps.data.YoutubeServletInput;  
 
 /** Servlet that returns youtube comment data. */
 @WebServlet("/youtube_servlet")
@@ -40,14 +41,16 @@ public class YoutubeServlet extends HttpServlet {
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
-
+  
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String channelId = request.getParameter("channelId");
-    String videoId = request.getParameter("videoId");
-    String completeUrl = (channelId != null) ? 
-      (BASE_URL + "&allThreadsRelatedToChannelId=" + channelId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
-        (BASE_URL + "&videoId=" + videoId + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    YoutubeServletInput info = new YoutubeServletInput("", "");
+    String postRequestBodyData = request.getReader().readLine().trim();
+    Gson gson = new Gson();
+    info = gson.fromJson(postRequestBodyData, YoutubeServletInput.class);
+    String completeUrl = (info.getIdType().equals("channelId")) ? 
+      (BASE_URL + "&allThreadsRelatedToChannelId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
+        (BASE_URL + "&videoId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  

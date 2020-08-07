@@ -20,6 +20,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
+
 /** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
@@ -47,28 +48,25 @@ async function callYoutube() {
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
-  // Checks if input follows channel ID format, if not attempts to convert it to channel ID
+  /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   let response;
   let responseJson;
-  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId);
-    responseJson = await response.json();
+  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {;
+    responseJson = await callYoutubeServlet("channelId", channelId);
     if (responseJson.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
       return;
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
-    const usernameConverterResponseJson = await usernameConverterResponse.json();
+    const usernameConverterResponseJson = await callYoutubeUsernameServlet(channelId);
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
-    responseJson = await response.json();
+    responseJson = await callYoutubeServlet("channelId", convertedUserName);
   }
   inputCommentsToPerspective([responseJson]);
 }
@@ -218,10 +216,9 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
-/** Fetches top videos by category Id */
+/** Fetches top videos by categoty Id */
 async function getTrending(categoryId) {
-  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
-  const trendingResponseJson = await trendingResponse.json();
+  const trendingResponseJson = await callYoutubeTrendingServlet(categoryId);
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
     const videoId = trendingResponseJson.items[item].id;
@@ -229,8 +226,7 @@ async function getTrending(categoryId) {
   }
   const commentsListPromises = [];
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
-    const videoCommentListJson = await videoCommentList.json();
+    const videoCommentListJson = await callYoutubeServlet("videoId", trendingVideoIds[id]);
     commentsListPromises.push(videoCommentListJson);
   }
   await Promise.all(commentsListPromises).then(resolvedCommentsList => {
@@ -293,6 +289,29 @@ function showCategories() {
   }
 }
 
+async function callYoutubeServlet(idType, id) {
+  const response = await fetch('/youtube_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: JSON.stringify({idType: idType, id: id})});
+  return await response.json();
+}
+
+async function callYoutubeUsernameServlet(channelId) {
+  const response = await fetch('/youtube_username_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: channelId});
+  return await response.json();
+}
+
+async function callYoutubeTrendingServlet(categoryId) {
+  const response = await fetch('/trending_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: categoryId});
+  return await response.json();
+  
 /** Converts perspective results to knoop scale then to mohs */
 function getScoreInMohs(attributeAverages) {
   // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
@@ -324,13 +343,6 @@ function getScoreInMohs(attributeAverages) {
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
   const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
   return completeMohsScore;
-}
-
-/** Displays the perspective toxicity scale score */
-function showPerspectiveToxicityScale(attributeAverages) {
-  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
-  document.getElementById('search-type').appendChild(document.createElement("br"));  
-  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
 
 /** Displays the perspective toxicity scale score */
