@@ -37,20 +37,14 @@ public class YoutubeTrendingServlet extends HttpServlet {
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "2";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  private String postRequestBodyData;
   OkHttpClient client = new OkHttpClient();
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String postRequestBodyData = request.getReader().readLine().trim();
     String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + postRequestBodyData + "&key=" + KEY;
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
-    response.getWriter().println(output);  
-  }
-
-  @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    postRequestBodyData = request.getReader().readLine().trim();
-    doGet(request, response);
+    response.getWriter().println(output); 
   }
 }

@@ -42,21 +42,15 @@ public class YoutubeUsernameServlet extends HttpServlet {
   private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  private String postRequestBodyData;
   OkHttpClient client = new OkHttpClient();
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String postRequestBodyData = request.getReader().readLine().trim();
     String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
     String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  
-  }
-
-  @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    postRequestBodyData = request.getReader().readLine().trim();
-    doGet(request, response);
   }
 }
