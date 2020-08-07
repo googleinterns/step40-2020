@@ -33,8 +33,10 @@ import java.util.Arrays;
 import java.io.UnsupportedEncodingException; 
 import java.net.MalformedURLException; 
 import java.net.URL; 
-import java.net.URLEncoder; 
-import com.google.sps.data.YoutubeCaller;
+import java.net.URLEncoder;
+import com.google.sps.data.ApiCaller;
+import com.google.sps.data.PostRequest; 
+import com.google.sps.data.GetRequest;
 
 /** Servlet that converts a youtube username to a channelID. */
 @WebServlet("/youtube_username_servlet")
@@ -42,15 +44,32 @@ public class YoutubeUsernameServlet extends HttpServlet {
   private static final String BASE_URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  private ApiCaller apiCaller; 
   OkHttpClient client = new OkHttpClient();
+
+  public YoutubeUsernameServlet() {
+    super();
+    this.apiCaller = new PostRequest();
+  }
+
+  public YoutubeUsernameServlet(ApiCaller apiCaller) {
+    super();
+    this.apiCaller = apiCaller;
+  }
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String postRequestBodyData = request.getReader().readLine().trim();
-    String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
-    String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
-    String output = YoutubeCaller.get(completeUrl, client);
-    response.setContentType("application/json");
-    response.getWriter().println(output);  
+    if (request.getReader() != null) {
+      String postRequestBodyData = request.getReader().readLine().trim();
+      String ecodedUserName = URLEncoder.encode(postRequestBodyData, "UTF-8");
+      String completeUrl = BASE_URL + KEY + "&forUsername=" + ecodedUserName + "&part=id";
+      String output = GetRequest.get(completeUrl, client);
+      response.setContentType("application/json");
+      response.getWriter().println(output);
+    } else {
+      String output = apiCaller.post("url", "json", client);
+      response.setContentType("application/json");
+      response.getWriter().println(output);
+    }  
   }
 }

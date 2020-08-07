@@ -28,7 +28,7 @@ import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.sps.data.ApiCaller;
-import com.google.sps.data.PerspectiveCaller;
+import com.google.sps.data.PostRequest;
 import com.google.sps.data.PerspectiveInput;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
@@ -37,6 +37,7 @@ import java.util.Arrays;
 /** Servlet that returns Perspective scoring. */
 @WebServlet("/call_perspective")
 public class CallPerspectiveServlet extends HttpServlet {
+
   private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
@@ -44,7 +45,7 @@ public class CallPerspectiveServlet extends HttpServlet {
 
   public CallPerspectiveServlet() {
     super();
-    this.apiCaller = new PerspectiveCaller();
+    this.apiCaller = new PostRequest();
   }
 
   public CallPerspectiveServlet(ApiCaller apiCaller) {

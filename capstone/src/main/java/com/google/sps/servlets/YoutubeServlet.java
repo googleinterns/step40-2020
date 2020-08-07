@@ -30,8 +30,10 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.sps.data.YoutubeCaller;
 import com.google.sps.data.YoutubeServletInput;  
+import com.google.sps.data.ApiCaller;
+import com.google.sps.data.PostRequest;
+import com.google.sps.data.GetRequest;
 
 /** Servlet that returns youtube comment data. */
 @WebServlet("/youtube_servlet")
@@ -41,18 +43,35 @@ public class YoutubeServlet extends HttpServlet {
   private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
-  
+  private ApiCaller apiCaller; 
+
+  public YoutubeServlet() {
+    super();
+    this.apiCaller = new PostRequest();
+  }
+
+  public YoutubeServlet(ApiCaller apiCaller) {
+    super();
+    this.apiCaller = apiCaller;
+  }
+
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    YoutubeServletInput info = new YoutubeServletInput("", "");
-    String postRequestBodyData = request.getReader().readLine().trim();
-    Gson gson = new Gson();
-    info = gson.fromJson(postRequestBodyData, YoutubeServletInput.class);
-    String completeUrl = (info.getIdType().equals("channelId")) ? 
-      (BASE_URL + "&allThreadsRelatedToChannelId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
-        (BASE_URL + "&videoId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
-    String output = YoutubeCaller.get(completeUrl, client);
-    response.setContentType("application/json");
-    response.getWriter().println(output);  
+    if (request.getReader() != null) {
+      YoutubeServletInput info = new YoutubeServletInput("", "");
+      String postRequestBodyData = request.getReader().readLine().trim();
+      Gson gson = new Gson();
+      info = gson.fromJson(postRequestBodyData, YoutubeServletInput.class);
+      String completeUrl = (info.getIdType().equals("channelId")) ? 
+        (BASE_URL + "&allThreadsRelatedToChannelId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
+          (BASE_URL + "&videoId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
+      String output = GetRequest.get(completeUrl, client);
+      response.setContentType("application/json");
+      response.getWriter().println(output);  
+    } else {
+      String output = apiCaller.post("url", "json", client);
+      response.setContentType("application/json");
+      response.getWriter().println(output);
+    }  
   }
 }

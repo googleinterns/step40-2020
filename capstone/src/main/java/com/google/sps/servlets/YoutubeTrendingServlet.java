@@ -30,7 +30,9 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.sps.data.YoutubeCaller;
+import com.google.sps.data.ApiCaller;
+import com.google.sps.data.PostRequest;
+import com.google.sps.data.GetRequest;
 
 /** Servlet that fetches trending results of a certain category. */
 @WebServlet("/trending_servlet")
@@ -38,15 +40,32 @@ public class YoutubeTrendingServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&chart=mostPopular";
   private static final String KEY = "API_KEY";
   private static final String NUM_RESULTS = "2";
-  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+  private static final MediaType JSON = MediaType.get("application/json; charset=utf-8"); 
+  private ApiCaller apiCaller; 
   OkHttpClient client = new OkHttpClient();
+
+  public YoutubeTrendingServlet() {
+    super();
+    this.apiCaller = new PostRequest();
+  }
+
+  public YoutubeTrendingServlet(ApiCaller apiCaller) {
+    super();
+    this.apiCaller = apiCaller;
+  }
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String postRequestBodyData = request.getReader().readLine().trim();
-    String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + postRequestBodyData + "&key=" + KEY;
-    String output = YoutubeCaller.get(completeUrl, client);
-    response.setContentType("application/json");
-    response.getWriter().println(output); 
+    if (request.getReader() != null) {
+      String postRequestBodyData = request.getReader().readLine().trim();
+      String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + postRequestBodyData + "&key=" + KEY;
+      String output = GetRequest.get(completeUrl, client);
+      response.setContentType("application/json");
+      response.getWriter().println(output); 
+    } else {
+      String output = apiCaller.post("url", "json", client);
+      response.setContentType("application/json");
+      response.getWriter().println(output);
+    } 
   }
 }
