@@ -21,7 +21,7 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
 
-/** Category names are mapped to youtube category numbers */
+/** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
   'Comedy': 23,
@@ -34,13 +34,9 @@ const YOUTUBE_CATEGORIES = {
   'Sports' : 17,
 };
 
-/** These variables will keep track of the data required for CSV output */
-let attributeData = [];
-let analyzedComments = [];
-
 /** Calls youtube servlet and passes output to perspctive */
 async function callYoutube() {
-  resetChartAndCsv();
+  resetChart();
   document.getElementById('search-type').innerHTML = "";
   const channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
   if (!channelId) {
@@ -52,28 +48,25 @@ async function callYoutube() {
     getTrending(YOUTUBE_CATEGORIES[channelId]);
     return;
   }
-  // Checks if input follows channel ID format, if not attempts to convert it to channel ID
+  /** Checks if input follows channel ID format, if not attempts to convert it to channel ID*/
   let response;
   let responseJson;
-  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId);
-    responseJson = await response.json();
+  if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {;
+    responseJson = await callYoutubeServlet("channelId", channelId);
     if (responseJson.hasOwnProperty('error')) {
       alert("Invalid Channel ID");
       return;
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
-    const usernameConverterResponseJson = await usernameConverterResponse.json();
+    const usernameConverterResponseJson = await callYoutubeUsernameServlet(channelId);
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       alert("Username Not found, Please Input Channel ID");
       return;
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
-    responseJson = await response.json();
+    responseJson = await callYoutubeServlet("channelId", convertedUserName);
   }
   inputCommentsToPerspective([responseJson]);
 }
@@ -91,18 +84,23 @@ async function inputCommentsToPerspective(commentsList) {
       return;
   }
   const attributeScoresPromises = [];
+  const analyzedComments = [];
   for (const comments in commentsList) {
     for (const item in commentsList[comments].items) {
-      analyzedComments.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
-      const perspectiveScore = await callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes);
+      let commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+      analyzedComments.push(commentText);
+      const perspectiveScore = await callPerspective(commentText, langElement.value, requestedAttributes);
       attributeScoresPromises.push(perspectiveScore);
     }
   }
+  let totalNumberOfComments = commentsList[0].items.length * commentsList.length;
   await Promise.all(attributeScoresPromises).then(resolvedAttributeScores => {
+    const attributeData = getAttributeData(resolvedAttributeScores);
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
-    const attributeAverages = getAttributeAverages(attributeTotals, commentsList);
+    const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
     loadChartsApi(attributeAverages);
     perspectiveToxicityScale(attributeAverages);
+    beginDownload(analyzedComments, attributeData);
   });
 }
 
@@ -112,16 +110,12 @@ function getAttributeTotals(attributeScores) {
   const attributeTotals = new Map();    
   for (let i = 0; i < requestedAttributes.length; i++) {
     for (let j = 0; j < attributeScores.length; j++) {
-      // populates attributeData to support CSV output and attributeTotals to support averaging
-      if(attributeData[j] == null) {
-        attributeData[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value)];
-      } else {
-        attributeData[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-      }
+      // Populates attributeTotals to support averaging
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
       if (attributeTotals.has(requestedAttributes[i])) {
-        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
       } else {
-        attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+        attributeTotals.set(requestedAttributes[i], attributeScoreValue);
       }
     }
   }
@@ -129,10 +123,10 @@ function getAttributeTotals(attributeScores) {
 }
 
 /** Returns a map of attribute score averages from a map and an array */
-function getAttributeAverages(attributeTotals, commentsList) {
+function getAttributeAverages(attributeTotals, totalNumberOfComments) {
   const attributeAverages = new Map();
   for (const [attribute, attributeScoresTotal] of attributeTotals) {
-    attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length)*commentsList.length));
+    attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
   }
   return attributeAverages;
 }
@@ -199,8 +193,8 @@ function showAvailableAttributes() {
     return;
   }
   const lang = langElement.value;
-  const avaiableAttributesElement = document.getElementById('available-attributes');
-  avaiableAttributesElement.innerHTML = '';
+  const availableAttributesElement = document.getElementById('available-attributes');
+  availableAttributesElement.innerHTML = '';
   const attributes = ATTRIBUTES_BY_LANGUAGE[lang];
   attributes.forEach(function(attribute) {
     const checkbox = document.createElement('input');
@@ -211,9 +205,9 @@ function showAvailableAttributes() {
     const label = document.createElement('label');
     label.htmlFor = attribute + '-checkbox';
     label.appendChild(document.createTextNode(attribute));
-    avaiableAttributesElement.appendChild(checkbox);
-    avaiableAttributesElement.appendChild(label);
-    avaiableAttributesElement.appendChild(document.createTextNode(" "));
+    availableAttributesElement.appendChild(checkbox);
+    availableAttributesElement.appendChild(label);
+    availableAttributesElement.appendChild(document.createTextNode(" "));
   });
 }
 
@@ -222,10 +216,9 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
-/** Category names are mapped to youtube category numbers */
+/** Fetches top videos by categoty Id */
 async function getTrending(categoryId) {
-  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
-  const trendingResponseJson = await trendingResponse.json();
+  const trendingResponseJson = await callYoutubeTrendingServlet(categoryId);
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
     const videoId = trendingResponseJson.items[item].id;
@@ -233,8 +226,7 @@ async function getTrending(categoryId) {
   }
   const commentsListPromises = [];
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
-    const videoCommentListJson = await videoCommentList.json();
+    const videoCommentListJson = await callYoutubeServlet("videoId", trendingVideoIds[id]);
     commentsListPromises.push(videoCommentListJson);
   }
   await Promise.all(commentsListPromises).then(resolvedCommentsList => {
@@ -242,27 +234,22 @@ async function getTrending(categoryId) {
   });
 }
 
-/** Enables user from entering text into the text field */
-function enableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = button.id;
-    document.getElementById('channelIdForAnalysis').disabled = true;
-    document.getElementById("keywordSearch").disabled = true;
+/** Enables and disables input into the text field */
+function textInputToggle(button, toEnable) {
+  if (button.checked) {
+    if (toEnable) {
+      document.getElementById('channelIdForAnalysis').value = button.id;
+      document.getElementById('channelIdForAnalysis').disabled = true;
+    } else {
+      document.getElementById('channelIdForAnalysis').value = "";
+      document.getElementById('channelIdForAnalysis').disabled = false;
+    }
   }
 }
 
-/** Disables user from entering text into the text field */
-function disableTextInput(button) {
-  if (button.checked) { 
-    document.getElementById('channelIdForAnalysis').value = "";
-    document.getElementById('channelIdForAnalysis').disabled = false;
-    document.getElementById("keywordSearch").disabled = false;   
-  }
-}
-
-/** Creates radio buttons to allow the user to select between various categories*/
+/** Creates radio buttons to allow teh user to select between various categories */
 function showCategories() {
-  // Creates button to enable manual text input
+  // Creates button to enable manual input
   const radiobox = document.createElement('input');
   radiobox.type = 'radio';
   radiobox.id = 'manualInput';
@@ -274,14 +261,14 @@ function showCategories() {
   const description = document.createTextNode('ID/Username');
   label.appendChild(description);
   radiobox.onclick = function() {
-    disableTextInput(this);   
+    textInputToggle(this, false);   
   }
   const categoryContainer = document.getElementById('category-container');
   categoryContainer.appendChild(radiobox);
   categoryContainer.appendChild(label);
   categoryContainer.appendChild(document.createTextNode(" "));
   categoryContainer.appendChild(document.createElement("br"));
-  // creates buttons for all youtube categories
+  // Creates buttons for all youtube categories
   for (const category in YOUTUBE_CATEGORIES ) {
     const radiobox = document.createElement('input');
     radiobox.type = 'radio';
@@ -293,7 +280,7 @@ function showCategories() {
     const description = document.createTextNode(category);
     label.appendChild(description);
     radiobox.onclick = function() {
-      enableTextInput(this);   
+      textInputToggle(this, true);   
     }
     const categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
@@ -302,8 +289,32 @@ function showCategories() {
   }
 }
 
-/** Converts perspective results to knoop scale then to mohs*/
-function perspectiveToxicityScale(attributeAverages) {
+async function callYoutubeServlet(idType, id) {
+  const response = await fetch('/youtube_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: JSON.stringify({idType: idType, id: id})});
+  return await response.json();
+}
+
+async function callYoutubeUsernameServlet(channelId) {
+  const response = await fetch('/youtube_username_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: channelId});
+  return await response.json();
+}
+
+async function callYoutubeTrendingServlet(categoryId) {
+  const response = await fetch('/trending_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: categoryId});
+  return await response.json();
+  
+/** Converts perspective results to knoop scale then to mohs */
+function getScoreInMohs(attributeAverages) {
+  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
   const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
   let totalToxicityScore = 0;
   for (const [attribute, attributeAverage] of attributeAverages) {
@@ -317,7 +328,7 @@ function perspectiveToxicityScale(attributeAverages) {
   let mohsScore;
   for (let i = 0; i < knoopScale.length; i++) {
     if (knoopScore < knoopScale[i]) {
-      if(knoopScore < 1) {
+      if (knoopScore < 1) {
         knoopLow = 0;
       } else {
         knoopLow = knoopScale[i-1];
@@ -330,25 +341,33 @@ function perspectiveToxicityScale(attributeAverages) {
   const knoopRange = knoopHigh - knoopLow;
   const amountMoreThanKnoop = knoopScore - knoopLow;
   const mohsDecimal = amountMoreThanKnoop / knoopRange;
-  const perspectiveToxicityScore = (mohsScore + mohsDecimal).toFixed(1);
-  document.getElementById('perspective-toxicity-score').innerHTML = ("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
+  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
+  return completeMohsScore;
+}
+
+/** Displays the perspective toxicity scale score */
+function showPerspectiveToxicityScale(attributeAverages) {
+  const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
+  document.getElementById('search-type').appendChild(document.createElement("br"));  
+  document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
 }
 
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 async function getKeywordSearchResults() {
-  resetChartAndCsv();
+  resetChart();
   const searchTerm = document.getElementById('channelIdForAnalysis').value;
   const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
   const responseJson = await response.json();
-  let videoIds = [];
+  let videoIdList = [];
   for (const item in responseJson.items) {
-    if(responseJson.items[item].id.videoId != undefined){
-      videoIds.push(responseJson.items[item].id.videoId);
+    if (responseJson.items[item].id.videoId != undefined) {
+      let videoId = responseJson.items[item].id.videoId;
+      videoIdList.push(videoId);
     }
   }   
   const commentsListPromises = [];
-  for (const id in videoIds) {
-    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIds[id]);
+  for (const id in videoIdList) {
+    videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIdList[id]);
     videoCommentListJson = await videoCommentList.json();
     commentsListPromises.push(videoCommentListJson);
   }
@@ -360,21 +379,19 @@ async function getKeywordSearchResults() {
 
 /** Prepares CSV download*/
 function prepareDownload(sheetHeader, sheetData, sheetName) {
-  const header = sheetHeader.join(',') + '\n';
-  let csv = header;
-  for(const data of sheetData) {
-    csv += data.join(',') + "\n";
+  let csv = sheetHeader.join(',') + '\n';
+  for (const data of sheetData) {
+    csv += data.join(',') + '\n';
   }
   const outputCsv = new Blob([csv], { type: 'text/csv' });  
   const downloadUrl = URL.createObjectURL(outputCsv);
-  const downloadElement = document.createElement('a');
+  const downloadElement = document.getElementById('download');
   downloadElement.href = downloadUrl;
   downloadElement.download = sheetName + '.csv';
-  downloadElement.click();
 }
 
 /** Formats data and initiates download of CSV file*/
-function beginDownload() { 
+function beginDownload(analyzedComments, attributeData) { 
   const requestedAttributes = getRequestedAttributes();
   requestedAttributes.unshift('COMMENT');
   const sheetHeader = requestedAttributes;
@@ -387,11 +404,9 @@ function beginDownload() {
 }
 
 /** Clears on screen elements and empties arrays associated with CSV creation*/
-function resetChartAndCsv() {
+function resetChart() {
   document.getElementById('chart-container').innerHTML = "";
   document.getElementById('perspective-toxicity-score').innerHTML = "";
-  attributeData = [];
-  analyzedComments = [];
 }
 
 /** Removes whitespace, commas and newlines to allow comments to be comaptible with CSV*/
@@ -400,4 +415,22 @@ function formatCommentForSpreadsheet(comment) {
   formattedComment = formattedComment.replace(/,/g, "");
   formattedComment = formattedComment.replace(/\s+/g, " ");
   return formattedComment;    
+}
+  
+/** Returns an array of attribute data to support CSV output*/
+function getAttributeData(attributeScores) {
+  const requestedAttributes = getRequestedAttributes();
+  const attributeData = [];    
+  for (let i = 0; i < requestedAttributes.length; i++) {
+    for (let j = 0; j < attributeScores.length; j++) {
+      // Populates attributeData to support CSV output
+      let attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
+      if (attributeData[j] == null) {
+        attributeData[j] = [attributeScoreValue];
+      } else {
+        attributeData[j].push(attributeScoreValue);
+      }
+    }
+  }
+  return attributeData;
 }
