@@ -31,7 +31,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.google.sps.data.ApiCaller;
-import com.google.sps.data.YoutubeCaller;
+import com.google.sps.data.PostRequest;
 
 
 /** Servlet that returns youtube api data. */
@@ -48,7 +48,7 @@ public class YoutubeKeywordServlet extends HttpServlet {
 
   public YoutubeKeywordServlet() {
     super();
-    this.apiCaller = new YoutubeCaller();
+    this.apiCaller = new PostRequest();
   }
 
   public YoutubeKeywordServlet(ApiCaller apiCaller) {

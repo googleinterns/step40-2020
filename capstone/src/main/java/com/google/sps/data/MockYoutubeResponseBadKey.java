@@ -20,6 +20,7 @@ import okhttp3.OkHttpClient;
 /** Mock YouTube caller that returns an invalid key error */
 public class MockYoutubeResponseBadKey implements ApiCaller {
   public String post(String url, String json, OkHttpClient client) throws IOException {
-    return "{\"error\":{\"code\":400,\"message\":\"API key not valid. Please pass a valid API key.\",\"errors\":[{\"message\":\"API key not valid. Please pass a valid API key.\",\"domain\":\"global\",\"reason\":\"badRequest\"}],\"status\":\"INVALID_ARGUMENT\"}}";
+    return "{\"error\":{\"code\":400,\"message\":\"API key not valid. Please pass a valid API key.\",\"errors\":[{\"message\":" +
+      "\"API key not valid. Please pass a valid API key.\",\"domain\":\"global\",\"reason\":\"badRequest\"}],\"status\":\"INVALID_ARGUMENT\"}}";
   }
 }

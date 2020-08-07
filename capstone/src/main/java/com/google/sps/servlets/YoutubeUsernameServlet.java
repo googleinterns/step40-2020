@@ -35,7 +35,7 @@ import java.net.MalformedURLException;
 import java.net.URL; 
 import java.net.URLEncoder;
 import com.google.sps.data.ApiCaller;
-import com.google.sps.data.YoutubeCaller; 
+import com.google.sps.data.PostRequest; 
 
 /** Servlet that converts a youtube username to a channelID. */
 @WebServlet("/youtube_username_servlet")
@@ -50,7 +50,7 @@ public class YoutubeUsernameServlet extends HttpServlet {
 
   public YoutubeUsernameServlet() {
     super();
-    this.apiCaller = new YoutubeCaller();
+    this.apiCaller = new PostRequest();
   }
 
   public YoutubeUsernameServlet(ApiCaller apiCaller) {

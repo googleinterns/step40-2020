@@ -28,7 +28,7 @@ import java.io.BufferedReader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.sps.data.ApiCaller;
-import com.google.sps.data.PerspectiveCaller;
+import com.google.sps.data.PostRequest;
 import com.google.sps.data.PerspectiveInput;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class CallPerspectiveServlet extends HttpServlet {
 
   public CallPerspectiveServlet() {
     super();
-    this.apiCaller = new PerspectiveCaller();
+    this.apiCaller = new PostRequest();
   }
 
   public CallPerspectiveServlet(ApiCaller apiCaller) {

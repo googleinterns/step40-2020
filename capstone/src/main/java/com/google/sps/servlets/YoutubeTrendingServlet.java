@@ -29,7 +29,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.google.sps.data.ApiCaller;
-import com.google.sps.data.YoutubeCaller;
+import com.google.sps.data.PostRequest;
 
 /** Servlet that fetches trending results of a certain category. */
 @WebServlet("/trending_servlet")
@@ -45,7 +45,7 @@ public class YoutubeTrendingServlet extends HttpServlet {
 
   public YoutubeTrendingServlet() {
     super();
-    this.apiCaller = new YoutubeCaller();
+    this.apiCaller = new PostRequest();
   }
 
   public YoutubeTrendingServlet(ApiCaller apiCaller) {

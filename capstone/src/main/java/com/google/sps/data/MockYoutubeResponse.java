@@ -20,6 +20,8 @@ import okhttp3.OkHttpClient;
 /** Mock YouTube caller that returns a sample output */
 public class MockYoutubeResponse implements ApiCaller {
   public String post(String url, String json, OkHttpClient client) throws IOException {
-    return "{\"items\":[{\"snippet\":{\"topLevelComment\":{\"snippet\":{\"textOriginal\":\"Chinese launch: \"details are top secret, China is not even releasing the rover's name\" \u2014 yeah, I am so shocked and surprised from the model of international cooperation, e.g. Belt and Road, \u4e00\u5e26\u4e00\u8def\"}}}}]}";
+    return "{\"items\":[{\"snippet\":{\"topLevelComment\":{\"snippet\":{\"textOriginal\":\"Chinese launch:" + 
+      "\"details are top secret, China is not even releasing the rover's name\" \u2014 yeah, I am so shocked and" + 
+      "surprised from the model of international cooperation, e.g. Belt and Road, \u4e00\u5e26\u4e00\u8def\"}}}}]}";
   }
 }
