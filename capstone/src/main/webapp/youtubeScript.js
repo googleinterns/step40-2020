@@ -20,7 +20,6 @@ const ATTRIBUTES_BY_LANGUAGE = {
   'it': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT'],
   'pt': ['TOXICITY', 'SEVERE_TOXICITY', 'IDENTITY_ATTACK', 'INSULT', 'PROFANITY', 'THREAT']
 };
-
 /** Category names are mapped to youtube category numbers. This data is from https://gist.github.com/dgp/1b24bf2961521bd75d6c */
 const YOUTUBE_CATEGORIES = {
   'Autos&Vehicles': 2,
@@ -219,7 +218,7 @@ function isLetter(character) {
   return (character.charCodeAt() >= 65 && character.charCodeAt() <= 90) || (character.charCodeAt() >= 97 && character.charCodeAt() <= 122); 
 }
 
-/** Fetches top videos based category Id */
+/** Fetches top videos by category Id */
 async function getTrending(categoryId) {
   const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
   const trendingResponseJson = await trendingResponse.json();
@@ -332,39 +331,6 @@ function showPerspectiveToxicityScale(attributeAverages) {
   const perspectiveToxicityScore = getScoreInMohs(attributeAverages);
   document.getElementById('search-type').appendChild(document.createElement("br"));  
   document.getElementById('search-type').append("Perspective Toxicity Score" + " : " + perspectiveToxicityScore);
-}
-    
-/** Converts perspective results to knoop scale then to mohs */
-function getScoreInMohs(attributeAverages) {
-  // Each index represents a value on the mohs scale and each value represents the highest knoop score that can be correlated with that mohs score *exclusive*. The values are from http://www.themeter.net/durezza_e.htm
-  const knoopScale = [1, 32, 135, 163, 430, 560, 820, 1340, 1800, 7000];
-  let totalToxicityScore = 0;
-  for (const [attribute, attributeAverage] of attributeAverages) {
-    totalToxicityScore += attributeAverage;
-  }
-  const inputLength = attributeAverages.size;
-  const averageToxicityScore = totalToxicityScore / inputLength;
-  const knoopScore = averageToxicityScore * 7000;
-  let knoopLow;
-  let knoopHigh;
-  let mohsScore;
-  for (let i = 0; i < knoopScale.length; i++) {
-    if (knoopScore < knoopScale[i]) {
-      if (knoopScore < 1) {
-        knoopLow = 0;
-      } else {
-        knoopLow = knoopScale[i-1];
-      }
-      knoopHigh = knoopScale[i];
-      mohsScore = i;  
-      break;
-    }
-  }
-  const knoopRange = knoopHigh - knoopLow;
-  const amountMoreThanKnoop = knoopScore - knoopLow;
-  const mohsDecimal = amountMoreThanKnoop / knoopRange;
-  const completeMohsScore = (mohsScore + mohsDecimal).toFixed(1);
-  return completeMohsScore;
 }
 
 /** Displays the perspective toxicity scale score */
