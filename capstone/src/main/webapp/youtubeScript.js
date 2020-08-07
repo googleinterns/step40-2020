@@ -416,7 +416,7 @@ function formatCommentForSpreadsheet(comment) {
   formattedComment = formattedComment.replace(/\s+/g, " ");
   return formattedComment;    
 }
-
+  
 /** Returns an array of attribute data to support CSV output*/
 function getAttributeData(attributeScores) {
   const requestedAttributes = getRequestedAttributes();
