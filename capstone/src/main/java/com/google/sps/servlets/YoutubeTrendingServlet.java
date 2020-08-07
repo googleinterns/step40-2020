@@ -58,7 +58,6 @@ public class YoutubeTrendingServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     if (request.getReader() != null) {
       String postRequestBodyData = request.getReader().readLine().trim();
-      System.out.println(postRequestBodyData);
       String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&regionCode=US&videoCategoryId=" + postRequestBodyData + "&key=" + KEY;
       String output = GetRequest.get(completeUrl, client);
       response.setContentType("application/json");
