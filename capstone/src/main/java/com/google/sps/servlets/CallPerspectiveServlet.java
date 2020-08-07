@@ -37,7 +37,6 @@ import java.util.Arrays;
 /** Servlet that returns Perspective scoring. */
 @WebServlet("/call_perspective")
 public class CallPerspectiveServlet extends HttpServlet {
-
   private static final String URL = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=API_KEY";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
