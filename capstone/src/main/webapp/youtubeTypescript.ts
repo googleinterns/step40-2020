@@ -57,8 +57,7 @@ async function callYoutube() {
   let response: Response;
   let responseJson;
   if (channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length-1])) {
-    response = await fetch('/youtube_servlet?channelId=' + channelId);
-    responseJson = await response.json();
+    responseJson = await callYoutubeServlet("channelId", channelId);
     if (responseJson.hasOwnProperty('error')) {
       hideLoadingWheel();
       alert("Invalid Channel ID");
@@ -66,8 +65,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Channel ID Search";
   } else {
-    const usernameConverterResponse = await fetch('/youtube_username_servlet?channelId=' + channelId);
-    const usernameConverterResponseJson = await usernameConverterResponse.json();
+    const usernameConverterResponseJson = await callYoutubeUsernameServlet(channelId);
     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
       hideLoadingWheel();
       alert("Username Not found, Please Input Channel ID");
@@ -75,8 +73,7 @@ async function callYoutube() {
     }
     document.getElementById('search-type').innerHTML = "Username Search";
     const convertedUserName = usernameConverterResponseJson.items[0].id;
-    response = await fetch('/youtube_servlet?channelId=' + convertedUserName);
-    responseJson = await response.json();
+    responseJson = await callYoutubeServlet("channelId", convertedUserName);
   }
   inputCommentsToPerspective([responseJson]);
 }
@@ -109,6 +106,7 @@ async function inputCommentsToPerspective(commentsList: any[]) {
     const attributeDataForChart = getAttributeData(resolvedAttributeScores);
     const attributeTotals = getAttributeTotals(resolvedAttributeScores);
     const attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
+    hideLoadingWheel();
     loadChartsApi(attributeAverages, analyzedComments, attributeData);
     perspectiveToxicityScale(attributeAverages);
     beginDownload(analyzedComments, attributeDataForChart);
@@ -228,8 +226,7 @@ function isLetter(character) {
 
 /** Category names are mapped to youtube category numbers */
 async function getTrending(categoryId: number) {
-  const trendingResponse = await fetch('/trending_servlet?videoCategoryId=' + categoryId);
-  const trendingResponseJson = await trendingResponse.json();
+  const trendingResponseJson = await callYoutubeTrendingServlet(categoryId);
   const trendingVideoIds = [];
   for (const item in trendingResponseJson.items) {
     const videoId = trendingResponseJson.items[item].id;
@@ -237,8 +234,7 @@ async function getTrending(categoryId: number) {
   }
   const commentsListPromises = [];
   for (const id in trendingVideoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoId=' + trendingVideoIds[id]);
-    const videoCommentListJson = await videoCommentList.json();
+    const videoCommentListJson = await callYoutubeServlet("videoId", trendingVideoIds[id]);
     commentsListPromises.push(videoCommentListJson);
   }
   await Promise.all(commentsListPromises).then(resolvedCommentsList => {
@@ -344,8 +340,7 @@ async function getKeywordSearchResults() {
   showLoadingWheel();
   getInputElement('download').disabled = false;
   const searchTerm = getInputElement('channelIdForAnalysis').value;
-  const response = await fetch('/keyword_search_servlet?searchTerm=' + searchTerm);
-  const responseJson = await response.json();
+  const responseJson = await callYoutubeKeywordServlet(searchTerm);
   let videoIds = [];
   for (const item in responseJson.items) {
     if (responseJson.items[item].id.videoId != undefined) {
@@ -354,8 +349,7 @@ async function getKeywordSearchResults() {
   }   
   const commentsListPromises = [];
   for (const id in videoIds) {
-    const videoCommentList = await fetch('/youtube_servlet?videoId=' + videoIds[id]);
-    const videoCommentListJson = await videoCommentList.json();
+    const videoCommentListJson = await callYoutubeServlet("videoid", videoIds[id]);
     commentsListPromises.push(videoCommentListJson);
   }
   await Promise.all(commentsListPromises).then(resolvedCommentsList => {
@@ -490,4 +484,36 @@ function getAttributeData(attributeScores) {
 
 function getInputElement(id: string) {
     return <HTMLInputElement> document.getElementById(id);
+}
+
+async function callYoutubeServlet(idType, id) {
+  const response = await fetch('/youtube_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: JSON.stringify({idType: idType, id: id})});
+  return await response.json();
+}
+
+async function callYoutubeUsernameServlet(channelId) {
+  const response = await fetch('/youtube_username_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: channelId});
+  return await response.json();
+}
+
+async function callYoutubeTrendingServlet(categoryId) {
+  const response = await fetch('/trending_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: categoryId});
+  return await response.json();
+}
+
+async function callYoutubeKeywordServlet(searchTerm) {
+  const response = await fetch('/keyword_search_servlet', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json',},
+    body: searchTerm});
+  return await response.json();
 }

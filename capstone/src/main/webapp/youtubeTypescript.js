@@ -67,20 +67,20 @@ var YOUTUBE_CATEGORIES = {
     'Science&Technology': 28,
     'Sports': 17
 };
-/** These variables will keep track of the data required for CSV output */
-var ATTRIBUTE_DATA;
-var ANALYZED_COMMENTS;
 /** Calls youtube servlet and passes output to perspctive */
 function callYoutube() {
     return __awaiter(this, void 0, void 0, function () {
-        var channelId, response, responseJson, usernameConverterResponse, usernameConverterResponseJson, convertedUserName;
+        var channelId, response, responseJson, usernameConverterResponseJson, convertedUserName;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    resetChartAndCsv();
+                    resetChart();
+                    showLoadingWheel();
+                    getInputElement('download').disabled = false;
                     document.getElementById('search-type').innerHTML = "";
-                    channelId = document.getElementById('channelIdForAnalysis').value.replace(/ /g, '');
+                    channelId = getInputElement('channelIdForAnalysis').value.replace(/ /g, '');
                     if (!channelId) {
+                        hideLoadingWheel();
                         return [2 /*return*/];
                     }
                     // Checks if input is a category, if so directs input to be handled by get trending
@@ -89,39 +89,32 @@ function callYoutube() {
                         getTrending(YOUTUBE_CATEGORIES[channelId]);
                         return [2 /*return*/];
                     }
-                    if (!(channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length - 1]))) return [3 /*break*/, 3];
-                    return [4 /*yield*/, fetch('/youtube_servlet?channelId=' + channelId)];
+                    if (!(channelId[0] == "U" && channelId[1] == "C" && channelId.length == 24 && isLetter(channelId[channelId.length - 1]))) return [3 /*break*/, 2];
+                    return [4 /*yield*/, callYoutubeServlet("channelId", channelId)];
                 case 1:
-                    response = _a.sent();
-                    return [4 /*yield*/, response.json()];
-                case 2:
                     responseJson = _a.sent();
                     if (responseJson.hasOwnProperty('error')) {
+                        hideLoadingWheel();
                         alert("Invalid Channel ID");
                         return [2 /*return*/];
                     }
                     document.getElementById('search-type').innerHTML = "Channel ID Search";
-                    return [3 /*break*/, 8];
-                case 3: return [4 /*yield*/, fetch('/youtube_username_servlet?channelId=' + channelId)];
-                case 4:
-                    usernameConverterResponse = _a.sent();
-                    return [4 /*yield*/, usernameConverterResponse.json()];
-                case 5:
+                    return [3 /*break*/, 5];
+                case 2: return [4 /*yield*/, callYoutubeUsernameServlet(channelId)];
+                case 3:
                     usernameConverterResponseJson = _a.sent();
                     if (usernameConverterResponseJson.pageInfo.totalResults == 0) {
+                        hideLoadingWheel();
                         alert("Username Not found, Please Input Channel ID");
                         return [2 /*return*/];
                     }
                     document.getElementById('search-type').innerHTML = "Username Search";
                     convertedUserName = usernameConverterResponseJson.items[0].id;
-                    return [4 /*yield*/, fetch('/youtube_servlet?channelId=' + convertedUserName)];
-                case 6:
-                    response = _a.sent();
-                    return [4 /*yield*/, response.json()];
-                case 7:
+                    return [4 /*yield*/, callYoutubeServlet("channelId", convertedUserName)];
+                case 4:
                     responseJson = _a.sent();
-                    _a.label = 8;
-                case 8:
+                    _a.label = 5;
+                case 5:
                     inputCommentsToPerspective([responseJson]);
                     return [2 /*return*/];
             }
@@ -131,11 +124,11 @@ function callYoutube() {
 /** Calls perspective to analyze an array of comment JSON's */
 function inputCommentsToPerspective(commentsList) {
     return __awaiter(this, void 0, void 0, function () {
-        var langElement, commentListElement, requestedAttributes, attributeScoresPromises, _a, _b, _i, comments, _c, _d, _e, item, perspectiveScore;
+        var langElement, commentListElement, requestedAttributes, attributeScoresPromises, analyzedComments, _a, _b, _i, comments, _c, _d, _e, item, commentText, perspectiveScore, totalNumberOfComments;
         return __generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
-                    langElement = document.getElementById('languageForAnalysis');
+                    langElement = getInputElement('languageForAnalysis');
                     if (!langElement) {
                         return [2 /*return*/];
                     }
@@ -146,6 +139,7 @@ function inputCommentsToPerspective(commentsList) {
                         return [2 /*return*/];
                     }
                     attributeScoresPromises = [];
+                    analyzedComments = [];
                     _a = [];
                     for (_b in commentsList)
                         _a.push(_b);
@@ -162,8 +156,9 @@ function inputCommentsToPerspective(commentsList) {
                 case 2:
                     if (!(_e < _c.length)) return [3 /*break*/, 5];
                     item = _c[_e];
-                    ANALYZED_COMMENTS.push(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal);
-                    return [4 /*yield*/, callPerspective(commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal, langElement.value, requestedAttributes)];
+                    commentText = commentsList[comments].items[item].snippet.topLevelComment.snippet.textOriginal;
+                    analyzedComments.push(commentText);
+                    return [4 /*yield*/, callPerspective(commentText, langElement.value, requestedAttributes)];
                 case 3:
                     perspectiveScore = _f.sent();
                     attributeScoresPromises.push(perspectiveScore);
@@ -174,12 +169,18 @@ function inputCommentsToPerspective(commentsList) {
                 case 5:
                     _i++;
                     return [3 /*break*/, 1];
-                case 6: return [4 /*yield*/, Promise.all(attributeScoresPromises).then(function (resolvedAttributeScores) {
-                        var attributeTotals = getAttributeTotals(resolvedAttributeScores);
-                        var attributeAverages = getAttributeAverages(attributeTotals, commentsList);
-                        loadChartsApi(attributeAverages);
-                        perspectiveToxicityScale(attributeAverages);
-                    })];
+                case 6:
+                    totalNumberOfComments = commentsList[0].items.length * commentsList.length;
+                    return [4 /*yield*/, Promise.all(attributeScoresPromises).then(function (resolvedAttributeScores) {
+                            var attributeData = getAttributeData(resolvedAttributeScores);
+                            var attributeDataForChart = getAttributeData(resolvedAttributeScores);
+                            var attributeTotals = getAttributeTotals(resolvedAttributeScores);
+                            var attributeAverages = getAttributeAverages(attributeTotals, totalNumberOfComments);
+                            hideLoadingWheel();
+                            loadChartsApi(attributeAverages, analyzedComments, attributeData);
+                            perspectiveToxicityScale(attributeAverages);
+                            beginDownload(analyzedComments, attributeDataForChart);
+                        })];
                 case 7:
                     _f.sent();
                     return [2 /*return*/];
@@ -193,29 +194,24 @@ function getAttributeTotals(attributeScores) {
     var attributeTotals = new Map();
     for (var i = 0; i < requestedAttributes.length; i++) {
         for (var j = 0; j < attributeScores.length; j++) {
-            // Populates attributeData to support CSV output and attributeTotals to support averaging
-            if (ATTRIBUTE_DATA[j] == null) {
-                ATTRIBUTE_DATA[j] = [(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value).toString()];
-            }
-            else {
-                ATTRIBUTE_DATA[j].push(attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
-            }
+            // populates attributeData to support CSV output and attributeTotals to support averaging
+            var attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
             if (attributeTotals.has(requestedAttributes[i])) {
-                attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+                attributeTotals.set(requestedAttributes[i], attributeTotals.get(requestedAttributes[i]) + attributeScoreValue);
             }
             else {
-                attributeTotals.set(requestedAttributes[i], attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value);
+                attributeTotals.set(requestedAttributes[i], attributeScoreValue);
             }
         }
     }
     return attributeTotals;
 }
 /** Returns a map of attribute score averages from a map and an array */
-function getAttributeAverages(attributeTotals, commentsList) {
+function getAttributeAverages(attributeTotals, totalNumberOfComments) {
     var attributeAverages = new Map();
     // forEach(value,key)
     attributeTotals.forEach(function (attributeScoresTotal, attribute) {
-        attributeAverages.set(attribute, attributeScoresTotal / ((commentsList[0].items.length) * commentsList.length));
+        attributeAverages.set(attribute, attributeScoresTotal / totalNumberOfComments);
     });
     return attributeAverages;
 }
@@ -253,9 +249,11 @@ function callPerspective(text, lang, requestedAttributes) {
     });
 }
 /** Loads the Google Charts API */
-function loadChartsApi(toxicityData) {
+function loadChartsApi(toxicityData, analyzedComments, attributeData) {
     google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.load('current', { 'packages': ['table'] });
     google.charts.setOnLoadCallback(function () { drawBarChart(toxicityData); });
+    google.charts.setOnLoadCallback(function () { drawTableChart(analyzedComments, attributeData); });
 }
 /** Draws a Google BarChart from a map. */
 function drawBarChart(toxicityData) {
@@ -263,15 +261,9 @@ function drawBarChart(toxicityData) {
     var data = google.visualization.arrayToDataTable([[{ label: 'Attribute' }, { label: 'Score', type: 'number' }, { role: "style" }]]);
     // forEach(value,key)
     toxicityData.forEach(function (attributeScoresAvg, attribute) {
-        var color = '#6B8E23'; // Green
         var score = attributeScoresAvg;
-        if (score >= 0.8) {
-            color = '#DC143C'; // Red
-        }
-        else if (score >= 0.2) {
-            color = '#ffd800'; // Yellow
-        }
-        data.addRow([attribute, score, color]);
+        var style = getStyle(attributeScoresAvg);
+        data.addRow([attribute, score, style]);
     });
     data.sort({ column: 1, desc: false });
     var options = {
@@ -287,13 +279,13 @@ function drawBarChart(toxicityData) {
 }
 /** Shows the avaiable attributes given a language selected on text analyzer page */
 function showAvailableAttributes() {
-    var langElement = document.getElementById('languageForAnalysis');
+    var langElement = getInputElement('languageForAnalysis');
     if (!langElement) {
         return;
     }
     var lang = langElement.value;
-    var avaiableAttributesElement = document.getElementById('available-attributes');
-    avaiableAttributesElement.innerHTML = '';
+    var availableAttributesElement = document.getElementById('available-attributes');
+    availableAttributesElement.innerHTML = '';
     var attributes = ATTRIBUTES_BY_LANGUAGE[lang];
     attributes.forEach(function (attribute) {
         var checkbox = document.createElement('input');
@@ -304,9 +296,9 @@ function showAvailableAttributes() {
         var label = document.createElement('label');
         label.htmlFor = attribute + '-checkbox';
         label.appendChild(document.createTextNode(attribute));
-        avaiableAttributesElement.appendChild(checkbox);
-        avaiableAttributesElement.appendChild(label);
-        avaiableAttributesElement.appendChild(document.createTextNode(" "));
+        availableAttributesElement.appendChild(checkbox);
+        availableAttributesElement.appendChild(label);
+        availableAttributesElement.appendChild(document.createTextNode(" "));
     });
 }
 /** Checks if a character is a letter */
@@ -316,14 +308,11 @@ function isLetter(character) {
 /** Category names are mapped to youtube category numbers */
 function getTrending(categoryId) {
     return __awaiter(this, void 0, void 0, function () {
-        var trendingResponse, trendingResponseJson, trendingVideoIds, item, videoId, commentsListPromises, _a, _b, _i, id, videoCommentList, videoCommentListJson;
+        var trendingResponseJson, trendingVideoIds, item, videoId, commentsListPromises, _a, _b, _i, id, videoCommentListJson;
         return __generator(this, function (_c) {
             switch (_c.label) {
-                case 0: return [4 /*yield*/, fetch('/trending_servlet?videoCategoryId=' + categoryId)];
+                case 0: return [4 /*yield*/, callYoutubeTrendingServlet(categoryId)];
                 case 1:
-                    trendingResponse = _c.sent();
-                    return [4 /*yield*/, trendingResponse.json()];
-                case 2:
                     trendingResponseJson = _c.sent();
                     trendingVideoIds = [];
                     for (item in trendingResponseJson.items) {
@@ -335,45 +324,43 @@ function getTrending(categoryId) {
                     for (_b in trendingVideoIds)
                         _a.push(_b);
                     _i = 0;
-                    _c.label = 3;
-                case 3:
-                    if (!(_i < _a.length)) return [3 /*break*/, 7];
+                    _c.label = 2;
+                case 2:
+                    if (!(_i < _a.length)) return [3 /*break*/, 5];
                     id = _a[_i];
-                    return [4 /*yield*/, fetch('/youtube_servlet?videoId=' + trendingVideoIds[id])];
-                case 4:
-                    videoCommentList = _c.sent();
-                    return [4 /*yield*/, videoCommentList.json()];
-                case 5:
+                    return [4 /*yield*/, callYoutubeServlet("videoId", trendingVideoIds[id])];
+                case 3:
                     videoCommentListJson = _c.sent();
                     commentsListPromises.push(videoCommentListJson);
-                    _c.label = 6;
-                case 6:
+                    _c.label = 4;
+                case 4:
                     _i++;
-                    return [3 /*break*/, 3];
-                case 7: return [4 /*yield*/, Promise.all(commentsListPromises).then(function (resolvedCommentsList) {
+                    return [3 /*break*/, 2];
+                case 5: return [4 /*yield*/, Promise.all(commentsListPromises).then(function (resolvedCommentsList) {
                         inputCommentsToPerspective(resolvedCommentsList);
                     })];
-                case 8:
+                case 6:
                     _c.sent();
                     return [2 /*return*/];
             }
         });
     });
 }
-/** Enables user from entering text into the text field */
-function enableTextInput(button) {
+/** Enables and disables manual input into the text field */
+function textInputToggle(button, toEnable) {
+    var channelIdEl = getInputElement('channelIdForAnalysis');
+    var keywordSearchdEl = getInputElement('channelIdForAnalysis');
     if (button.checked) {
-        document.getElementById('channelIdForAnalysis').value = button.id;
-        document.getElementById('channelIdForAnalysis').disabled = true;
-        document.getElementById("keywordSearch").disabled = true;
-    }
-}
-/** Disables user from entering text into the text field */
-function disableTextInput(button) {
-    if (button.checked) {
-        document.getElementById('channelIdForAnalysis').value = "";
-        document.getElementById('channelIdForAnalysis').disabled = false;
-        document.getElementById("keywordSearch").disabled = false;
+        if (toEnable) {
+            channelIdEl.value = button.id;
+            channelIdEl.disabled = true;
+            keywordSearchdEl.disabled = true;
+        }
+        else {
+            channelIdEl.value = "";
+            channelIdEl.disabled = false;
+            keywordSearchdEl.disabled = false;
+        }
     }
 }
 /** Creates radio buttons to allow the user to select between various categories*/
@@ -390,14 +377,14 @@ function showCategories() {
     var description = document.createTextNode('ID/Username');
     label.appendChild(description);
     radiobox.onclick = function () {
-        disableTextInput(this);
+        textInputToggle(this, false);
     };
     var categoryContainer = document.getElementById('category-container');
     categoryContainer.appendChild(radiobox);
     categoryContainer.appendChild(label);
     categoryContainer.appendChild(document.createTextNode(" "));
     categoryContainer.appendChild(document.createElement("br"));
-    // creates buttons for all youtube categories
+    // Creates buttons for all youtube categories
     for (var category in YOUTUBE_CATEGORIES) {
         var radiobox_1 = document.createElement('input');
         radiobox_1.type = 'radio';
@@ -409,7 +396,7 @@ function showCategories() {
         var description_1 = document.createTextNode(category);
         label_1.appendChild(description_1);
         radiobox_1.onclick = function () {
-            enableTextInput(this);
+            textInputToggle(this, true);
         };
         var categoryContainer_1 = document.getElementById('category-container');
         categoryContainer_1.appendChild(radiobox_1);
@@ -453,17 +440,16 @@ function perspectiveToxicityScale(attributeAverages) {
 /** Returns top Youtube results by keyword to have their comments analyzed*/
 function getKeywordSearchResults() {
     return __awaiter(this, void 0, void 0, function () {
-        var searchTerm, response, responseJson, videoIds, item, commentsListPromises, _a, _b, _i, id, videoCommentList, videoCommentListJson;
+        var searchTerm, responseJson, videoIds, item, commentsListPromises, _a, _b, _i, id, videoCommentListJson;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    resetChartAndCsv();
-                    searchTerm = document.getElementById('channelIdForAnalysis').value;
-                    return [4 /*yield*/, fetch('/keyword_search_servlet?searchTerm=' + searchTerm)];
+                    resetChart();
+                    showLoadingWheel();
+                    getInputElement('download').disabled = false;
+                    searchTerm = getInputElement('channelIdForAnalysis').value;
+                    return [4 /*yield*/, callYoutubeKeywordServlet(searchTerm)];
                 case 1:
-                    response = _c.sent();
-                    return [4 /*yield*/, response.json()];
-                case 2:
                     responseJson = _c.sent();
                     videoIds = [];
                     for (item in responseJson.items) {
@@ -476,25 +462,22 @@ function getKeywordSearchResults() {
                     for (_b in videoIds)
                         _a.push(_b);
                     _i = 0;
-                    _c.label = 3;
-                case 3:
-                    if (!(_i < _a.length)) return [3 /*break*/, 7];
+                    _c.label = 2;
+                case 2:
+                    if (!(_i < _a.length)) return [3 /*break*/, 5];
                     id = _a[_i];
-                    return [4 /*yield*/, fetch('/youtube_servlet?videoId=' + videoIds[id])];
-                case 4:
-                    videoCommentList = _c.sent();
-                    return [4 /*yield*/, videoCommentList.json()];
-                case 5:
+                    return [4 /*yield*/, callYoutubeServlet("videoid", videoIds[id])];
+                case 3:
                     videoCommentListJson = _c.sent();
                     commentsListPromises.push(videoCommentListJson);
-                    _c.label = 6;
-                case 6:
+                    _c.label = 4;
+                case 4:
                     _i++;
-                    return [3 /*break*/, 3];
-                case 7: return [4 /*yield*/, Promise.all(commentsListPromises).then(function (resolvedCommentsList) {
+                    return [3 /*break*/, 2];
+                case 5: return [4 /*yield*/, Promise.all(commentsListPromises).then(function (resolvedCommentsList) {
                         inputCommentsToPerspective(resolvedCommentsList);
                     })];
-                case 8:
+                case 6:
                     _c.sent();
                     document.getElementById('search-type').innerHTML = "Keyword Search";
                     return [2 /*return*/];
@@ -511,29 +494,28 @@ function prepareDownload(sheetHeader, sheetData, sheetName) {
     }
     var outputCsv = new Blob([csv], { type: 'text/csv' });
     var downloadUrl = URL.createObjectURL(outputCsv);
-    var downloadElement = document.createElement('a');
+    var downloadElement = document.getElementById('download');
     downloadElement.href = downloadUrl;
     downloadElement.download = sheetName + '.csv';
-    downloadElement.click();
 }
 /** Formats data and initiates download of CSV file*/
-function beginDownload() {
+function beginDownload(analyzedComments, attributeData) {
+    getInputElement('download').disabled = true;
     var requestedAttributes = getRequestedAttributes();
     requestedAttributes.unshift('COMMENT');
     var sheetHeader = requestedAttributes;
-    for (var i = 0; i < ATTRIBUTE_DATA.length; i++) {
-        var comment = formatCommentForSpreadsheet(ANALYZED_COMMENTS[i]);
-        ATTRIBUTE_DATA[i].unshift(comment);
+    for (var i = 0; i < attributeData.length; i++) {
+        var comment = formatCommentForSpreadsheet(analyzedComments[i]);
+        attributeData[i].unshift(comment);
     }
     var sheetName = 'Perspective_Output';
-    prepareDownload(sheetHeader, ATTRIBUTE_DATA, sheetName);
+    prepareDownload(sheetHeader, attributeData, sheetName);
 }
 /** Clears on screen elements and empties arrays associated with CSV creation*/
-function resetChartAndCsv() {
+function resetChart() {
     document.getElementById('chart-container').innerHTML = "";
+    document.getElementById('table-container').innerHTML = "";
     document.getElementById('perspective-toxicity-score').innerHTML = "";
-    ATTRIBUTE_DATA = [];
-    ANALYZED_COMMENTS = [];
 }
 /** Removes whitespace, commas and newlines to allow comments to be comaptible with CSV*/
 function formatCommentForSpreadsheet(comment) {
@@ -541,4 +523,161 @@ function formatCommentForSpreadsheet(comment) {
     formattedComment = formattedComment.replace(/,/g, "");
     formattedComment = formattedComment.replace(/\s+/g, " ");
     return formattedComment;
+}
+/** Creates chart of analyzed comments and requested attributes*/
+function drawTableChart(analyzedComments, attributeData) {
+    var requestedAttributes = getRequestedAttributes();
+    var tableData = new google.visualization.DataTable();
+    // Add columns
+    tableData.addColumn('string', 'COMMENT');
+    for (var i = 0; i < requestedAttributes.length; i++) {
+        tableData.addColumn('number', requestedAttributes[i]);
+    }
+    // Add rows
+    tableData.addRows(analyzedComments.length);
+    for (var i = 0; i < analyzedComments.length; i++) {
+        tableData.setCell(i, 0, analyzedComments[i]);
+        for (var j = 1; j < attributeData[i].length + 1; j++) {
+            tableData.setCell(i, j, attributeData[i][j - 1]);
+        }
+    }
+    var table = new google.visualization.Table(document.getElementById('table-container'));
+    var formatter = new google.visualization.ColorFormat();
+    formatter.addRange(0, .2, 'black', '#F6F2FC');
+    formatter.addRange(.2, .4, 'black', '#E0CCFB');
+    formatter.addRange(.4, .6, 'black', '#A166F2');
+    formatter.addRange(.6, .8, 'white', '#8133EE');
+    formatter.addRange(.8, 1, 'white', '#6200EA');
+    for (var i = 0; i < requestedAttributes.length + 1; i++) {
+        formatter.format(tableData, i);
+    }
+    table.draw(tableData, { allowHtml: true, showRowNumber: false, width: '100%', height: '100%' });
+}
+/** Displays a loading wheel that can be used a placeholder until an output is ready to be displayed*/
+function showLoadingWheel() {
+    var loadingContainerElement = document.getElementById('loading-container');
+    // Only one loading wheel will be shown at a time
+    if (loadingContainerElement.innerHTML == '') {
+        var loadingWheel = document.createElement('p');
+        loadingWheel.className = 'spinner-border';
+        loadingContainerElement.appendChild(loadingWheel);
+    }
+}
+/** Removes the placeholding loading wheel*/
+function hideLoadingWheel() {
+    var loadingContainerElement = document.getElementById('loading-container');
+    loadingContainerElement.innerHTML = '';
+}
+/** Gives the appropriate style for a bar in a barchart given its score */
+function getStyle(score) {
+    var color;
+    if (score >= 0.8) {
+        color = '#6200EA'; // Darkest purple
+    }
+    else if (score >= 0.6) {
+        color = '#8133EE'; // Dark purple
+    }
+    else if (score >= 0.4) {
+        color = '#A166F2'; // Mild purple
+    }
+    else if (score >= 0.2) {
+        color = '#E0CCFB'; // Light purple
+    }
+    else {
+        color = '#F6F2FC'; // Lightest purple
+    }
+    return 'stroke-color: #000000; stroke-width: 1; fill-color: ' + color;
+}
+/** Returns an array of attribute data to support CSV output*/
+function getAttributeData(attributeScores) {
+    var requestedAttributes = getRequestedAttributes();
+    var attributeData = [];
+    for (var i = 0; i < requestedAttributes.length; i++) {
+        for (var j = 0; j < attributeScores.length; j++) {
+            // Populates attributeData to support CSV output
+            var attributeScoreValue = attributeScores[j].attributeScores[requestedAttributes[i]].summaryScore.value;
+            if (attributeData[j] == null) {
+                attributeData[j] = [attributeScoreValue];
+            }
+            else {
+                attributeData[j].push(attributeScoreValue);
+            }
+        }
+    }
+    return attributeData;
+}
+function getInputElement(id) {
+    return document.getElementById(id);
+}
+function callYoutubeServlet(idType, id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, fetch('/youtube_servlet', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idType: idType, id: id })
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [4 /*yield*/, response.json()];
+                case 2: return [2 /*return*/, _a.sent()];
+            }
+        });
+    });
+}
+function callYoutubeUsernameServlet(channelId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, fetch('/youtube_username_servlet', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: channelId
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [4 /*yield*/, response.json()];
+                case 2: return [2 /*return*/, _a.sent()];
+            }
+        });
+    });
+}
+function callYoutubeTrendingServlet(categoryId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, fetch('/trending_servlet', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: categoryId
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [4 /*yield*/, response.json()];
+                case 2: return [2 /*return*/, _a.sent()];
+            }
+        });
+    });
+}
+function callYoutubeKeywordServlet(searchTerm) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, fetch('/keyword_search_servlet', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: searchTerm
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [4 /*yield*/, response.json()];
+                case 2: return [2 /*return*/, _a.sent()];
+            }
+        });
+    });
 }
