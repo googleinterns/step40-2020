@@ -2,7 +2,7 @@
   "name": "package.json-mastery",
   "version": "1.0.0",
   "scripts": {
-    "installTS": "npm install -g typescript",
+    "installTS": "npm install typescript",
     "deploy_appengine" : "mvn package appengine:run",
     "compile_yt" : "tsc src/main/webapp/youtubeTypescript.ts"
   },
