@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "installTS": "npm install -g typescript",
-    "deploy_appengine" : "mvn package appengine:run"
+    "deploy_appengine" : "mvn package appengine:run",
+    "compile_yt" : "tsc src/main/webapp/youtubeTypescript.ts"
   },
   "devDependencies": {
     "typescript": "^3.9.7"
