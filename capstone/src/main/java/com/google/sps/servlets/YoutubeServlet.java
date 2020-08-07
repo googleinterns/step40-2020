@@ -51,7 +51,6 @@ public class YoutubeServlet extends HttpServlet {
     String completeUrl = (info.getIdType().equals("channelId")) ? 
       (BASE_URL + "&allThreadsRelatedToChannelId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
         (BASE_URL + "&videoId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
-    System.out.println(completeUrl);
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  
