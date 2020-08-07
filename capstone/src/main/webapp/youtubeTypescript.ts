@@ -486,6 +486,7 @@ function getInputElement(id: string) {
     return <HTMLInputElement> document.getElementById(id);
 }
 
+/** Makes a post request to the youtube username servlet*/
 async function callYoutubeServlet(idType, id) {
   const response = await fetch('/youtube_servlet', {
     method: 'POST',
@@ -494,6 +495,7 @@ async function callYoutubeServlet(idType, id) {
   return await response.json();
 }
 
+/** Makes a post request to the youtube username servlet*/
 async function callYoutubeUsernameServlet(channelId) {
   const response = await fetch('/youtube_username_servlet', {
     method: 'POST',
@@ -502,6 +504,8 @@ async function callYoutubeUsernameServlet(channelId) {
   return await response.json();
 }
 
+
+/** Makes a post request to the youtube trending servlet*/
 async function callYoutubeTrendingServlet(categoryId) {
   const response = await fetch('/trending_servlet', {
     method: 'POST',
@@ -510,6 +514,7 @@ async function callYoutubeTrendingServlet(categoryId) {
   return await response.json();
 }
 
+/** Makes a post request to the youtube keyword servlet*/
 async function callYoutubeKeywordServlet(searchTerm) {
   const response = await fetch('/keyword_search_servlet', {
     method: 'POST',
