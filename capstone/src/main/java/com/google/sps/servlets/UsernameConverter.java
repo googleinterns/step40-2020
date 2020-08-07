@@ -30,43 +30,31 @@ import com.google.gson.JsonObject;
 import org.json.simple.JSONObject;    
 import java.util.ArrayList;
 import java.util.Arrays;
-import com.google.sps.data.ApiCaller;
-import com.google.sps.data.PostRequest; 
-import com.google.sps.data.GetRequest;
 
-
-/** Servlet that returns youtube video data based on a keyword. */
-@WebServlet("/keyword_search_servlet")
-public class YoutubeKeywordServlet extends HttpServlet {
-  private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
+/** Servlet that converts a youtube username to a channelID. */
+@WebServlet("/username_servlet")
+public class UsernameConverter extends HttpServlet {
+  private static final String URL = " https://www.googleapis.com/youtube/v3/channels?key=";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "5";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
-  private ApiCaller apiCaller;
-
-  public YoutubeKeywordServlet() {
-    super();
-    this.apiCaller = new PostRequest();
-  }
-
-  public YoutubeKeywordServlet(ApiCaller apiCaller) {
-    super();
-    this.apiCaller = apiCaller;
-  }
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    if (request.getReader() != null) {
-      String postRequestBodyData = request.getReader().readLine().trim();
-      String completeUrl = BASE_URL + "&maxResults=" + NUM_RESULTS + "&q=" + postRequestBodyData + "&key=" + KEY;
-      String output = GetRequest.get(completeUrl, client);
-      response.setContentType("application/json");
-      response.getWriter().println(output); 
-    } else {
-      String output = apiCaller.post("url", "json", client);
-      response.setContentType("application/json");
-      response.getWriter().println(output);
-    } 
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String userName = request.getParameter("channelId");
+    String url = URL + KEY + "&forUsername=" + userName + "&part=id";
+    String output = get(url);
+    response.setContentType("application/json");
+    response.getWriter().println(output);  
+  }
+  
+  /** Makes a GET request. */
+  private String get(String url) throws IOException {
+    Request request = new Request.Builder()
+      .url(url)
+      .build();
+    try (Response response = client.newCall(request).execute()) {
+      return response.body().string();
+    }
   }
 }
