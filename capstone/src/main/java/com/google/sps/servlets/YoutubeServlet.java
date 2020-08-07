@@ -31,6 +31,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.google.sps.data.YoutubeCaller;
+import com.google.sps.data.YoutubeServletInput;  
 
 /** Servlet that returns youtube api data. */
 @WebServlet("/youtube_servlet")
@@ -43,10 +44,14 @@ public class YoutubeServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    YoutubeServletInput info = new YoutubeServletInput("", "");
     String postRequestBodyData = request.getReader().readLine().trim();
-    String completeUrl = (postRequestBodyData.length() == 24) ? 
-      (BASE_URL + "&allThreadsRelatedToChannelId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
-        (BASE_URL + "&videoId=" + postRequestBodyData + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
+    Gson gson = new Gson();
+    info = gson.fromJson(postRequestBodyData, YoutubeServletInput.class);
+    String completeUrl = (info.getIdType().equals("channelId")) ? 
+      (BASE_URL + "&allThreadsRelatedToChannelId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY) : 
+        (BASE_URL + "&videoId=" + info.getId() + "&maxResults=" + NUM_RESULTS + "&key=" + KEY);
+    System.out.println(completeUrl);
     String output = YoutubeCaller.get(completeUrl, client);
     response.setContentType("application/json");
     response.getWriter().println(output);  
