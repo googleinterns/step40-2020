@@ -7,11 +7,11 @@ At Google, the Conversation AI (ConvAI) team’s mission is to make online conve
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
-This app requires Maven. To install Maven execute
+This app requires Maven. To install Maven, execute
 ```
 sudo apt install maven
 ```
-This app requires Java Development Kit. To install Java Development Kit execute
+This app requires Java Development Kit. To install Java Development Kit, execute
 ```
 sudo apt install default-jdk 
 ```
@@ -20,7 +20,7 @@ sudo apt install default-jdk
 
 This project feature pre-written tests for the modules. 
 
-To run the various tests execute
+To run the various tests, execute
 ```
 mvn test 
 ```
