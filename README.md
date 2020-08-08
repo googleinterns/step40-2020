@@ -16,29 +16,43 @@ This app requires Java Development Kit. To install Java Development Kit run...
 sudo apt install default-jdk 
 ```
 
-## Running the tests
+## Running tests (optional)
 
-This project feature pre-written tets for the modules. 
+This project feature pre-written tests for the modules. 
 
 To run the various tests run...
 ```
 mvn test 
 ```
 
-## Deployment
+## Running the webapp
 
-API keys for Datamuse, YouTube Data API and Google Sheets are pre-requisites to delploying the web application
+To run this webapp, execute
+
+```
+mvn package appengine:run
+```
+
+and to deploy to a website, edit the pom.xml file with the ID of your GCP and then execute
+
+```
+mvn package appengine:deploy
+```
+
+## API Keys
+
+API keys for the YouTube Data, Google Sheets, Google Docs, OAuth, and Perspective APIs are pre-requisites to delploying the web application.
+To create an API key for each of these, follow the guide [here](https://cloud.google.com/docs/authentication/api-keys#creating_an_api_key).
 
 ## Built With
 
-* [Perspective API](http://perspectiveapi.com/#/home) - Used to score text for toxicity
+* [Perspective API](http://perspectiveapi.com/#/home) - Used to score text for the probability that it is toxic
 * [Datamuse](https://www.datamuse.com/api/) - Used to find replacement words 
 * [YouTube Data API](https://developers.google.com/youtube/v3) - Enables YouTube Analyzer to fetch Youtube Data
 * [Google Sheets API](https://developers.google.com/sheets/api) - Used to support sheets analysis and output
-* [Google Charts](https://developers.google.com/chart) - Used to provide data to site visitors in the form of attarctive charts 
-* [Bootstrap 4](https://getbootstrap.com/docs/4.0/getting-started/introduction/) - CSS Framework for visually appealing and responsive elemmts 
+* [Google Charts](https://developers.google.com/chart) - Used to provide data to site visitors in the form of attarctive charts  
 * [Maven](https://maven.apache.org/) - Used to manage dependencies
-* [Material Design Bootstrap](https://mdbootstrap.com/) - Used to add visual elements that comply with Google's design langauge 
+* [Material Design Bootstrap](https://mdbootstrap.com/) - CSS Framework to add visually appealing and responsive elemmts
 
 ## Contributing
 
@@ -47,8 +61,8 @@ Please contact the [Conversation AI team](https://conversationai.github.io/) for
 ## Authors
 
 * **Oluwadamilare Alamutu** - *Youtube Analyzer* - [GitHub](https://github.com/olu144)
-* **Daniel Ortega** - *Document Analyzer* - [GitHub](https://github.com/#)
-* **Christopher Mohri** - *Text Analyzer* - [GitHub](https://github.com/#)
+* **Christopher Mohri** - *Text Analyzer* - [GitHub](https://github.com/chrismohrii)
+* **Daniel Ortega** - *Document Analyzer* - [GitHub](https://github.com/danieldortega77)
 
 ## License
 
@@ -56,4 +70,4 @@ This project is licensed under the Apache 2 License - see the [LICENSE.md](https
 
 ## Acknowledgments
 
-* A huge Thank You goes to our hosts, Daniel Borkan and Lucas Dos Santos as well as the Jigsaw team
+* A huge Thank You goes to our hosts, Daniel Borkan and Lucas Dos Santos as well as the Jigsaw team!
