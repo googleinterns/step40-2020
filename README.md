@@ -1,4 +1,4 @@
-# # Perspective Hub
+# Perspective Hub
 
 At Google, the Conversation AI (ConvAI) team’s mission is to make online conversations safer and less toxic. One of their tools, Perspective API, gives a probability score for text being toxic on a scale from 0 (low probability) to 1 (high probability). Currently, it is implemented in some platforms such as the New York Times, and anyone can play around with it in a textbox halfway through the homepage of perspectiveapi.com. However, Perspective is relatively inaccessible for anyone lacking technical knowledge or simply unaware of the API. In general, our goal is to help ConvAI make the internet a less toxic place, and this means that we want the Perspective to be more readily available and understandable to the general public. This will also add transparency so the outside world can have a better idea of what the team is working on.
 
@@ -7,11 +7,11 @@ At Google, the Conversation AI (ConvAI) team’s mission is to make online conve
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
-This app requires Maven. To install Maven run...
+This app requires Maven. To install Maven execute
 ```
 sudo apt install maven
 ```
-This app requires Java Development Kit. To install Java Development Kit run...
+This app requires Java Development Kit. To install Java Development Kit execute
 ```
 sudo apt install default-jdk 
 ```
@@ -20,7 +20,7 @@ sudo apt install default-jdk
 
 This project feature pre-written tests for the modules. 
 
-To run the various tests run...
+To run the various tests execute
 ```
 mvn test 
 ```
