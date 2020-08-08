@@ -39,7 +39,7 @@ import com.google.sps.data.GetRequest;
 public class YoutubeKeywordServlet extends HttpServlet {
   private static final String BASE_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet";
   private static final String KEY = "API_KEY";
-  private static final String NUM_RESULTS = "5";
+  private static final String NUM_RESULTS = "2";
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
   OkHttpClient client = new OkHttpClient();
   private ApiCaller apiCaller;
