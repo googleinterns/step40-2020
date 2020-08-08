@@ -49,11 +49,11 @@ To create an API key for each of these, follow the guide [here](https://cloud.go
 
 ## Built With
 
-* [Perspective API](http://perspectiveapi.com/#/home) - Used to score text for the probability that it is toxic
+* [Perspective API](http://perspectiveapi.com/#/home) - Used to score text for the probability that it is "toxic," among other attributes
 * [Datamuse API](https://www.datamuse.com/api/) - Used to find replacement words 
-* [YouTube Data API](https://developers.google.com/youtube/v3) - Enables YouTube Analyzer to fetch Youtube Data
-* [Google Sheets API](https://developers.google.com/sheets/api) - Used to support sheets analysis and output
-* [Google Charts API](https://developers.google.com/chart) - Used to provide data to site visitors in the form of attarctive charts  
+* [YouTube Data API](https://developers.google.com/youtube/v3) - Enables the YouTube Analyzer to fetch Youtube comments
+* [Google Sheets API](https://developers.google.com/sheets/api) - Used to support Sheets analysis and output
+* [Google Charts API](https://developers.google.com/chart) - Used to provide data to users in the form of attractive charts  
 * [Maven](https://maven.apache.org/) - Used to manage dependencies
 * [Material Design Bootstrap](https://mdbootstrap.com/) - CSS Framework to add visually appealing and responsive elemmts
 
