@@ -47,10 +47,10 @@ To create an API key for each of these, follow the guide [here](https://cloud.go
 ## Built With
 
 * [Perspective API](http://perspectiveapi.com/#/home) - Used to score text for the probability that it is toxic
-* [Datamuse](https://www.datamuse.com/api/) - Used to find replacement words 
+* [Datamuse API](https://www.datamuse.com/api/) - Used to find replacement words 
 * [YouTube Data API](https://developers.google.com/youtube/v3) - Enables YouTube Analyzer to fetch Youtube Data
 * [Google Sheets API](https://developers.google.com/sheets/api) - Used to support sheets analysis and output
-* [Google Charts](https://developers.google.com/chart) - Used to provide data to site visitors in the form of attarctive charts  
+* [Google Charts API](https://developers.google.com/chart) - Used to provide data to site visitors in the form of attarctive charts  
 * [Maven](https://maven.apache.org/) - Used to manage dependencies
 * [Material Design Bootstrap](https://mdbootstrap.com/) - CSS Framework to add visually appealing and responsive elemmts
 
